@@ -1,0 +1,40 @@
+0000000000000000000000000000000000000000 c74a2d42c919c3c1b4d6c35cc2a7beb19171f611 thisiskarthisk <karthikeyan2771999@gmail.com> 1783935904 +0530	commit (initial): first commit
+c74a2d42c919c3c1b4d6c35cc2a7beb19171f611 0000000000000000000000000000000000000000 thisiskarthisk <karthikeyan2771999@gmail.com> 1783935906 +0530	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 c74a2d42c919c3c1b4d6c35cc2a7beb19171f611 thisiskarthisk <karthikeyan2771999@gmail.com> 1783935906 +0530	Branch: renamed refs/heads/master to refs/heads/main
+c74a2d42c919c3c1b4d6c35cc2a7beb19171f611 6dff316e56c2bbfb33546e02c9cc854c208d064e thisiskarthisk <karthikeyan2771999@gmail.com> 1783936076 +0530	commit: db
+6dff316e56c2bbfb33546e02c9cc854c208d064e d7973a85f747d8e81365545b1bb38c4f25c5515d thisiskarthisk <karthikeyan2771999@gmail.com> 1783936699 +0530	commit: sample env...and mail send bug fiixed
+d7973a85f747d8e81365545b1bb38c4f25c5515d dbdc752defc108acba465bb76f61760170948e8b thisiskarthisk <karthikeyan2771999@gmail.com> 1784011651 +0530	commit: bug fix and import intergation
+dbdc752defc108acba465bb76f61760170948e8b 612389aa518a0a8917cd4a6ef45116bf7495a7da thisiskarthisk <karthikeyan2771999@gmail.com> 1784032468 +0530	commit: import function intergation
+612389aa518a0a8917cd4a6ef45116bf7495a7da 76ab3c7cfba0c52aea28002a7faa77122de7ffd5 thisiskarthisk <karthikeyan2771999@gmail.com> 1784052536 +0530	commit: proflujo name remove and bug fixed
+76ab3c7cfba0c52aea28002a7faa77122de7ffd5 76ab3c7cfba0c52aea28002a7faa77122de7ffd5 thisiskarthisk <karthikeyan2771999@gmail.com> 1784178719 +0530	checkout: moving from main to latest-ui-neet-predictor
+76ab3c7cfba0c52aea28002a7faa77122de7ffd5 60aa51da382fe0be94004c756a20752b62a70172 thisiskarthisk <karthikeyan2771999@gmail.com> 1784178917 +0530	commit: update latest
+60aa51da382fe0be94004c756a20752b62a70172 60aa51da382fe0be94004c756a20752b62a70172 thisiskarthisk <karthikeyan2771999@gmail.com> 1784283268 +0530	checkout: moving from latest-ui-neet-predictor to ai-neet-predictor
+60aa51da382fe0be94004c756a20752b62a70172 eac5f12512315625220b9568a02254d9029b8150 thisiskarthisk <karthikeyan2771999@gmail.com> 1784283305 +0530	commit: first commit
+eac5f12512315625220b9568a02254d9029b8150 747c55b7aefb97b0a537d79a16499e552e4d148a thisiskarthisk <karthikeyan2771999@gmail.com> 1784293660 +0530	commit: ai api key change
+747c55b7aefb97b0a537d79a16499e552e4d148a 548a80bd7cbb3c77959896eea93dd377a51cd5e5 thisiskarthisk <karthikeyan2771999@gmail.com> 1784295233 +0530	commit: demo-neet-predict max token change
+548a80bd7cbb3c77959896eea93dd377a51cd5e5 615fd41a548ce579b6572ca18450298a10b1cd7e thisiskarthisk <karthikeyan2771999@gmail.com> 1784540574 +0530	commit: ui and counselling individual screen intergation
+615fd41a548ce579b6572ca18450298a10b1cd7e 1e374b3cdda0f9df43bfa210549b42bfb36f8e24 thisiskarthisk <karthikeyan2771999@gmail.com> 1784546245 +0530	commit: ui and bug fixed
+1e374b3cdda0f9df43bfa210549b42bfb36f8e24 211c0868bbf174eec81d6fb91c0b1c6b95b6a05b thisiskarthisk <karthikeyan2771999@gmail.com> 1784551860 +0530	commit: bug fixed and ui chnage
+211c0868bbf174eec81d6fb91c0b1c6b95b6a05b e0436a94064bf6bd615147c3e7a5f77bd4fca5b3 thisiskarthisk <karthikeyan2771999@gmail.com> 1784552523 +0530	commit: email message change
+e0436a94064bf6bd615147c3e7a5f77bd4fca5b3 31b3e4176e261b97c087580b1d2a40a00f1f35bd thisiskarthisk <karthikeyan2771999@gmail.com> 1784633227 +0530	commit: ui change home
+31b3e4176e261b97c087580b1d2a40a00f1f35bd a9829e658c5fa6ec5a0b799a8a6ba3730fcd987e thisiskarthisk <karthikeyan2771999@gmail.com> 1784635141 +0530	commit: Ui button and scrren colour update
+a9829e658c5fa6ec5a0b799a8a6ba3730fcd987e 3d677d598317b45b000b9d4763beb723bc7980c8 thisiskarthisk <karthikeyan2771999@gmail.com> 1784710739 +0530	commit: govt tag -> remove - Done
+3d677d598317b45b000b9d4763beb723bc7980c8 6d78d5f061a127d517035cab26366ec3e48a849f thisiskarthisk <karthikeyan2771999@gmail.com> 1784714557 +0530	commit: prompt and counselling scrren change
+6d78d5f061a127d517035cab26366ec3e48a849f 03fb81592be38106c995b63340bf1de0cd5f8ab5 thisiskarthisk <karthikeyan2771999@gmail.com> 1784714560 +0530	commit: some chnage
+03fb81592be38106c995b63340bf1de0cd5f8ab5 092ed608589ba0e830c368135cf5bfe0fa3b376c thisiskarthisk <karthikeyan2771999@gmail.com> 1784747638 +0530	commit: some bugfiexed and ui change
+092ed608589ba0e830c368135cf5bfe0fa3b376c fed0deec37a124f13661a3ae2dfa8f8c93ac7ee7 thisiskarthisk <karthikeyan2771999@gmail.com> 1784786232 +0530	commit: ui change
+fed0deec37a124f13661a3ae2dfa8f8c93ac7ee7 3146d4c45b10729e97ebba2cc17a59021a663ac7 thisiskarthisk <karthikeyan2771999@gmail.com> 1784789244 +0530	commit: ai data and prompt change
+3146d4c45b10729e97ebba2cc17a59021a663ac7 113a93dc5ab1947dd5af147da4c6bafe38470e36 thisiskarthisk <karthikeyan2771999@gmail.com> 1784796218 +0530	commit: counselling data intergation
+113a93dc5ab1947dd5af147da4c6bafe38470e36 6afd228fc742f95f0cff718513fb70802fa83ed4 thisiskarthisk <karthikeyan2771999@gmail.com> 1784809448 +0530	commit: same button name and colour chnage
+6afd228fc742f95f0cff718513fb70802fa83ed4 f81a4c5f462d05f0d9f94ea2ad6ff8d769753969 thisiskarthisk <karthikeyan2771999@gmail.com> 1784876908 +0530	pull --tags origin ai-neet-predictor: Fast-forward
+f81a4c5f462d05f0d9f94ea2ad6ff8d769753969 dd85bdc2e826a609765cfd03dbd5d85cd42e2b68 thisiskarthisk <karthikeyan2771999@gmail.com> 1784877884 +0530	commit: model automatically hide remove and counselling model responsive design
+dd85bdc2e826a609765cfd03dbd5d85cd42e2b68 d0cedc8c1f9587d6156f67810e7806accb26446d thisiskarthisk <karthikeyan2771999@gmail.com> 1784879799 +0530	commit: bug fixed for rank predict fome submit counselling model open automatically that not need
+d0cedc8c1f9587d6156f67810e7806accb26446d 9fa456eec91832f6fe15a9d25485708e99cda676 thisiskarthisk <karthikeyan2771999@gmail.com> 1784879802 +0530	pull --tags origin ai-neet-predictor: Merge made by the 'recursive' strategy.
+9fa456eec91832f6fe15a9d25485708e99cda676 14a4d84f4cfb30b08d4ef90d29f92e17753401a9 thisiskarthisk <karthikeyan2771999@gmail.com> 1784888581 +0530	commit: get personalised counselling information button remove
+14a4d84f4cfb30b08d4ef90d29f92e17753401a9 862ced8fd548fe2f8c454cba9b99c1bf8bf25893 thisiskarthisk <karthikeyan2771999@gmail.com> 1784941250 +0530	commit: bug fixed
+862ced8fd548fe2f8c454cba9b99c1bf8bf25893 c6bdd380de6f0979260cd89692bdf0824ad3572f thisiskarthisk <karthikeyan2771999@gmail.com> 1785081593 +0530	commit: Bug fix and some change
+c6bdd380de6f0979260cd89692bdf0824ad3572f c6bdd380de6f0979260cd89692bdf0824ad3572f thisiskarthisk <karthikeyan2771999@gmail.com> 1785081854 +0530	checkout: moving from ai-neet-predictor to karnataka-ai-neet-predict
+c6bdd380de6f0979260cd89692bdf0824ad3572f aee9eb27648fc3eb94cb8bd897b5a7fcb92c3f33 thisiskarthisk <karthikeyan2771999@gmail.com> 1785095273 +0530	commit: ui and bug fixed
+aee9eb27648fc3eb94cb8bd897b5a7fcb92c3f33 bc158c7b1728fe32f604ed90466adf156fc53282 thisiskarthisk <karthikeyan2771999@gmail.com> 1785096133 +0530	commit: counselling screen ui and bug fixed
+bc158c7b1728fe32f604ed90466adf156fc53282 d1ad0829ac874a43ad7bdae729a1a70d69d1e132 thisiskarthisk <karthikeyan2771999@gmail.com> 1785136613 +0530	commit: bug and ui chnage
+d1ad0829ac874a43ad7bdae729a1a70d69d1e132 4fc0a298c59f3a00324f4d6210b5e0b38d75f948 thisiskarthisk <karthikeyan2771999@gmail.com> 1785145998 +0530	commit: rank ug and pg college list add

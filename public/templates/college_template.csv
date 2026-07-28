@@ -1,0 +1,4 @@
+name,state_name,college_type,Cutoffs_Year,course_name,Quotas,General_openRank,General_closeRank,OBC_openRank,OBC_closeRank,EWS_openRank,EWS_closeRank,SC_openRank,SC_closeRank,ST_openRank,ST_closeRank
+"Christian Medical College (CMC)",Tamil Nadu,Private,2025,MBBS,AIQ,1,50,2,100,3,150,4,200,5,250
+"PSG Institute of Medical Sciences & Research",Tamil Nadu,Private,2025,MBBS,AIQ,1,50,2,100,3,150,4,200,5,250
+"Karpaga Vinayaga Institute of Medical Sciences",Tamil Nadu,Private,2026,MBBS,AIQ,1,50,2,100,3,150,4,200,5,250

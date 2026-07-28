@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Counselling Atlas — Campus Continents · NEET UG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CAMPUS CONTINENTS — THE COUNSELLING ATLAS
+   Print-perfect A4. Each .sheet = exactly one printed page.
+   ============================================================ */
+
+:root{
+  --ink:#0B2138;        /* deep chart navy  */
+  --ink-2:#14314E;
+  --sea:#0E6E6A;        /* viridian / teal  */
+  --sea-deep:#0A4F4C;
+  --amber:#E4A035;      /* wayfinding pin   */
+  --amber-soft:#F6E7C6;
+  --coral:#CF4B39;      /* caution          */
+  --coral-soft:#F7E1DC;
+  --paper:#EEF1F4;      /* app backdrop     */
+  --sheet:#FBFBF8;      /* sheet paper      */
+  --line:#D8DFE5;       /* hairlines        */
+  --line-soft:#E7ECF0;
+  --slate:#526170;      /* secondary text   */
+  --mist:#F1F5F6;       /* teal-tint fill   */
+  --sand:#FAF4E6;       /* amber-tint fill  */
+  --ok:#0E6E6A;
+}
+
+*{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{ font-family:'IBM Plex Mono',ui-monospace,monospace; }
+.disp{ font-family:'Space Grotesk','Inter',sans-serif; }
+
+/* ---------- App shell ---------- */
+.app{ padding:34px 0 60px; display:flex; flex-direction:column; align-items:center; gap:26px; }
+
+/* ---------- Toolbar (screen only) ---------- */
+.toolbar{
+  position:fixed; top:16px; right:16px; z-index:50;
+  display:flex; gap:10px; align-items:center;
+}
+.btn-print{
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+  letter-spacing:.02em; color:#fff; background:var(--ink);
+  border:none; border-radius:10px; padding:11px 18px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:9px;
+  box-shadow:0 6px 20px rgba(11,33,56,.28); transition:transform .12s ease, background .12s ease;
+}
+.btn-print:hover{ transform:translateY(-1px); background:var(--sea); }
+.btn-print svg{ width:15px; height:15px; }
+.hint{
+  font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate);
+  background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 11px;
+}
+
+/* ---------- Sheet = one A4 page ---------- */
+.sheet{
+  width:210mm; height:297mm;
+  background:var(--sheet);
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column;
+  box-shadow:0 12px 44px rgba(11,33,56,.16);
+  color:var(--ink);
+}
+.pad{ padding:14mm 14mm 11mm; flex:1; display:flex; flex-direction:column; min-height:0; }
+
+/* ---------- Plate chrome (header/footer) ---------- */
+.plate-top{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  padding-bottom:7px; border-bottom:1.5px solid var(--ink);
+  margin-bottom:11mm;
+}
+.coord{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em;
+  color:var(--slate); text-transform:uppercase; }
+.coord b{ color:var(--sea); font-weight:600; }
+.mini-brand{ display:flex; align-items:center; gap:7px; }
+.mini-brand .rose{ width:15px; height:15px; }
+.mini-brand span{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; letter-spacing:.01em; color:var(--ink); }
+.mini-brand span i{ color:var(--sea); font-style:normal; }
+
+.plate-foot{
+  display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid var(--line); padding-top:7px; margin-top:auto;
+}
+.plate-foot .pg{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--slate); }
+.plate-foot .pg b{ color:var(--ink); }
+.plate-foot .site{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.12em; color:var(--slate); text-transform:uppercase; }
+
+/* ---------- Section headings ---------- */
+.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--sea); display:flex; align-items:center; gap:9px; margin:0 0 6px; }
+.eyebrow::before{ content:""; width:16px; height:2px; background:var(--amber); display:inline-block; }
+h1.title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px;
+  line-height:1.06; letter-spacing:-.01em; margin:0 0 3px; color:var(--ink); }
+.lede{ font-size:12.5px; color:var(--slate); max-width:150mm; margin:2px 0 0; line-height:1.45; }
+
+h2.sub{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15.5px;
+  margin:0 0 9px; color:var(--ink); letter-spacing:-.005em; }
+h2.sub .tk{ color:var(--amber); }
+
+/* ---------- Cards ---------- */
+.card{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:12px 14px; }
+.card h3{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; margin:0 0 5px;
+  color:var(--sea-deep); letter-spacing:.005em; }
+.card p{ font-size:11px; color:var(--slate); margin:0 0 6px; line-height:1.45; }
+.card p:last-child{ margin-bottom:0; }
+.card .tag{ position:absolute; }
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; }
+.grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+
+/* labelled card w/ hanging tab */
+.tabcard{ position:relative; background:#fff; border:1px solid var(--line); border-radius:9px; padding:15px 14px 12px; }
+.tabcard .lab{ position:absolute; top:-9px; left:12px; background:var(--sheet); padding:0 7px;
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11.5px; color:var(--sea); letter-spacing:.01em; }
+.tabcard.amber .lab{ color:var(--amber); }
+.tabcard.coral .lab{ color:var(--coral); }
+.tabcard .lab::before{ content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--sea); margin-right:6px; vertical-align:middle; }
+.tabcard.amber .lab::before{ background:var(--amber); }
+.tabcard.coral .lab::before{ background:var(--coral); }
+
+/* bullet list */
+.tick{ list-style:none; margin:0; padding:0; }
+.tick li{ font-size:11px; color:var(--ink-2); line-height:1.4; padding-left:19px; position:relative; margin-bottom:6px; }
+.tick li:last-child{ margin-bottom:0; }
+.tick li::before{ content:""; position:absolute; left:0; top:4px; width:11px; height:11px;
+  border-radius:50%; background:var(--mist); border:1.5px solid var(--sea); }
+.tick li::after{ content:""; position:absolute; left:3.5px; top:7px; width:4.5px; height:2.5px;
+  border-left:1.5px solid var(--sea); border-bottom:1.5px solid var(--sea); transform:rotate(-45deg); }
+.tick.warn li::before{ background:var(--coral-soft); border-color:var(--coral); }
+.tick.warn li::after{ content:"×"; border:0; left:2.5px; top:1.5px; width:auto; height:auto; transform:none;
+  color:var(--coral); font-weight:700; font-size:9px; }
+.tick strong{ color:var(--ink); font-weight:600; }
+
+/* numbered rail */
+.stage{ display:flex; gap:11px; }
+.stage .n{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12px; color:#fff;
+  background:var(--ink); min-width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.stage.sea .n{ background:var(--sea); }
+.stage.amber .n{ background:var(--amber); color:var(--ink); }
+
+/* pill / chips */
+.chip{ display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; padding:3px 8px; border-radius:20px;
+  border:1px solid var(--line); color:var(--slate); background:#fff; }
+.chip.sea{ color:var(--sea); border-color:#bfe0dd; background:var(--mist); }
+.chip.amber{ color:#a9741a; border-color:#ecd6a4; background:var(--sand); }
+
+/* stat block */
+.stat .big{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; line-height:.9; color:var(--sea); }
+.stat .big small{ font-size:16px; }
+.stat .lbl{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--slate); margin-top:3px; }
+
+/* data tables */
+table.data{ width:100%; border-collapse:collapse; font-size:10px; }
+table.data th{ background:var(--ink); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  font-size:9.5px; letter-spacing:.02em; padding:6px 7px; text-align:left; }
+table.data td{ padding:5px 7px; border-bottom:1px solid var(--line-soft); color:var(--ink-2); }
+table.data tr:nth-child(even) td{ background:#fff; }
+table.data tr:nth-child(odd) td{ background:var(--mist); }
+table.data td.num, table.data th.num{ font-family:'IBM Plex Mono',monospace; text-align:right; }
+table.data td.st{ font-weight:600; color:var(--ink); }
+.rank{ font-family:'IBM Plex Mono',monospace; font-weight:500; color:var(--sea-deep); }
+
+/* callout band */
+.band{ background:var(--ink); color:#fff; border-radius:10px; padding:13px 16px; position:relative; overflow:hidden; }
+.band .k{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--amber); }
+.band p{ margin:5px 0 0; font-size:11.5px; color:#e8eef2; line-height:1.5; }
+.band strong{ color:#fff; }
+
+/* remember strip */
+.remember{ background:var(--sea); color:#fff; border-radius:10px; padding:12px 15px; }
+.remember b{ color:var(--amber); }
+.remember p{ margin:0; font-size:11.5px; line-height:1.5; color:#eafbf9; }
+
+/* ============================================================
+   COVER
+   ============================================================ */
+.cover{ background:var(--ink); color:#fff; overflow:hidden; }
+.cover .contour{ position:absolute; inset:0; opacity:.5; }
+.cover-inner{ position:relative; z-index:2; flex:1; padding:20mm 16mm 14mm; display:flex; flex-direction:column; }
+.cover .brandrow{ display:flex; align-items:center; justify-content:space-between; }
+.brandmark{ display:flex; align-items:center; gap:11px; }
+.brandmark .rose{ width:34px; height:34px; }
+.brandmark .wm{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; letter-spacing:-.01em; color:#fff; }
+.brandmark .wm i{ color:var(--amber); font-style:normal; }
+.cover .issue{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.18em; color:#9fb3c4; text-transform:uppercase; text-align:right; line-height:1.7; }
+
+.cover-hero{ margin-top:auto; }
+.cover .kicker{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.26em;
+  text-transform:uppercase; color:var(--amber); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.cover .kicker::before{ content:""; width:26px; height:2px; background:var(--amber); }
+.cover h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:62px; line-height:.98;
+  letter-spacing:-.02em; margin:0; color:#fff; }
+.cover h1 em{ font-style:normal; color:var(--amber); }
+.cover .say{ font-size:14px; color:#c6d3de; max-width:135mm; margin:16px 0 0; line-height:1.55; }
+
+.cover .legend{ margin-top:26px; display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+  border-top:1px solid rgba(255,255,255,.18); padding-top:14px; }
+.cover .legend div{ padding-right:14px; }
+.cover .legend .lg-k{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.14em; color:var(--sea); text-transform:uppercase; }
+.cover .legend .lg-v{ font-size:11.5px; color:#d7e2ea; margin-top:4px; line-height:1.4; }
+.cover .footline{ margin-top:auto; padding-top:20px; display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid rgba(255,255,255,.14); }
+.cover .footline .s{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em; color:#9fb3c4; text-transform:uppercase; }
+
+/* compass rose (reusable via svg symbol) */
+.route{ display:flex; flex-direction:column; }
+
+/* contents rows */
+.toc{ display:flex; flex-direction:column; gap:0; margin-top:4mm; }
+.toc-row{ display:flex; align-items:baseline; gap:12px; padding:9px 0; border-bottom:1px solid var(--line-soft); }
+.toc-row .idx{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--sea); font-weight:600; min-width:30px; }
+.toc-row .nm{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--ink); }
+.toc-row .ds{ font-size:10.5px; color:var(--slate); }
+.toc-row .dots{ flex:1; border-bottom:1.5px dotted var(--line); transform:translateY(-3px); }
+.toc-row .pg{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink); font-weight:600; }
+
+/* flow nodes */
+.flow{ display:flex; flex-direction:column; align-items:center; gap:0; }
+.node{ border:1.5px solid var(--sea); background:#fff; border-radius:8px; padding:8px 13px; text-align:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11px; color:var(--ink); min-width:120px; }
+.node.ink{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.node.amber{ border-color:var(--amber); }
+.node small{ display:block; font-family:'Inter',sans-serif; font-weight:400; font-size:9px; color:var(--slate); margin-top:2px; }
+.node.ink small{ color:#a9c0d1; }
+.conn{ width:1.5px; height:14px; background:var(--line); }
+.branch{ display:flex; gap:10px; justify-content:center; align-items:flex-start; width:100%; }
+
+.tinylink{ font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--slate); }
+
+/* mono value list (open states / fees) */
+.rows{ display:flex; flex-direction:column; }
+.rrow{ display:grid; grid-template-columns:1.5fr 1fr 1fr .7fr; gap:8px; padding:5px 0; border-bottom:1px solid var(--line-soft); align-items:center; }
+.rrow .fee{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--sea-deep); font-weight:500; }
+.rrow .v{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-2); text-align:right; }
+.rhead{ font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--slate); }
+
+/* faq */
+.faq{ display:flex; gap:11px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--line-soft); }
+.faq .q-n{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12px; color:#fff; background:var(--sea);
+  min-width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.faq .q{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; color:var(--ink); margin:0 0 3px; }
+.faq .a{ font-size:10.5px; color:var(--slate); margin:0; line-height:1.45; }
+
+/* tool rows */
+.tool{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line-soft); }
+.tool .ic{ width:30px; height:30px; border-radius:8px; background:var(--mist); border:1px solid #cfe6e3;
+  display:flex; align-items:center; justify-content:center; color:var(--sea); flex-shrink:0; }
+.tool .ic svg{ width:16px; height:16px; }
+.tool h4{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; margin:0 0 2px; color:var(--ink); }
+.tool p{ font-size:10.5px; color:var(--slate); margin:0; line-height:1.4; }
+
+/* closing */
+.closing{ background:var(--ink); color:#fff; }
+.closing .contour{ position:absolute; inset:0; opacity:.5; }
+.closing-inner{ position:relative; z-index:2; flex:1; padding:22mm 16mm 16mm; display:flex; flex-direction:column; }
+
+/* screen-only note */
+.screen-note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); text-align:center; max-width:210mm; }
+
+@media print{
+  html,body{ background:#fff; }
+  .app{ padding:0; gap:0; }
+  .toolbar,.screen-note{ display:none !important; }
+  .sheet{ box-shadow:none !important; break-after:page; page-break-after:always; }
+  .sheet:last-child{ break-after:auto; page-break-after:auto; }
+}
+@page{ size:A4 portrait; margin:0; }
+
+@media screen and (max-width:820px){
+  .sheet{ transform-origin:top center; }
+}
+</style>
+</head>
+<body>
+
+<!-- reusable compass-rose SVG symbol -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="rose" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2.5"/>
+    <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+    <polygon points="50,6 57,50 50,44 43,50" fill="#E4A035"/>
+    <polygon points="50,94 43,50 50,56 57,50" fill="currentColor"/>
+    <polygon points="6,50 50,43 44,50 50,57" fill="currentColor" opacity=".85"/>
+    <polygon points="94,50 50,57 56,50 50,43" fill="currentColor" opacity=".85"/>
+    <circle cx="50" cy="50" r="4" fill="#E4A035"/>
+  </symbol>
+</svg>
+
+<div class="toolbar">
+  <span class="hint">Prints 1:1 as A4 — pick "Save as PDF"</span>
+  <button class="btn-print" onclick="window.print()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print / Save as PDF
+  </button>
+</div>
+
+<div class="app">
+
+<p class="screen-note">Scroll to preview all pages · Press the button (or Ctrl/Cmd&nbsp;+&nbsp;P) — what you see is exactly what prints.</p>
+
+<!-- ============================ SHEET 1 — COVER ============================ -->
+<section class="sheet cover">
+  <svg class="contour" viewBox="0 0 595 842" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#0E6E6A" stroke-width="1">
+    <path d="M-40 120 C120 70 250 190 380 130 S560 60 660 150" opacity=".35"/>
+    <path d="M-40 180 C120 130 250 250 380 190 S560 120 660 210" opacity=".3"/>
+    <path d="M-40 250 C130 200 260 320 400 250 S560 190 680 280" opacity=".28"/>
+    <path d="M-40 330 C120 290 280 400 400 330 S580 270 700 360" opacity=".24"/>
+    <path d="M-40 430 C140 390 260 500 420 430 S600 380 720 470" opacity=".2"/>
+    <path d="M-40 560 C120 520 300 630 430 560 S610 510 730 600" opacity=".16"/>
+    <path d="M-40 690 C160 650 300 760 460 690 S620 640 760 730" opacity=".13"/>
+    <path d="M-40 800 C160 760 320 860 480 800 S640 760 780 840" opacity=".1"/>
+  </svg>
+  <div class="cover-inner">
+    <div class="brandrow">
+      <div class="brandmark">
+        <svg class="rose" style="color:#dfe9f0"><use href="#rose"/></svg>
+        <span class="wm">Campus<i>Continents</i></span>
+      </div>
+      <div class="issue">NEET UG · 2026<br>Medical &amp; Dental<br>Edition 01</div>
+    </div>
+
+    <div class="cover-hero">
+      <div class="kicker">The All-India Counselling Guide</div>
+      <h1>The Counselling<br><em>Atlas</em></h1>
+      <p class="say">Counselling is a map problem — All-India versus State, home turf versus open borders, quota lines that decide where your rank can take you. This is your plain-language chart from result day to the day you walk into your medical college.</p>
+
+      <div class="legend">
+        <div><div class="lg-k">You are here</div><div class="lg-v">NEET result is out. The seat isn't yours yet — counselling is how you claim it.</div></div>
+        <div><div class="lg-k">The terrain</div><div class="lg-v">Two parallel routes: MCC (All-India, 15%) and your State authority (85%).</div></div>
+        <div><div class="lg-k">The destination</div><div class="lg-v">A seat allotted by rank + choice, then confirmed by reporting in person.</div></div>
+      </div>
+    </div>
+
+    <div class="footline">
+      <span class="s">A step-by-step field guide for students &amp; parents</span>
+      <span class="s">campuscontinents.com</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 2 — CONTENTS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 00</b> · THE ROUTE</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Table of contents</div>
+    <h1 class="title">Where this atlas takes you</h1>
+    <p class="lede">Read it in order the first time, then use it as a reference you return to at each stage of counselling.</p>
+
+    <div class="toc">
+      <div class="toc-row"><span class="idx">01</span><span class="nm">NEET UG Overview</span><span class="ds">— where a seat can actually come from</span><span class="dots"></span><span class="pg">03</span></div>
+      <div class="toc-row"><span class="idx">02</span><span class="nm">How the System Works</span><span class="ds">— who conducts which counselling</span><span class="dots"></span><span class="pg">04</span></div>
+      <div class="toc-row"><span class="idx">03</span><span class="nm">State Counselling Authorities</span><span class="ds">— the office that runs your state's 85%</span><span class="dots"></span><span class="pg">05</span></div>
+      <div class="toc-row"><span class="idx">04</span><span class="nm">Medical Colleges, State by State</span><span class="ds">— the national seat landscape</span><span class="dots"></span><span class="pg">06</span></div>
+      <div class="toc-row"><span class="idx">05</span><span class="nm">The Counselling Calendar</span><span class="ds">— the eight stages that decide everything</span><span class="dots"></span><span class="pg">07</span></div>
+      <div class="toc-row"><span class="idx">06</span><span class="nm">Approaching Counselling</span><span class="ds">— two pathways &amp; the terms you must know</span><span class="dots"></span><span class="pg">08</span></div>
+      <div class="toc-row"><span class="idx">07</span><span class="nm">Rules &amp; Key Decisions</span><span class="ds">— accept, resign, upgrade or wait</span><span class="dots"></span><span class="pg">09</span></div>
+      <div class="toc-row"><span class="idx">08</span><span class="nm">Document Checklist</span><span class="ds">— what to keep ready &amp; the fees</span><span class="dots"></span><span class="pg">10</span></div>
+      <div class="toc-row"><span class="idx">09</span><span class="nm">Seat Types &amp; Quotas</span><span class="ds">— which quota changes everything for you</span><span class="dots"></span><span class="pg">11</span></div>
+      <div class="toc-row"><span class="idx">10</span><span class="nm">Do's, Don'ts &amp; the Round Flow</span><span class="ds">— the choice-to-seat sequence</span><span class="dots"></span><span class="pg">12</span></div>
+      <div class="toc-row"><span class="idx">11</span><span class="nm">Closing Ranks &amp; Fees (2025)</span><span class="ds">— read the map against real numbers</span><span class="dots"></span><span class="pg">14</span></div>
+      <div class="toc-row"><span class="idx">12</span><span class="nm">Open States &amp; FAQs</span><span class="ds">— crossing borders + common doubts</span><span class="dots"></span><span class="pg">16</span></div>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>02</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 3 — OVERVIEW ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 01</b> · NEET UG OVERVIEW</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 01</div>
+    <h1 class="title">Where a seat can come from</h1>
+    <p class="lede">NEET gives you a rank. It does not give you a college. Counselling is the separate step where your rank is matched to a seat — and there are five places that seat can come from.</p>
+
+    <div style="margin-top:6mm;display:flex;gap:9px;">
+      <div class="band" style="flex:1;padding:11px 14px;"><span class="k">Rank → eligibility</span><p>Your rank sets the doors you may knock on.</p></div>
+      <div class="band" style="flex:1;padding:11px 14px;background:var(--sea);"><span class="k" style="color:var(--amber)">Choices → outcome</span><p style="color:#eafbf9">Your ordered choices decide which one opens.</p></div>
+      <div class="band" style="flex:1;padding:11px 14px;background:var(--amber);"><span class="k" style="color:var(--ink)">Reporting → yours</span><p style="color:#3a2c08">Only reporting in person locks the seat.</p></div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">The five sources of a seat</h2>
+    <div class="grid2" style="gap:9px;">
+      <div class="tabcard"><span class="lab">All India Quota — 15%</span>
+        <p class="mono" style="font-size:9px;color:var(--slate);margin:0 0 5px;letter-spacing:.05em;">MCC · ANY STATE · PURE RANK</p>
+        <p style="font-size:11px;color:var(--slate);margin:0;">15% of government-college seats, filled by the Medical Counselling Committee. Students from every state compete purely on All-India Rank — no domicile needed.</p>
+      </div>
+      <div class="tabcard"><span class="lab">State Quota — 85%</span>
+        <p class="mono" style="font-size:9px;color:var(--slate);margin:0 0 5px;letter-spacing:.05em;">STATE AUTHORITY · DOMICILE</p>
+        <p style="font-size:11px;color:var(--slate);margin:0;">85% of government-college seats are reserved for the state's own candidates. Each state runs its own counselling, with its own rules on domicile, nativity and schooling.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">Deemed Universities</span>
+        <p class="mono" style="font-size:9px;color:var(--slate);margin:0 0 5px;letter-spacing:.05em;">MCC · ALL STATES ELIGIBLE</p>
+        <p style="font-size:11px;color:var(--slate);margin:0;">Deemed medical universities are filled through centralised MCC counselling under the Deemed category. Fees run higher, but candidates from any state may apply.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">Private Universities</span>
+        <p class="mono" style="font-size:9px;color:var(--slate);margin:0 0 5px;letter-spacing:.05em;">UNDER THE STATE</p>
+        <p style="font-size:11px;color:var(--slate);margin:0;">Private colleges sit under the State, run mostly through state or state-private universities. Tuition varies widely and is usually well above government colleges.</p>
+      </div>
+    </div>
+
+    <div class="tabcard" style="margin-top:9px;"><span class="lab">AIIMS · JIPMER · Central Institutes of National Importance</span>
+      <p style="font-size:11px;color:var(--slate);margin:0;">Admission to all AIIMS campuses, JIPMER, and other Institutes of National Importance runs only through NEET UG and centralised counselling. These are among the most competitive seats in the country.</p>
+    </div>
+
+    <div class="remember" style="margin-top:auto;">
+      <p><b>Remember —</b> NEET&nbsp;≠&nbsp;admission, and counselling&nbsp;≠&nbsp;admission either. A rank earns a place in the queue; an allotment offers a seat; only reporting confirms it. And one exam feeds many counsellings — you can take part in several at once.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>03</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 4 — HOW THE SYSTEM WORKS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 02</b> · SYSTEM MAP</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 02</div>
+    <h1 class="title">How the system works</h1>
+    <p class="lede">One exam body, two counselling engines. Knowing who runs what tells you where to register.</p>
+
+    <div class="flow" style="margin-top:7mm;">
+      <div class="node ink" style="min-width:220px;">NTA — National Testing Agency<small>Conducts NEET UG · releases score &amp; rank</small></div>
+      <div class="conn"></div>
+      <div class="branch">
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+          <div class="node" style="border-color:var(--sea);min-width:200px;">Medical Counselling Committee (MCC)<small>The All-India engine</small></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+          <div class="node amber" style="min-width:200px;">State Counselling Authority<small>Your home-state engine</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:9px;gap:9px;align-items:start;">
+      <div class="card" style="border-color:#bfe0dd;">
+        <h3>MCC handles</h3>
+        <ul class="tick" style="margin-top:4px;">
+          <li>15% All-India Quota of state government institutes</li>
+          <li>Central government institutes — AIIMS, JIPMER, AMU, IP, DU</li>
+          <li>Deemed-to-be Universities</li>
+          <li>ESI insured-person seats · AFMC, Pune</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:#ecd6a4;">
+        <h3>Your State handles</h3>
+        <ul class="tick" style="margin-top:4px;">
+          <li>85% state quota of state government institutes</li>
+          <li>100% of seats in state private institutes / universities</li>
+          <li>State-specific quotas — domicile, nativity, minority</li>
+          <li>Its own registration window, rules and schedule</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">Who does what — your side of it</h2>
+    <div class="flow">
+      <div class="node ink" style="min-width:230px;">You — the candidate<small>Decide where to register &amp; apply</small></div>
+      <div class="conn"></div>
+      <div class="branch">
+        <div class="node" style="border-color:var(--sea);flex:1;max-width:210px;">Path A · All-India (MCC)<small>AIQ 15% · Deemed · Central colleges</small></div>
+        <div class="node amber" style="flex:1;max-width:210px;">Path B · State counselling<small>85% government + private</small></div>
+      </div>
+      <div class="conn"></div>
+      <div class="node" style="min-width:200px;">Choice filling<small>Rank your colleges in true priority order</small></div>
+      <div class="conn"></div>
+      <div class="node" style="min-width:200px;">Seat allotment<small>Matched by rank + your choice order</small></div>
+      <div class="conn"></div>
+      <div class="node ink" style="min-width:200px;">Report to college<small>Submit documents · admission confirmed</small></div>
+    </div>
+
+    <div class="band" style="margin-top:auto;">
+      <span class="k">The good news</span>
+      <p>You may run <strong>both</strong> pathways at the same time and keep your options open. If you can, register for AIQ as well as your home state — more doors, more chances.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>04</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 5 — STATE AUTHORITIES ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 03</b> · STATE AUTHORITIES</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 03</div>
+    <h1 class="title">Who runs your state's counselling</h1>
+    <p class="lede">Your 85% state quota is administered by one specific office. Register on <em>its</em> portal, on <em>its</em> dates — All-India registration does not cover it.</p>
+
+    <div style="margin-top:6mm;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;">
+      <!-- generate 36 authority chips -->
+      <!-- row set -->
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--amber);letter-spacing:.06em;">ALL INDIA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Medical Counselling Committee</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">ANDHRA PRADESH</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dr NTR Univ. of Health Sci.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">ARUNACHAL</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. Higher &amp; Tech. Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">ASSAM</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Medical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">BIHAR</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">BCECE Board</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">CHANDIGARH</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Govt. Medical College &amp; Hosp.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">CHHATTISGARH</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Medical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">DELHI</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">GGSIP University</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">GOA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Technical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">GUJARAT</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">ACPUGMEC</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">HARYANA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Med. Edu. &amp; Research</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">HIMACHAL</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Atal Medical &amp; Research Univ.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">J &amp; K</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">J&amp;K BOPEE</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">JHARKHAND</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">JCECEB</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">KARNATAKA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">KEA — Exam Authority</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">KERALA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Comm. for Entrance Exams (CEE)</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">MADHYA PRADESH</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Medical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">MAHARASHTRA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">State CET Cell</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">MANIPUR</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Health Services</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">MEGHALAYA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Health &amp; Family Welfare Dept.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">MIZORAM</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">MCC, Mizoram</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">NAGALAND</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Technical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">ODISHA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">OJEE Cell / DMET Odisha</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">PUDUCHERRY</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">CENTAC</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">PUNJAB</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Baba Farid Univ. of Health Sci.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">RAJASTHAN</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dept. of Medical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">SIKKIM</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">SMU &amp; Human Resource Dev.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">TAMIL NADU</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Med. Edu. &amp; Research</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">TELANGANA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Kaloji Narayana Rao Univ.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">TRIPURA</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Medical Education</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">UTTAR PRADESH</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Med. Edu. &amp; Training</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">UTTARAKHAND</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">HNB Uttarakhand Med. Edu. Univ.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">WEST BENGAL</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">WB Medical Counselling Comm.</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">A &amp; N ISLANDS</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">CCAP</h3></div>
+      <div class="card" style="padding:8px 9px;"><div class="mono" style="font-size:8px;color:var(--sea);letter-spacing:.06em;">DNH &amp; DD</div><h3 style="font-size:11px;color:var(--ink);margin:2px 0 0;">Dir. of Medical Education</h3></div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;background:var(--ink);">
+      <p><b>Always verify on the official portal —</b> authorities, portals and dates change year to year. Confirm your state's current counselling body and schedule before you register anywhere.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>05</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 6 — STATE-WISE COLLEGES ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 04</b> · SEAT LANDSCAPE</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 04</div>
+    <h1 class="title">Medical colleges, state by state</h1>
+    <p class="lede">The national landscape at a glance — where the government, private, deemed and national-importance institutes sit. Numbers shift yearly as new colleges are approved.</p>
+
+    <div style="display:flex;gap:12px;margin-top:6mm;align-items:center;">
+      <div class="stat"><span class="big mono">822</span><div class="lbl">Total medical colleges (approx.)</div></div>
+      <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="chip sea">● 423 Government</span>
+        <span class="chip amber">● 318 Private</span>
+        <span class="chip">● 59 Deemed</span>
+        <span class="chip">● 21 National Importance</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6mm;">
+      <table class="data">
+        <thead><tr><th>State / UT</th><th class="num">Total</th><th class="num">Govt</th><th class="num">Pvt</th><th class="num">Dmd</th><th class="num">INI</th></tr></thead>
+        <tbody>
+          <tr><td class="st">Andhra Pradesh</td><td class="num">39</td><td class="num">18</td><td class="num">19</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="st">Arunachal Pradesh</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Assam</td><td class="num">16</td><td class="num">15</td><td class="num">0</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Bihar</td><td class="num">25</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Chandigarh</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Chhattisgarh</td><td class="num">16</td><td class="num">10</td><td class="num">5</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Delhi</td><td class="num">11</td><td class="num">8</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="st">Goa</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Gujarat</td><td class="num">43</td><td class="num">12</td><td class="num">29</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="st">Haryana</td><td class="num">17</td><td class="num">8</td><td class="num">7</td><td class="num">2</td><td class="num">0</td></tr>
+          <tr><td class="st">Himachal Pradesh</td><td class="num">8</td><td class="num">6</td><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">J &amp; K</td><td class="num">13</td><td class="num">10</td><td class="num">2</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Jharkhand</td><td class="num">10</td><td class="num">6</td><td class="num">2</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="st">Karnataka</td><td class="num">73</td><td class="num">24</td><td class="num">37</td><td class="num">12</td><td class="num">0</td></tr>
+          <tr><td class="st">Kerala</td><td class="num">37</td><td class="num">14</td><td class="num">22</td><td class="num">1</td><td class="num">0</td></tr>
+          <tr><td class="st">Madhya Pradesh</td><td class="num">35</td><td class="num">20</td><td class="num">14</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Maharashtra</td><td class="num">85</td><td class="num">42</td><td class="num">25</td><td class="num">16</td><td class="num">1</td></tr>
+        </tbody>
+      </table>
+      <table class="data">
+        <thead><tr><th>State / UT</th><th class="num">Total</th><th class="num">Govt</th><th class="num">Pvt</th><th class="num">Dmd</th><th class="num">INI</th></tr></thead>
+        <tbody>
+          <tr><td class="st">Manipur</td><td class="num">4</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Meghalaya</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Mizoram</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Nagaland</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Odisha</td><td class="num">21</td><td class="num">14</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+          <tr><td class="st">Puducherry</td><td class="num">9</td><td class="num">1</td><td class="num">3</td><td class="num">4</td><td class="num">1</td></tr>
+          <tr><td class="st">Punjab</td><td class="num">14</td><td class="num">5</td><td class="num">8</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Rajasthan</td><td class="num">49</td><td class="num">33</td><td class="num">15</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">Sikkim</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Tamil Nadu</td><td class="num">78</td><td class="num">37</td><td class="num">27</td><td class="num">13</td><td class="num">1</td></tr>
+          <tr><td class="st">Telangana</td><td class="num">66</td><td class="num">36</td><td class="num">27</td><td class="num">2</td><td class="num">1</td></tr>
+          <tr><td class="st">Tripura</td><td class="num">3</td><td class="num">1</td><td class="num">2</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">Uttar Pradesh</td><td class="num">88</td><td class="num">49</td><td class="num">36</td><td class="num">1</td><td class="num">2</td></tr>
+          <tr><td class="st">Uttarakhand</td><td class="num">10</td><td class="num">5</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="st">West Bengal</td><td class="num">41</td><td class="num">25</td><td class="num">15</td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="st">A &amp; N Islands</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td class="st">DNH &amp; DD</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="band" style="margin-top:auto;">
+      <span class="k">How to read this</span>
+      <p>A state with many <strong>government</strong> seats favours state-quota candidates. Heavy <strong>private / deemed</strong> counts mean more open, fee-paying options for out-of-state students. Match the landscape to your rank <em>and</em> your budget.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>06</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 7 — CALENDAR ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 05</b> · THE CALENDAR</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 05</div>
+    <h1 class="title">The eight stages that decide everything</h1>
+    <p class="lede">From result day to your first class, All-India counselling moves through eight stages. Miss a window and the map redraws itself.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:6mm;">
+      <div class="stage"><div class="n">1</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Result day</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">Download your scorecard &amp; rank letter. Note your <strong style="color:var(--ink)">All-India rank and state merit rank separately</strong>, and confirm your category.</p></div></div>
+      <div class="stage sea"><div class="n">2</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Registration</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">Register on the portal, upload nativity / community certificates, and pay the refundable security deposit. Register for AIQ too — more chances.</p></div></div>
+      <div class="stage"><div class="n">3</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Choice filling</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">The step that decides everything. Add <strong style="color:var(--ink)">25–30+ colleges</strong>, ordered by real preference. Check fees and location for each.</p></div></div>
+      <div class="stage sea"><div class="n">4</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Allotment · Rounds 1 &amp; 2</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">Hold a seat while staying eligible to upgrade. A better allotment auto-replaces the old one. Surrendering after Round 2 forfeits the deposit.</p></div></div>
+      <div class="stage"><div class="n">5</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Classes begin &amp; upgradation</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">Opt for upgrade if you want a better college; a new seat auto-cancels the old. No upgrade means you keep your current seat.</p></div></div>
+      <div class="stage sea"><div class="n">6</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Mop-up &amp; stray vacancy</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">The last opening for those still without a seat. Same process as earlier rounds — don't wait to confirm.</p></div></div>
+      <div class="stage amber"><div class="n">7</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Reporting to college</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">The seat becomes official. Report in person within the deadline with nativity, community and NEET originals, and finish admission formalities.</p></div></div>
+      <div class="stage amber"><div class="n">8</div><div><h3 style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;margin:2px 0 3px;color:var(--ink);">Course commences</h3><p style="font-size:10.5px;color:var(--slate);margin:0;line-height:1.4;">Your medical journey begins. Join on the scheduled date, complete remaining formalities, and stay on top of academic notices.</p></div></div>
+    </div>
+
+    <div class="grid3" style="margin-top:8mm;">
+      <div class="card" style="text-align:center;"><div class="stat"><span class="big mono" style="font-size:26px;">~24hr</span></div><p style="font-size:10px;margin-top:6px;">typical window to respond to an allotment — no extensions</p></div>
+      <div class="card" style="text-align:center;"><div class="stat"><span class="big mono" style="font-size:26px;">~3 days</span></div><p style="font-size:10px;margin-top:6px;">you may get between allotment and reporting — keep documents ready</p></div>
+      <div class="card" style="text-align:center;"><div class="stat"><span class="big mono" style="font-size:26px;">3+</span></div><p style="font-size:10px;margin-top:6px;">rounds plus mop-up &amp; stray — each with its own rules</p></div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;">
+      <p><b>The tell —</b> downloading your allotment order is often treated as having joined. Read each round's rules before you click anything.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>07</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 8 — APPROACHING / TERMS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 06</b> · APPROACHING COUNSELLING</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 06</div>
+    <h1 class="title">Two pathways, one vocabulary</h1>
+    <p class="lede">Counselling runs on two parallel tracks and a handful of words you'll see everywhere. Learn both before you register.</p>
+
+    <div class="grid2" style="margin-top:6mm;">
+      <div class="tabcard"><span class="lab">MCC counselling</span>
+        <ul class="tick" style="margin-top:3px;">
+          <li>Covers the 15% All-India Quota seats</li>
+          <li>AIIMS, JIPMER, central universities &amp; deemed universities</li>
+          <li>One national portal, one national schedule</li>
+        </ul>
+      </div>
+      <div class="tabcard amber"><span class="lab">State counselling</span>
+        <ul class="tick" style="margin-top:3px;">
+          <li>Covers the 85% state quota seats</li>
+          <li>Run separately by each state's own authority</li>
+          <li>Its own portal, rules, dates and deposit</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">Terms you must know</h2>
+    <div class="grid2">
+      <div class="card"><h3>Seat matrix</h3><p>The availability chart — how many seats each college and course holds for each category. Read it first; it shows where the opportunities actually are before you make a single choice.</p></div>
+      <div class="card"><h3>Choice list</h3><p>Your ranked wishlist of colleges and courses, ordered from "I'd love this" down to "I'd still be happy with this." The system reads it top to bottom.</p></div>
+      <div class="card"><h3>Choice filling</h3><p>Telling the system what you want, in order. Simple rule: put your true favourite at #1, because preferences are honoured strictly in the sequence you set.</p></div>
+      <div class="card"><h3>Seat allotment</h3><p>The moment choices turn into a seat. You'll see the college and course offered; accept it, or if eligible, stay in for a later round to upgrade.</p></div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">Before counselling begins — the prep list</h2>
+    <ul class="tick" style="columns:2;column-gap:16px;">
+      <li>Download scorecard + rank letter on result day; print several copies.</li>
+      <li>Map your AIQ rank against last year's closing ranks — mark safe, target and dream colleges.</li>
+      <li>Confirm your category: UR / OBC-NCL / SC / ST / EWS / PwD / Defence.</li>
+      <li>Renew OBC-NCL &amp; EWS certificates if needed (issued in the current cycle).</li>
+      <li>Build a target list across AIQ and your home state; add 2–3 open states if useful.</li>
+      <li>Organise every document before allotment — you may get only ~3 working days to report.</li>
+    </ul>
+
+    <div class="remember" style="margin-top:auto;">
+      <p><b>Remember —</b> a good outcome isn't just your NEET score. It's making informed choices and applying through the right channels. The rank opens doors; the strategy decides which one you walk through.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>08</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 9 — RULES & DECISIONS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 07</b> · RULES &amp; DECISIONS</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 07</div>
+    <h1 class="title">Rules that catch people out</h1>
+    <p class="lede">Most counselling regrets come from a handful of hard rules. Read these once, carefully.</p>
+
+    <div class="grid2" style="margin-top:6mm;gap:8px;">
+      <div class="card"><h3 style="color:var(--coral)">Choice locking is final</h3><p>Locked choices can't be changed for any reason — no exceptions, no extensions.</p></div>
+      <div class="card"><h3 style="color:var(--coral)">Deadlines are unforgiving</h3><p>Not resigning on time can confirm your admission; not reporting on time can cancel your seat.</p></div>
+      <div class="card"><h3 style="color:var(--coral)">No stray round while holding a seat</h3><p>Holding any AIQ seat automatically bars you from the state stray-vacancy round.</p></div>
+      <div class="card"><h3 style="color:var(--coral)">OBC-NCL must be current</h3><p>An expired certificate can push you into the UR category during verification.</p></div>
+      <div class="card"><h3 style="color:var(--coral)">Deposit loss on deemed exit</h3><p>Resigning a deemed-university seat after joining via Round 2 forfeits the ₹2 lakh security deposit.</p></div>
+      <div class="card"><h3 style="color:var(--coral)">No category reservation in deemed</h3><p>SC/ST/OBC/EWS/PwD reservation does not apply to deemed universities under All-India counselling.</p></div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">Key decisions during counselling</h2>
+    <div class="grid2" style="gap:8px;">
+      <div class="tabcard"><span class="lab">Round 1 — accept or resign?</span>
+        <p style="font-size:10.5px;color:var(--slate);margin:0 0 5px;"><strong style="color:var(--ink)">Accept &amp; try to upgrade</strong> is almost always right: your seat is held safely; if Round 2 gives better, it auto-cancels; if not, you keep it.</p>
+        <p style="font-size:10.5px;color:var(--slate);margin:0;"><strong style="color:var(--ink)">Resign to go fresh</strong> only if you'd never attend that college — high risk, as later rounds may have fewer seats and stiffer competition.</p>
+      </div>
+      <div class="tabcard"><span class="lab">AIQ seat vs state seat</span>
+        <p style="font-size:10.5px;color:var(--slate);margin:0 0 5px;"><strong style="color:var(--ink)">Govt AIQ vs govt state:</strong> pick the stronger college by reputation, not location. AIQ is harder to get, but your home state may have the better institute.</p>
+        <p style="font-size:10.5px;color:var(--slate);margin:0;"><strong style="color:var(--ink)">Govt vs private:</strong> take the government seat almost every time — unless the private college is genuinely in the CMC Vellore / St John's league.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">Deemed seat — join or wait?</span>
+        <p style="font-size:10.5px;color:var(--slate);margin:0;">Deemed fees are often far higher. If you have a realistic shot at a government college through state counselling, it can be worth waiting before you commit.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">Drop year — worth it?</span>
+        <p style="font-size:10.5px;color:var(--slate);margin:0 0 4px;"><strong style="color:var(--ok)">Makes sense</strong> if you're borderline govt/private, missed by ≤50 marks, targeting top AIIMS, and family can absorb the delay.</p>
+        <p style="font-size:10.5px;color:var(--slate);margin:0;"><strong style="color:var(--coral)">Doesn't</strong> if you're already above a decent govt closing rank, already dropped once, or scoring 600+ with little room to climb.</p>
+      </div>
+    </div>
+
+    <div class="band" style="margin-top:auto;">
+      <span class="k">Good to know</span>
+      <p>PwD's 5% reservation is <strong>horizontal</strong> — it doesn't add new seats. It ensures 5% of existing UR/OBC/EWS/SC/ST seats go to PwD candidates within each category.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>09</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 10 — DOCUMENTS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 08</b> · DOCUMENT CHECKLIST</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 08</div>
+    <h1 class="title">Keep these ready</h1>
+    <p class="lede">Have everything in hand before the window opens — a single missing document can delay admission. Carry originals plus 2–3 photocopies of each.</p>
+
+    <div class="grid2" style="margin-top:6mm;gap:8px;">
+      <div class="tabcard"><span class="lab">Identity &amp; exam</span>
+        <ul class="tick" style="margin-top:3px;"><li>NEET scorecard</li><li>NEET admit card</li><li>Aadhaar / government photo ID</li></ul>
+      </div>
+      <div class="tabcard"><span class="lab">Academic records</span>
+        <ul class="tick" style="margin-top:3px;"><li>Class 10 mark sheet &amp; certificate</li><li>Class 11 &amp; 12 mark sheets</li><li>Transfer &amp; conduct certificate</li></ul>
+      </div>
+      <div class="tabcard amber"><span class="lab">Special-quota documents (if applicable)</span>
+        <ul class="tick" style="margin-top:3px;"><li>OBC-NCL / EWS certificate</li><li>SC/ST certificate</li><li>PwD certificate</li><li>Minority-quota documents</li></ul>
+      </div>
+      <div class="tabcard amber"><span class="lab">Registration &amp; reporting</span>
+        <ul class="tick" style="margin-top:3px;"><li>Registration confirmation</li><li>Allotment order</li><li>Passport-size photographs</li></ul>
+      </div>
+    </div>
+
+    <h2 class="sub" style="margin-top:7mm;">Online application — upload specs</h2>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:12px;">
+      <table class="data">
+        <thead><tr><th>Document</th><th>Format</th><th class="num">Max size</th></tr></thead>
+        <tbody>
+          <tr><td class="st">Photograph</td><td>JPG / JPEG</td><td class="num">10–200 KB</td></tr>
+          <tr><td class="st">Signature</td><td>JPG / JPEG</td><td class="num">4–30 KB</td></tr>
+          <tr><td class="st">NEET scorecard</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+          <tr><td class="st">Class 10 certificate</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+          <tr><td class="st">Class 12 marksheet</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+          <tr><td class="st">Category (OBC-NCL / EWS)</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+          <tr><td class="st">PwD certificate</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+          <tr><td class="st">Photo ID (Aadhaar)</td><td>PDF / JPG</td><td class="num">&lt; 500 KB</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="tabcard"><span class="lab">Registration fee</span>
+          <ul class="tick" style="margin-top:3px;"><li><strong>₹1,000</strong> — UR, government counselling</li><li><strong>₹500</strong> — SC/ST/OBC/PwD, government</li><li><strong>₹5,000</strong> — deemed-university counselling</li></ul>
+        </div>
+        <div class="tabcard amber"><span class="lab">Security deposit (refundable)</span>
+          <ul class="tick" style="margin-top:3px;"><li><strong>₹10,000</strong> — government college counselling</li><li><strong>₹2,00,000</strong> — deemed-university counselling</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;background:var(--sea);">
+      <p><b>Both must be paid at registration —</b> the registration fee <em>and</em> the security deposit clear before you can take part in AIQ counselling. Amounts differ across states; verify yours.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>10</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 11 — SEAT TYPES & QUOTAS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 09</b> · SEAT TYPES &amp; QUOTAS</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 09</div>
+    <h1 class="title">Which quota changes everything</h1>
+    <p class="lede">Not all seats are equal. The quota a seat belongs to decides who can take it, how it's allotted, and what it costs.</p>
+
+    <div class="grid2" style="margin-top:6mm;gap:9px;">
+      <div class="tabcard"><span class="lab">15% All-India Quota (AIQ)</span>
+        <ul class="tick" style="margin-top:3px;"><li>Open to students from every state; run by MCC</li><li>Allotted purely on All-India Rank — no domicile preference</li><li>Applies only to government colleges</li></ul>
+        <p style="font-size:9.5px;color:var(--sea-deep);margin:6px 0 0;font-family:'IBM Plex Mono';"><b>e.g.</b> a Tamil Nadu student can win a government seat in another state on a strong rank.</p>
+      </div>
+      <div class="tabcard"><span class="lab">85% State Quota</span>
+        <ul class="tick" style="margin-top:3px;"><li>Reserved mainly for the state's own students</li><li>Allotted on the state merit list from NEET scores</li><li>Applies to government &amp; private colleges</li></ul>
+        <p style="font-size:9.5px;color:var(--sea-deep);margin:6px 0 0;font-family:'IBM Plex Mono';"><b>e.g.</b> a Tamil Nadu student securing a government seat within TN via the 85% quota.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">Management Quota (private)</span>
+        <ul class="tick" style="margin-top:3px;"><li>Private-college seats at higher fees</li><li>Open to all NEET-qualified students, no domicile bar</li><li>Available only in private medical colleges</li></ul>
+        <p style="font-size:9.5px;color:#a9741a;margin:6px 0 0;font-family:'IBM Plex Mono';"><b>e.g.</b> a lower rank can still secure a private seat if the family can meet the fees.</p>
+      </div>
+      <div class="tabcard amber"><span class="lab">NRI Quota</span>
+        <ul class="tick" style="margin-top:3px;"><li>For NRI students or those sponsored by an NRI</li><li>Fees significantly higher than other quotas</li><li>Available in private &amp; deemed universities</li></ul>
+        <p style="font-size:9.5px;color:#a9741a;margin:6px 0 0;font-family:'IBM Plex Mono';"><b>e.g.</b> a student with an NRI sponsor may secure a seat even on a lower rank.</p>
+      </div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">The split, side by side</h2>
+    <div class="grid2" style="gap:12px;">
+      <div class="card" style="border-color:#bfe0dd;">
+        <div class="mono" style="font-size:9px;letter-spacing:.1em;color:var(--sea);text-transform:uppercase;">Government colleges · low fees · merit-based</div>
+        <div style="display:flex;gap:18px;margin-top:8px;">
+          <div class="stat"><span class="big" style="font-size:30px;">15<small>%</small></span><div class="lbl">AIQ seats</div></div>
+          <div class="stat"><span class="big" style="font-size:30px;color:var(--amber);">85<small>%</small></span><div class="lbl">State quota</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#ecd6a4;">
+        <div class="mono" style="font-size:9px;letter-spacing:.1em;color:#a9741a;text-transform:uppercase;">Private colleges · higher fees · three quotas</div>
+        <div style="display:flex;gap:14px;margin-top:8px;">
+          <div class="stat"><span class="big" style="font-size:26px;">50<small>%</small></span><div class="lbl">State</div></div>
+          <div class="stat"><span class="big" style="font-size:26px;color:var(--amber);">35<small>%</small></span><div class="lbl">Mgmt / open</div></div>
+          <div class="stat"><span class="big" style="font-size:26px;">15<small>%</small></span><div class="lbl">NRI</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="band" style="margin-top:auto;">
+      <span class="k">Read the fine print</span>
+      <p>The private-college split can vary from state to state, and management/NRI definitions differ too. Always confirm the exact quota breakdown for the specific college and state before you rely on it.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>11</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 12 — DO'S & DON'TS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 10</b> · THE PROCESS · 1 OF 2</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 10 · part one</div>
+    <h1 class="title">Before you begin, check three things</h1>
+
+    <div class="grid3" style="margin-top:6mm;gap:10px;">
+      <div class="card"><div class="mono" style="font-size:22px;font-weight:600;color:var(--sea);">01</div><h3 style="margin-top:4px;">Eligibility</h3><p style="font-size:10px;">Can you take part?</p><ul class="tick" style="margin-top:4px;"><li>Qualified NEET &amp; eligible for the counselling you're entering</li><li>All essential documents ready before registration</li><li>Category, domicile &amp; reservation verified</li></ul></div>
+      <div class="card"><div class="mono" style="font-size:22px;font-weight:600;color:var(--sea);">02</div><h3 style="margin-top:4px;">Possibility</h3><p style="font-size:10px;">What's realistically in reach?</p><ul class="tick" style="margin-top:4px;"><li>Understand options by rank, state rank, category &amp; quota</li><li>Review last years' closing ranks</li><li>Build a balanced dream / target / safe list</li></ul></div>
+      <div class="card"><div class="mono" style="font-size:22px;font-weight:600;color:var(--sea);">03</div><h3 style="margin-top:4px;">Affordability</h3><p style="font-size:10px;">What fits the budget?</p><ul class="tick" style="margin-top:4px;"><li>Compare fees across govt, private, deemed &amp; NRI</li><li>Count the full cost — tuition, hostel, mess, travel</li><li>Agree a comfort zone before filling choices</li></ul></div>
+    </div>
+
+    <h2 class="sub" style="margin-top:8mm;">Registration to reporting — do's &amp; don'ts</h2>
+    <div class="grid2" style="gap:12px;">
+      <div class="tabcard"><span class="lab">Do</span>
+        <div style="margin-top:4px;">
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--ok)">Apply for nativity &amp; community certificates early</strong> — start now to avoid last-minute delays.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--ok)">Register for both AIQ and state</strong> — two pathways raise your odds.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--ok)">Research colleges before the window</strong> — prep lets you decide fast and calm.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--ok)">Rank your true first choice at #1</strong> — preferences are honoured in order.</p>
+          <p style="font-size:10.5px;margin:0;"><strong style="color:var(--ok)">Set alerts for every result date</strong> — windows are short and strict.</p>
+        </div>
+      </div>
+      <div class="tabcard coral"><span class="lab">Don't</span>
+        <div style="margin-top:4px;">
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--coral)">List only 2–3 colleges</strong> — a short list can leave you with no seat.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--coral)">Ignore state-specific rules</strong> — some treat post-allotment actions as acceptance.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--coral)">Surrender after Round 2</strong> — you may lose your deposit and face restrictions.</p>
+          <p style="font-size:10.5px;margin:0 0 6px;"><strong style="color:var(--coral)">Ignore name mismatches</strong> — even small differences stall verification.</p>
+          <p style="font-size:10.5px;margin:0;"><strong style="color:var(--coral)">Skip the bond terms</strong> — some colleges carry long service commitments or heavy penalties.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;">
+      <p><b>One line to live by —</b> more well-chosen choices, filed on time, with clean documents. That combination protects you at every round.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>12</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 13 — ROUND FLOW ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 10</b> · THE PROCESS · 2 OF 2</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 10 · part two</div>
+    <h1 class="title">The round-by-round flow</h1>
+    <p class="lede">Every round branches the same way: allotted or not. What you do at each branch decides your next move.</p>
+
+    <div class="flow" style="margin-top:6mm;">
+      <div class="branch" style="gap:6px;">
+        <div class="node ink" style="min-width:90px;font-size:10px;">Registration</div>
+        <div style="align-self:center;color:var(--line);font-size:14px;">→</div>
+        <div class="node" style="border-color:var(--sea);min-width:90px;font-size:10px;">Choice filling</div>
+        <div style="align-self:center;color:var(--line);font-size:14px;">→</div>
+        <div class="node" style="border-color:var(--sea);min-width:90px;font-size:10px;">Seat processing</div>
+        <div style="align-self:center;color:var(--line);font-size:14px;">→</div>
+        <div class="node amber" style="min-width:70px;font-size:10px;">Results</div>
+      </div>
+
+      <div class="conn"></div>
+      <div class="branch" style="width:100%;">
+        <div style="flex:1;text-align:center;"><div class="node" style="border-color:var(--sea);display:inline-block;font-size:11px;">✓ Allotted</div></div>
+        <div style="flex:1;text-align:center;"><div class="node coral" style="border-color:var(--coral);color:var(--coral);display:inline-block;font-size:11px;">✕ Not allotted</div></div>
+      </div>
+      <div class="conn"></div>
+
+      <div class="branch" style="width:100%;align-items:stretch;gap:8px;">
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#bfe0dd;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:var(--sea);text-transform:uppercase;">If allotted — Round 1</div>
+          <ul class="tick" style="margin-top:5px;"><li>Accept, report &amp; exit</li><li>Accept, report &amp; upgrade in R2</li><li>Deny &amp; free exit <span class="mono" style="font-size:8px;color:var(--slate)">(R1 only)</span></li></ul>
+        </div>
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#ecd6a4;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:#a9741a;text-transform:uppercase;">If not allotted</div>
+          <ul class="tick" style="margin-top:5px;"><li>Carry forward to the next round automatically</li><li>Choices stay live unless you change them</li></ul>
+        </div>
+      </div>
+
+      <div class="conn"></div>
+      <div class="node ink" style="min-width:120px;">Round 2 → Results</div>
+      <div class="conn"></div>
+      <div class="branch" style="width:100%;align-items:stretch;gap:8px;">
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#bfe0dd;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:var(--sea);text-transform:uppercase;">If allotted — Round 2</div>
+          <ul class="tick" style="margin-top:5px;"><li>Accept, report &amp; exit</li><li>Accept, report &amp; upgrade in R3</li><li>Deny &amp; exit <strong style="color:var(--coral)">with forfeiture</strong></li></ul>
+        </div>
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#ecd6a4;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:#a9741a;text-transform:uppercase;">If not allotted</div>
+          <ul class="tick" style="margin-top:5px;"><li>No upgrade → report to your R1 college</li><li>Or continue to Round 3</li></ul>
+        </div>
+      </div>
+
+      <div class="conn"></div>
+      <div class="node ink" style="min-width:120px;">Round 3 → Results</div>
+      <div class="conn"></div>
+      <div class="branch" style="width:100%;align-items:stretch;gap:8px;">
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#bfe0dd;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:var(--sea);text-transform:uppercase;">If allotted — Round 3</div>
+          <ul class="tick" style="margin-top:5px;"><li>Take admission &amp; exit</li><li>Deny &amp; exit <strong style="color:var(--coral)">with forfeiture</strong></li></ul>
+        </div>
+        <div class="card" style="flex:1;padding:8px 10px;border-color:#ecd6a4;">
+          <div class="mono" style="font-size:8.5px;letter-spacing:.08em;color:#a9741a;text-transform:uppercase;">If not allotted</div>
+          <ul class="tick" style="margin-top:5px;"><li>Proceed to stray-vacancy round — the final opening</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;background:var(--coral);">
+      <p style="color:#fff;"><b style="color:#3a0d05;">Forfeiture warning —</b> from Round 2 onward, denying an allotted seat can cost your security deposit and limit later rounds. "Accept and upgrade" almost always beats "deny and gamble."</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>13</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 14 — CLOSING RANKS ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 11</b> · CLOSING RANKS 2025</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 11 · reference data</div>
+    <h1 class="title">Closing ranks — All-India UG, 2025</h1>
+    <p class="lede">MBBS, Round 3, by institute type and category. Use it to place your own rank on the map. Ranks shift year to year — read these as landmarks, not guarantees.</p>
+
+    <table class="data" style="margin-top:5mm;">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Metric</th>
+          <th class="num">AIQ Govt</th>
+          <th class="num">AMU/BHU</th>
+          <th class="num">AIIMS</th>
+          <th class="num">JIPMER</th>
+          <th class="num">Deemed Merit</th>
+          <th class="num">Deemed NRI-1</th>
+          <th class="num">Deemed NRI-2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="st" rowspan="2">Open</td><td class="rank">AI Rank</td><td class="num rank">26,178</td><td class="num rank">6,170</td><td class="num rank">7,143</td><td class="num rank">5,731</td><td class="num rank">9,03,981</td><td class="num rank">12,88,903</td><td class="num rank">13,17,215</td></tr>
+        <tr><td>Score</td><td class="num">527</td><td class="num">567</td><td class="num">564</td><td class="num">569</td><td class="num">178</td><td class="num">116</td><td class="num">113</td></tr>
+
+        <tr><td class="st" rowspan="2">EWS</td><td class="rank">AI Rank</td><td class="num rank">29,997</td><td class="num rank">2,284</td><td class="num rank">12,057</td><td class="num rank">8,126</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        <tr><td>Score</td><td class="num">522</td><td class="num">590</td><td class="num">550</td><td class="num">561</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+
+        <tr><td class="st" rowspan="2">OBC</td><td class="rank">AI Rank</td><td class="num rank">26,231</td><td class="num rank">2,620</td><td class="num rank">8,617</td><td class="num rank">7,700</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        <tr><td>Score</td><td class="num">527</td><td class="num">586</td><td class="num">559</td><td class="num">562</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+
+        <tr><td class="st" rowspan="2">SC</td><td class="rank">AI Rank</td><td class="num rank">1,36,445</td><td class="num rank">20,606</td><td class="num rank">51,471</td><td class="num rank">46,346</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        <tr><td>Score</td><td class="num">441</td><td class="num">535</td><td class="num">501</td><td class="num">505</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+
+        <tr><td class="st" rowspan="2">ST</td><td class="rank">AI Rank</td><td class="num rank">1,36,445</td><td class="num rank">20,606</td><td class="num rank">51,471</td><td class="num rank">46,346</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        <tr><td>Score</td><td class="num">441</td><td class="num">535</td><td class="num">501</td><td class="num">505</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+      </tbody>
+    </table>
+    <p class="tinylink" style="margin-top:5px;">AI Rank = All-India NEET rank · Score = corresponding marks (2025) · "—" = category reservation not applicable / not published.</p>
+
+    <h2 class="sub" style="margin-top:8mm;">Category &amp; reservation — how seats divide</h2>
+    <div class="grid3" style="gap:9px;">
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:var(--ok);">40.5<small>%</small></span><div class="lbl">UR (Open)</div></div></div>
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:var(--coral);">27<small>%</small></span><div class="lbl">OBC</div></div></div>
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:var(--sea);">10<small>%</small></span><div class="lbl">EWS</div></div></div>
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:#8a2f6e;">15<small>%</small></span><div class="lbl">SC</div></div></div>
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:var(--ink-2);">7.5<small>%</small></span><div class="lbl">ST</div></div></div>
+      <div class="card" style="text-align:center;padding:10px;"><div class="stat"><span class="big" style="font-size:28px;color:var(--amber);">5<small>%</small></span><div class="lbl">PwD · horizontal</div></div></div>
+    </div>
+
+    <div class="remember" style="margin-top:auto;background:var(--ink);">
+      <p><b>No category reservation in deemed —</b> deemed-university seats under All-India counselling are filled on merit / NRI basis only. The category split above applies to government and INI seats.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>14</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 15 — FEES & OPEN STATES ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 11</b> · FEES &amp; OPEN STATES</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 11 · reference data</div>
+    <h1 class="title">What a seat costs</h1>
+    <p class="lede">Annual MBBS fees by institute type (Round 3, 2025). Government seats are the value play; deemed and NRI seats climb steeply.</p>
+
+    <table class="data" style="margin-top:5mm;">
+      <thead><tr><th>Institute type</th><th>Sub-quota</th><th class="num">Fee / year (₹)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="st">Government</td><td>All-India Quota</td><td class="num">1,665 – 1.92 L</td><td>Tuition + caution deposit, registration, development fund etc. paid in year 1</td></tr>
+        <tr><td class="st">Govt · other open</td><td>AMU / BHU Open</td><td class="num">33,739 – 60,300</td><td>BHU ≈ 33,739 · AMU ≈ 60,300</td></tr>
+        <tr><td class="st">National Importance</td><td>AIIMS Open</td><td class="num">1,350</td><td>Among the lowest fees in the country</td></tr>
+        <tr><td class="st">National Importance</td><td>JIPMER Open</td><td class="num">1,200</td><td>Pondicherry-domicile quota also exists</td></tr>
+        <tr><td class="st">Deemed</td><td>Self-financed merit</td><td class="num">10 L – 30.5 L</td><td>No category reservation applies</td></tr>
+        <tr><td class="st">Deemed</td><td>NRI</td><td class="num">23.91 L – 1.29 Cr</td><td>Highest band; NRI or NRI-sponsored only</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid3" style="margin-top:6px;gap:8px;">
+      <div class="card" style="padding:9px 11px;"><p style="font-size:10px;margin:0;">≈ <strong>50%</strong> of seats sit below ₹20,000/yr; ≈ <strong>85%</strong> below ₹1 lakh/yr.</p></div>
+      <div class="card" style="padding:9px 11px;"><p style="font-size:10px;margin:0;">In Punjab, Maharashtra, Goa, Uttarakhand &amp; Delhi, some govt fees exceed ₹1 lakh — verify.</p></div>
+      <div class="card" style="padding:9px 11px;"><p style="font-size:10px;margin:0;">GMERS (Gujarat) fees run high, around ₹3.75 lakh — a quasi-government society model.</p></div>
+    </div>
+
+    <h2 class="sub" style="margin-top:7mm;">Open states — cross a border on a lower rank</h2>
+    <p style="font-size:10.5px;color:var(--slate);margin:-4px 0 8px;">Some states open private-college counselling to any-state students, no domicile needed. A sample of 2025 closing ranks with fees (R1–R3):</p>
+    <table class="data">
+      <thead><tr><th>State · quota</th><th class="num">Fee (₹)</th><th class="num">NEET rank</th><th class="num">Counselling rank</th><th class="num">Score</th></tr></thead>
+      <tbody>
+        <tr><td class="st">AP · Mgmt Cat-B1</td><td class="num">13,20,000</td><td class="num rank">3,42,303</td><td class="num rank">2,518</td><td class="num">339</td></tr>
+        <tr><td class="st">Bihar · Private General</td><td class="num">9.63 L – 16.5 L</td><td class="num rank">1,31,136+</td><td class="num rank">4,411+</td><td class="num">228–444</td></tr>
+        <tr><td class="st">Karnataka · Private Open</td><td class="num">8.1 L – 25.15 L</td><td class="num rank">13,706+</td><td class="num rank">13,706+</td><td class="num">248–547</td></tr>
+        <tr><td class="st">Kerala · Self-financing AI merit</td><td class="num">7.71 L – 8.98 L</td><td class="num rank">54,489+</td><td class="num rank">5,134+</td><td class="num">—</td></tr>
+        <tr><td class="st">Maharashtra · Mgmt</td><td class="num">18.6 L – 50.2 L</td><td class="num rank">4,88,804+</td><td class="num rank">33,443+</td><td class="num">183–285</td></tr>
+        <tr><td class="st">Tamil Nadu · Mgmt (CMC 50%)</td><td class="num">51,345</td><td class="num rank">1,114</td><td class="num rank">28</td><td class="num">604</td></tr>
+        <tr><td class="st">Telangana · Mgmt Cat-B</td><td class="num">11.55 L – 15 L</td><td class="num rank">1,44,275+</td><td class="num rank">657+</td><td class="num">383–436</td></tr>
+        <tr><td class="st">Uttar Pradesh · Private Open</td><td class="num">11.04 L – 20.19 L</td><td class="num rank">4,02,286+</td><td class="num rank">20,343+</td><td class="num">246–315</td></tr>
+        <tr><td class="st">West Bengal · Mgmt</td><td class="num">16 L – 22 L</td><td class="num rank">1,11,301+</td><td class="num rank">4,451+</td><td class="num">190–457</td></tr>
+      </tbody>
+    </table>
+
+    <div class="remember" style="margin-top:auto;background:var(--sea);">
+      <p><b>Open states widen the map —</b> a rank that closes doors at home may still open a private seat elsewhere. Weigh the fee against the seat before you commit; ranges span rounds and colleges.</p>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>15</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 16 — FAQs ============================ -->
+<section class="sheet">
+  <div class="pad">
+    <div class="plate-top">
+      <span class="coord"><b>PLATE 12</b> · COMMON DOUBTS</span>
+      <div class="mini-brand"><svg class="rose"><use href="#rose"/></svg><span>Campus<i>Continents</i></span></div>
+    </div>
+
+    <div class="eyebrow">Section 12</div>
+    <h1 class="title">Quick answers to common doubts</h1>
+    <p class="lede">The questions nearly every student and parent asks, answered plainly.</p>
+
+    <div style="margin-top:5mm;">
+      <div class="faq"><div class="q-n">1</div><div><p class="q">Can I take part in both AIQ and state counselling at once?</p><p class="a">Yes. MCC (All-India) and state counselling run simultaneously and independently. Register for both and compare allotments before deciding.</p></div></div>
+      <div class="faq"><div class="q-n">2</div><div><p class="q">What if I don't respond to an allotment in time?</p><p class="a">Your seat is cancelled and you may lose the right to that round, depending on its rules. The response window is typically about 24 hours, with no extensions.</p></div></div>
+      <div class="faq"><div class="q-n">3</div><div><p class="q">What's the difference between freeze and float (upgrade)?</p><p class="a">Freezing means accepting and keeping your current allotment. Floating (upgrade) means staying eligible for a higher-preference seat in later rounds, as the authority permits.</p></div></div>
+      <div class="faq"><div class="q-n">4</div><div><p class="q">Will I lose my security deposit if I withdraw?</p><p class="a">It depends on the counselling. In most, the deposit is forfeited if you don't join or if you resign after a Round 2 (or later) allotment.</p></div></div>
+      <div class="faq"><div class="q-n">5</div><div><p class="q">Can I change my community certificate after registration?</p><p class="a">No. The community category submitted at registration is final. Make sure it's correct before you submit.</p></div></div>
+      <div class="faq"><div class="q-n">6</div><div><p class="q">Do I register separately for each state?</p><p class="a">Yes. Each state has its own authority, registration process, eligibility rules and schedule.</p></div></div>
+      <div class="faq"><div class="q-n">7</div><div><p class="q">How many colleges should I add to my choice list?</p><p class="a">Aim for 30–50. More choices mean more safety; a short list risks no seat at all if your rank misses the few you listed.</p></div></div>
+      <div class="faq"><div class="q-n">8</div><div><p class="q">Can a seat be lost over missing documents?</p><p class="a">Yes — even after allotment. Verification matters as much as rank. Missing, expired or incorrect certificates (category, domicile, eligibility) can cancel an allotment.</p></div></div>
+      <div class="faq"><div class="q-n">9</div><div><p class="q">Is AIQ only for top rankers?</p><p class="a">No. All-India counselling covers thousands of seats across government colleges, AIIMS, central and deemed universities, spanning many rank brackets and categories.</p></div></div>
+      <div class="faq"><div class="q-n">10</div><div><p class="q">Can I leave an AIQ seat for a better option later?</p><p class="a">Usually yes, but timing matters. Depending on the round and rules, you may upgrade or shift — though deadlines and resignation policies can affect eligibility and deposits.</p></div></div>
+    </div>
+
+    <div class="plate-foot"><span class="pg">PAGE <b>16</b></span><span class="site">Campus Continents · NEET UG Counselling</span></div>
+  </div>
+</section>
+
+<!-- ============================ SHEET 17 — PLATFORM + CLOSING ============================ -->
+<section class="sheet closing">
+  <svg class="contour" viewBox="0 0 595 842" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#0E6E6A" stroke-width="1">
+    <path d="M-40 140 C120 90 250 210 380 150 S560 80 660 170" opacity=".3"/>
+    <path d="M-40 240 C130 190 260 310 400 240 S560 180 680 270" opacity=".24"/>
+    <path d="M-40 360 C120 320 280 430 400 360 S580 300 700 390" opacity=".2"/>
+    <path d="M-40 500 C140 460 260 570 420 500 S600 450 720 540" opacity=".16"/>
+    <path d="M-40 650 C120 610 300 720 430 650 S610 600 730 690" opacity=".12"/>
+  </svg>
+  <div class="closing-inner">
+    <div class="brandmark" style="margin-bottom:12mm;">
+      <svg class="rose" style="color:#dfe9f0;width:30px;height:30px;"><use href="#rose"/></svg>
+      <span class="wm" style="font-size:17px;">Campus<i style="color:var(--amber)">Continents</i></span>
+    </div>
+
+    <div class="kicker" style="font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px;">
+      <span style="width:24px;height:2px;background:var(--amber);"></span>How Campus Continents helps
+    </div>
+    <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:36px;line-height:1.05;margin:12px 0 4px;color:#fff;">The process is complex.<br>Your decisions don't have to be.</h1>
+    <p style="font-size:12.5px;color:#c6d3de;max-width:150mm;margin:6px 0 0;line-height:1.5;">Every tool, data point and answer for counselling, gathered in one place — so you spend your energy deciding, not hunting.</p>
+
+    <div style="margin-top:9mm;display:grid;grid-template-columns:1fr 1fr;gap:0 26px;">
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <div><h4 style="color:#fff;">Rank Scan</h4><p style="color:#a9c0d1;">Enter your rank, see every college you're eligible for, instantly.</p></div>
+      </div>
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+        <div><h4 style="color:#fff;">Allotment mapping</h4><p style="color:#a9c0d1;">See where higher-ranked candidates landed — and predict where you might.</p></div>
+      </div>
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><rect x="6" y="10" width="3" height="6"/><rect x="11" y="6" width="3" height="10"/><rect x="16" y="12" width="3" height="4"/></svg></div>
+        <div><h4 style="color:#fff;">Cut-off trends</h4><p style="color:#a9c0d1;">Three years of closing ranks by college, course, quota and category, one screen.</p></div>
+      </div>
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div><h4 style="color:#fff;">Fee, stipend &amp; bond analysis</h4><p style="color:#a9c0d1;">Verified fees, stipends and bond terms compared before you fill choices.</p></div>
+      </div>
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
+        <div><h4 style="color:#fff;">Choice-list builder</h4><p style="color:#a9c0d1;">Order colleges by your real preference, checked against your rank.</p></div>
+      </div>
+      <div class="tool" style="border-bottom:1px solid rgba(255,255,255,.14);">
+        <div class="ic" style="background:rgba(14,110,106,.25);border-color:rgba(14,110,106,.5);color:#8fd6d0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div><h4 style="color:#fff;">Expert &amp; community support</h4><p style="color:#a9c0d1;">Counsellor guidance plus real-time updates when it matters most.</p></div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.16);display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:26px;color:var(--amber);line-height:1;">All the best.</div>
+        <p style="font-size:11.5px;color:#c6d3de;margin:8px 0 0;max-width:120mm;">Understand every move before you make it — and here's to the day you walk into your medical college.</p>
+      </div>
+      <div style="text-align:right;">
+        <div class="mono" style="font-size:10px;color:#9fb3c4;letter-spacing:.1em;line-height:1.9;">
+          campuscontinents.com<br>
+          hello@campuscontinents.com<br>
+          <span style="color:var(--amber)">Counselling support · Mon–Sat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* Fit-to-width preview on small screens; never affects print. */
+(function(){
+  function fit(){
+    if (window.matchMedia('print').matches) return;
+    var mmToPx = 96/25.4, sheetW = 210*mmToPx;
+    var avail = document.documentElement.clientWidth - 32;
+    var scale = Math.min(1, avail/sheetW);
+    document.querySelectorAll('.sheet').forEach(function(s){
+      if (scale < 1){
+        s.style.transform = 'scale('+scale+')';
+        s.style.transformOrigin = 'top center';
+        s.style.marginBottom = (297*mmToPx*(scale-1)) + 'px';
+      } else {
+        s.style.transform=''; s.style.marginBottom='';
+      }
+    });
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  fit();
+})();
+</script>
+</body>
+</html>
