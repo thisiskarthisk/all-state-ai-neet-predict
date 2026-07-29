@@ -4,10 +4,10 @@ import Reveal from './reveal';
 
 export default function CounsellingSection() {
   const features = [
-    { icon: '⭐', title: 'Save Your Favourite Medical Colleges' },
-    { icon: '📅', title: 'Track Counselling Schedules' },
-    { icon: '🏥', title: 'Compare Government, Private & Deemed Colleges' },
-    { icon: '👨‍⚕️', title: 'Get Your Favourite College Info on Email' },
+    { icon: '⭐', title: 'Compare Government, Private & Deemed Options' },
+    { icon: '📅', title: 'Save Your Shortlisted Colleges' },
+    { icon: '🏥', title: 'Track Every Counselling Deadline' },
+    { icon: '👨‍⚕️', title: 'Receive College Details by Email' },
   ];
 
   return (
@@ -17,7 +17,7 @@ export default function CounsellingSection() {
         <Reveal>
           <div className="mb-12 space-y-3">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              Your Prediction Is Just the <br className="hidden sm:inline" />
+              Your College Match Is Just the <br className="hidden sm:inline" />
               Beginning.
             </h2>
             <p className="text-base sm:text-lg text-slate-400 font-medium">

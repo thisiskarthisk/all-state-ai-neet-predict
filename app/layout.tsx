@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'NEET Rank & College Predictor | AIQ Cutoff Data',
-  description: 'Predict your NEET rank and find eligible government MBBS colleges across India using real 2025 AIQ cutoff data from 397+ colleges.',
+  description: 'See which MBBS, BDS and other medical colleges you can get with your NEET rank or marks — compare Government, Private and Deemed options across India using real cutoff data.',
 };
 
 const GTM_SCRIPT = () => (`

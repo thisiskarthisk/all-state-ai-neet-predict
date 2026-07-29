@@ -19,6 +19,9 @@ export default function HomeFAQ() {
               Get clear answers to the questions students and doctors ask most, for both
               undergraduate and postgraduate NEET counselling.
             </p>
+             <p className="text-slate-500 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+              Answered by counsellors who've guided admissions since 2006.
+            </p>
           </div>
         </Reveal>
 

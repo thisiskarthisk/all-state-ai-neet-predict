@@ -805,7 +805,7 @@ export default function HeroSection({
             <h2 className="hero-title-cc font-extrabold text-white tracking-tight leading-tight">
               {mode === 'allstate' ? (
                 <>
-                  FREE NEET <span className="bg-gradient-to-r from-[#0095ff] via-[#00e5bf] to-[#2dd4bf] bg-clip-text text-transparent">Rank &amp; College</span> Predictor
+                  <span className="bg-gradient-to-r from-[#0095ff] via-[#00e5bf] to-[#2dd4bf] bg-clip-text text-transparent">NEET College</span> Predictor 2026 — Find Your MBBS College
                 </>
               ) : (
                 <>
@@ -815,7 +815,7 @@ export default function HeroSection({
             </h2>
             <p className="hero-subtitle-cc" style={{ color: '#fff' }}>
               {mode === 'allstate'
-                ? 'Predict your NEET rank, discover suitable medical colleges, track counselling schedules, and plan your admission journey—all in one place.'
+                ? 'See which Government, Private and Deemed medical colleges you can get with your NEET rank or marks — real cutoff data, trusted since 2006..'
                 : 'Predict eligible Karnataka medical colleges using your NEET rank and category. Get personalized college recommendations and counselling schedules'}
             </p>
           </div>

@@ -585,6 +585,25 @@ export default function CounsellingModal({
         }
       }
 
+      // 2. ZOHO CRM — Push Lead to Zoho CRM Leads Module
+      // try {
+      //   await fetch('/api/zoho-crm', {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({
+      //       name: name || 'Student',
+      //       email,
+      //       mobileNo: mobile,
+      //       homeState,
+      //       studentProfile: { rank, course, exam: examType, category, states: preferredStates },
+      //       selectedColleges: collegesToRender,
+      //       leadSource: 'Counselling Modal Form',
+      //     }),
+      //   });
+      // } catch (zohoErr) {
+      //   console.warn('[CounsellingModal] Zoho CRM lead push error:', zohoErr);
+      // }
+
       // 2. Generate the PDF client-side (this file becomes the WhatsApp document)
       let pdfBlob: Blob | null = null;
 
@@ -953,7 +972,7 @@ export default function CounsellingModal({
                 ) : (
                   <>
                     {isHandbook ? <Download className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
-                    {isHandbook ? 'Download Free Guide' : 'Alert my counselling window on Email'}
+                    {isHandbook ? 'Download Free Guide' : 'Get My Personalised Counselling Update'}
                   </>
                 )}
               </button>

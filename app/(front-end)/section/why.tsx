@@ -139,7 +139,7 @@ export default function WhySection() {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-              Get Personalized Counselling Information
+              Get My Personalised Counselling Update
             </h2>
 
             <p className="text-sm sm:text-base text-slate-400 font-medium leading-relaxed mb-8">
@@ -373,7 +373,7 @@ export default function WhySection() {
                       </>
                     ) : (
                       <>
-                        <MessageSquare className="w-4 h-4" /> Alert my counselling window on Email
+                        <MessageSquare className="w-4 h-4" /> Get My Personalised Counselling Update
                       </>
                     )}
                   </button>
