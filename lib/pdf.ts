@@ -34,7 +34,7 @@ export function buildHTML(body: RequestBody): string {
         const cState = c.state_name || c.state || 'Karnataka';
         const cCity = c.city_name || c.city || '';
         const cType = c.college_type || c.type || 'Government';
-        const cutoff = c.closest_cutoff ? `AIR ~${c.closest_cutoff.toLocaleString('en-IN')}` : 'TBA';
+        const cutoff = c.closest_cutoff ? `AIR ~${Math.round(c.closest_cutoff).toLocaleString('en-IN')}` : 'TBA';
         const chance = c.best_chance || 'High';
         const chanceColor = chance === 'High' ? '#16a34a' : chance === 'Medium' ? '#d97706' : '#e11d48';
         const chanceBg = chance === 'High' ? '#f0fdf4' : chance === 'Medium' ? '#fffbeb' : '#fff1f2';

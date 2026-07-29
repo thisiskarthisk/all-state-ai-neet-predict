@@ -226,6 +226,7 @@ export const INDIAN_STATES: State[] = [
 ];
 
 export const NEET_CATEGORIES: Category[] = [
+  { code: 'ALL', name: 'All Categories', description: 'Show colleges matching cutoffs across all categories (General, OBC, SC, ST, EWS).' },
   { code: 'UR', name: 'General', description: 'Open Category without specific community reservations.' },
   { code: 'OBC', name:'OBC', description: 'OBC Non-Creamy Layer recognized in the Central Reservation List.' },
   { code: 'SC', name: 'SC', description: 'Candidates belonging to Scheduled Castes.' },

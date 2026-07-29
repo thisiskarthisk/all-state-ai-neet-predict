@@ -679,6 +679,8 @@ import { KARNATAKA_PG_COLLEGES } from '@/lib/data/KarnatakaState/pgCollegeList';
 import { KARNATAKA_UG_COLLEGES } from '@/lib/data/KarnatakaState/ugCollegeList';
 import { ALLSTATE_PG_COLLEGES } from '@/lib/data/allstate/pgCollegeList';
 import { ALLSTATE_UG_COLLEGES } from '@/lib/data/allstate/ugCollegeList';
+import { predictCollegesFromMasterData } from '@/lib/data/collegeMatcher';
+import { MASTER_UG_COLLEGE_LIST } from '@/lib/data/allstate/UgMasterCollegeList';
 
 function parseCleanJson(text: string): any {
   let cleaned = text.trim();
@@ -1256,7 +1258,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(aiData);
     }
 
-    const { rank, states, category, courses, course, examType } = body;
+    const { rank, states, category, courses, course, examType, round } = body;
 
     const rankNum = typeof rank === 'number' && rank > 0 ? rank : null;
     if (rankNum === null) {
@@ -1369,75 +1371,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Direct static UG College Dataset matching for NEET UG (using General UR cutoffs dataset)
+    // Direct deterministic Master UG College Dataset matching for NEET UG
     if (selectedExamCode === 'NEET_UG') {
-      const isGeneralOrAllCategory = !category || category === 'ALL' || category === 'UR';
+      const masterMatches = predictCollegesFromMasterData(
+        MASTER_UG_COLLEGE_LIST,
+        rankNum,
+        category || 'General',
+        preferredStatesList,
+        round || 'Round 1'
+      );
 
-      let ugMatches = (targetUgDataset as any[]).filter((col: any) => {
-        if (
-          selectedCourseCodes.length > 0 &&
-          !selectedCourseCodes.includes('ALL')
-        ) {
-          const matchCourse = selectedCourseCodes.some(
-            (code) =>
-              (col.course && (col.course === code || col.course.toLowerCase().includes(code.toLowerCase()))) ||
-              (col.courses && col.courses.some((c: any) => c.course_name?.toLowerCase().includes(code.toLowerCase())))
-          );
-          if (!matchCourse) return false;
-        }
-
-        const closingRankNum = col.closingRank || col.closing_rank || col.courses?.[0]?.categories?.[0]?.closing_rank || 150000;
-        if (rankNum <= 1000) return true;
-        return rankNum <= closingRankNum + 5000;
-      });
-
-      if (ugMatches.length > 0 && isGeneralOrAllCategory) {
-        const formattedColleges = ugMatches.map((col: any) => {
-          const closingRankNum = col.closingRank || col.closing_rank || col.courses?.[0]?.categories?.[0]?.closing_rank || 150000;
-          const openingRankNum = col.openingRank || col.opening_rank || 1;
-          const chance = rankNum <= 1000 ? 'High' : computeChance(rankNum, closingRankNum);
-
-          const auth = getAuthorityForState(col.state_name || col.state || 'Karnataka');
-
-          return {
-            college_id: col.college_id || col.id,
-            name: col.college_name || col.collegeName,
-            state: col.state_name || col.state || 'Karnataka',
-            city: col.city_name || col.city || '',
-            collegeType: col.college_type || col.collegeType || 'Government',
-            officialWebsite: auth?.officialWebsite || 'https://kea.kar.nic.in/',
-            best_chance: chance,
-            closest_cutoff: closingRankNum,
-            opening_cutoff: openingRankNum,
-            cutoffs: col.courses ? col.courses.map((crs: any) => ({
-              course: crs.course_name,
-              category: targetCategory,
-              openingRank: openingRankNum,
-              closingRank: crs.categories?.[0]?.closing_rank || closingRankNum,
-              chanceOfAdmission: chance
-            })) : [
-              {
-                course: col.course || 'MBBS',
-                category: targetCategory,
-                openingRank: openingRankNum,
-                closingRank: closingRankNum,
-                chanceOfAdmission: chance
-              }
-            ],
-            authorityInfo: auth ? {
-              authority: auth.authority,
-              organization: auth.organization,
-              ugPortal: auth.ugPortal,
-              pgPortal: auth.pgPortal,
-              officialWebsite: auth.officialWebsite,
-              registrationPortal: auth.registrationPortal,
-              quotaType: auth.quotaType,
-              notes: auth.notes
-            } : null
-          };
-        });
-
-        return NextResponse.json({ colleges: formattedColleges });
+      if (masterMatches && masterMatches.length > 0) {
+        return NextResponse.json({ colleges: masterMatches });
       }
     }
 

@@ -225,7 +225,7 @@ export default function CounsellingModal({
         const cState = c.state_name || c.state || 'Karnataka';
         const cCity = c.city_name || c.city || '';
         const cType = c.college_type || c.type || 'Government';
-        const cutoff = c.closest_cutoff ? `AIR ~${c.closest_cutoff.toLocaleString('en-IN')}` : 'TBA';
+        const cutoff = c.closest_cutoff ? `AIR ~${Math.round(c.closest_cutoff).toLocaleString('en-IN')}` : 'TBA';
         const chance = c.best_chance || 'High';
 
         msg += `${i + 1}. ${cName}${cCity ? ` (${cCity}, ${cState})` : ` (${cState})`}\n`;
@@ -532,169 +532,170 @@ export default function CounsellingModal({
   
   
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  let cleanMobile = (mobile || '').replace(/\D/g, '');
-  if (cleanMobile.length === 10) cleanMobile = `91${cleanMobile}`;
+    let cleanMobile = (mobile || '').replace(/\D/g, '');
+    if (cleanMobile.length === 10) cleanMobile = `91${cleanMobile}`;
 
-  const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
-  const homeStateName = homeStateObj ? homeStateObj.name : homeState;
-
-  try {
-    let collegesToRenderList = selectedColleges.length > 0
-      ? selectedColleges
-      : propSelectedColleges && propSelectedColleges.length > 0
-      ? propSelectedColleges
-      : [];
-
-    if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
-      try {
-        const raw =
-          localStorage.getItem('selectCollege') ||
-          localStorage.getItem('selectedColleges') ||
-          localStorage.getItem('collegeList') ||
-          localStorage.getItem('college_prediction_results');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) collegesToRenderList = parsed;
-        }
-      } catch {}
-    }
-
-    const collegesToRender = ensureCollegeDetails(collegesToRenderList);
-
-    // 1. EMAIL — plain text/data message, no PDF attached
-    if (email) {
-      try {
-        await fetch('/api/counselling/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: name || 'Student',
-            email,
-            mobileNo: mobile,
-            studentProfile: { rank, course, exam: examType, category, states: preferredStates },
-            selectedColleges: collegesToRender,
-            type: 'counselling',
-          }),
-        });
-      } catch (emailErr) {
-        console.warn('[CounsellingModal] Send email error:', emailErr);
-      }
-    }
-
-    // 2. Generate the PDF client-side (this file becomes the WhatsApp document)
-    let pdfBlob: Blob | null = null;
-
-    const host = document.createElement('div');
-    host.style.position = 'fixed';
-    host.style.left = '0';
-    host.style.top = '0';
-    host.style.opacity = '0';
-    host.style.pointerEvents = 'none';
-    host.style.zIndex = '-1';
-
-    const container = document.createElement('div');
-    container.style.width = '700px';
-    container.style.backgroundColor = '#ffffff';
-    container.style.color = '#0f172a';
-    container.style.fontFamily = 'Arial, sans-serif';
-    host.appendChild(container);
+    const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
+    const homeStateName = homeStateObj ? homeStateObj.name : homeState;
 
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
+      let collegesToRenderList = selectedColleges.length > 0
+        ? selectedColleges
+        : propSelectedColleges && propSelectedColleges.length > 0
+        ? propSelectedColleges
+        : [];
 
-      container.innerHTML = buildHTML({
-        name: name || 'Medical Student',
-        studentProfile: {
-          rank: rank || 'AIR 106',
-          course: course || 'MBBS',
-          exam: examType || 'NEET UG',
-          category: category || 'General / All Categories',
-          quota: 'State / AIQ Quota',
-          states: homeStateName,
-        },
-        selectedColleges: collegesToRender,
-      });
-
-      document.body.appendChild(host);
-
-      const images = Array.from(container.querySelectorAll('img'));
-      await Promise.all(
-        images.map((img) => {
-          if (img.complete) return Promise.resolve();
-          return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        })
-      );
-
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      if (!container.offsetHeight) {
-        throw new Error('PDF source has no layout height - refusing to render a blank page');
+      if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
+        try {
+          const raw =
+            localStorage.getItem('selectCollege') ||
+            localStorage.getItem('selectedColleges') ||
+            localStorage.getItem('collegeList') ||
+            localStorage.getItem('college_prediction_results');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) collegesToRenderList = parsed;
+          }
+        } catch {}
       }
 
-      const worker = html2pdf().from(container).set({
-        margin: 6,
-        filename: `counselling-plan-${cleanMobile}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      const collegesToRender = ensureCollegeDetails(collegesToRenderList);
+
+      // 1. EMAIL — plain text/data message, no PDF attached
+      if (email) {
+        try {
+          await fetch('/api/counselling/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name || 'Student',
+              email,
+              mobileNo: mobile,
+              studentProfile: { rank, course, exam: examType, category, states: preferredStates },
+              selectedColleges: collegesToRender,
+              type: 'counselling',
+            }),
+          });
+        } catch (emailErr) {
+          console.warn('[CounsellingModal] Send email error:', emailErr);
+        }
+      }
+
+      // 2. Generate the PDF client-side (this file becomes the WhatsApp document)
+      let pdfBlob: Blob | null = null;
+
+      const host = document.createElement('div');
+      host.style.position = 'fixed';
+      host.style.left = '0';
+      host.style.top = '0';
+      host.style.opacity = '0';
+      host.style.pointerEvents = 'none';
+      host.style.zIndex = '-1';
+
+      const container = document.createElement('div');
+      container.style.width = '700px';
+      container.style.backgroundColor = '#ffffff';
+      container.style.color = '#0f172a';
+      container.style.fontFamily = 'Arial, sans-serif';
+      host.appendChild(container);
+
+      try {
+        const html2pdf = (await import('html2pdf.js')).default;
+
+        container.innerHTML = buildHTML({
+          name: name || 'Medical Student',
+          studentProfile: {
+            rank: rank || 'AIR 106',
+            course: course || 'MBBS',
+            exam: examType || 'NEET UG',
+            category: category || 'General / All Categories',
+            quota: 'State / AIQ Quota',
+            states: homeStateName,
+          },
+          selectedColleges: collegesToRender,
+        });
+
+        document.body.appendChild(host);
+
+        const images = Array.from(container.querySelectorAll('img'));
+        await Promise.all(
+          images.map((img) => {
+            if (img.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          })
+        );
+
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        if (!container.offsetHeight) {
+          throw new Error('PDF source has no layout height - refusing to render a blank page');
+        }
+
+        const worker = html2pdf().from(container).set({
+          margin: 6,
+          filename: `counselling-plan-${cleanMobile}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        });
+
+        pdfBlob = await worker.outputPdf('blob');
+      } catch (pdfErr) {
+        console.warn('Frontend PDF generation warning:', pdfErr);
+      } finally {
+        if (host.parentNode) host.parentNode.removeChild(host);
+      }
+
+      if (!pdfBlob) {
+        throw new Error('PDF could not be generated, cannot send WhatsApp document');
+      }
+
+      // 3. WHATSAPP — send PDF to backend, backend pushes it via WATI
+      const formData = new FormData();
+      formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
+      formData.append('name', name || 'Student');
+      formData.append('phone', cleanMobile);
+      formData.append('email', email);
+      formData.append('homeState', homeState);
+      formData.append('rank', rank);
+      formData.append('exam', examType);
+      formData.append('course', course);
+      formData.append('category', category);
+      formData.append('states', preferredStates);
+
+      const waRes = await fetch('/api/counselling/generate-and-send', {
+        method: 'POST',
+        body: formData,
       });
 
-      pdfBlob = await worker.outputPdf('blob');
-    } catch (pdfErr) {
-      console.warn('Frontend PDF generation warning:', pdfErr);
+      if (!waRes.ok) {
+        throw new Error('WhatsApp send failed');
+      }
+
+      onClose();
+      router.push('/thank-you');
+    } catch (err) {
+      console.error('Submission error:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
-      if (host.parentNode) host.parentNode.removeChild(host);
+      setLoading(false);
     }
-
-    if (!pdfBlob) {
-      throw new Error('PDF could not be generated, cannot send WhatsApp document');
-    }
-
-    // 3. WHATSAPP — send PDF to backend, backend pushes it via WATI
-    const formData = new FormData();
-    formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
-    formData.append('name', name || 'Student');
-    formData.append('phone', cleanMobile);
-    formData.append('email', email);
-    formData.append('homeState', homeState);
-    formData.append('rank', rank);
-    formData.append('exam', examType);
-    formData.append('course', course);
-    formData.append('category', category);
-    formData.append('states', preferredStates);
-
-    const waRes = await fetch('/api/counselling/generate-and-send', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!waRes.ok) {
-      throw new Error('WhatsApp send failed');
-    }
-
-    onClose();
-    router.push('/thank-you');
-  } catch (err) {
-    console.error('Submission error:', err);
-    setError('Something went wrong. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+  
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/75 backdrop-blur-sm overflow-y-auto overscroll-contain"

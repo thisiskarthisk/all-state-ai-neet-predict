@@ -306,7 +306,7 @@ export default function CollegeCounsellingPage() {
 
   if (!mounted) return null;
 
-  const fmt = (n?: number) => n?.toLocaleString('en-IN') || '—';
+  const fmt = (n?: number) => typeof n === 'number' && !isNaN(n) ? Math.round(n).toLocaleString('en-IN') : '—';
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans leading-relaxed section-dark">

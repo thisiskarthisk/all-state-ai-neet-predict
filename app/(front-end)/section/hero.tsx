@@ -24,6 +24,7 @@ import MedicalPulseLoader from '@/components/MedicalPulseLoader';
 import CounsellingModal from '@/components/CounsellingModal';
 import MultiSelect from '@/components/Multiselect';
 import Dropdown from '@/components/dropdown';
+import { isStateMatched } from '@/lib/data/collegeMatcher';
 import {
   SUPPORTED_EXAMS,
   getCoursesByExam,
@@ -142,6 +143,15 @@ export default function HeroSection({
   const [selectedCourse, setSelectedCourse] = useState('MBBS');
   const [selectedCategory, setSelectedCategory] = useState('UR');
   const [selectedStates, setSelectedStates] = useState<string[]>(mode === 'allstate' ? ['AI'] : ['KA']);
+  const [selectedRound, setSelectedRound] = useState<string>('Round 1');
+
+  const COUNSELLING_ROUNDS = [
+    { code: 'Round 1', name: 'Round 1 (Default)' },
+    { code: 'Round 2', name: 'Round 2' },
+    { code: 'Round 3', name: 'Round 3 / Mop-up' },
+    { code: 'Stray', name: 'Stray Vacancy Round' },
+    { code: 'ALL', name: 'All Rounds' },
+  ];
 
   const [collegeResult, setCollegeResult] = useState<any>(null);
   const [collegeLoading, setCollegeLoading] = useState(false);
@@ -151,7 +161,8 @@ export default function HeroSection({
   // Filter drawer controls
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [chanceFilter, setChanceFilter] = useState<'all' | 'High' | 'Medium' | 'Reach'>('all');
-  const [roundFilter, setRoundFilter] = useState<'all' | 'Round 1' | 'Round 2' | 'Round 3'>('all');
+  const [roundFilter, setRoundFilter] = useState<'all' | 'Round 1' | 'Round 2' | 'Round 3' | 'Stray'>('Round 1');
+  const [roundCategoryFilter, setRoundCategoryFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'Government' | 'Private' | 'Deemed'>('all');
 
   const scrollToResults = () => {
@@ -166,18 +177,13 @@ export default function HeroSection({
   const [selectedCollegesForCounselling, setSelectedCollegesForCounselling] = useState<any[]>([]);
   const [infoModalCollege, setInfoModalCollege] = useState<any | null>(null);
 
-  // Remembers exactly which rank/exam/course/category/states produced the
-  // results currently on screen. Changing a filter in the form does NOT
-  // re-run the search automatically — the person has to click "Predict
-  // Matching Colleges" again. We use this to show a "results are stale"
-  // notice instead of silently, confusingly re-filtering already-fetched
-  // data client-side (which was the root of the broken-looking UI).
   const [lastSearchParams, setLastSearchParams] = useState<{
     rank: string;
     examType: string;
     course: string;
     category: string;
     states: string[];
+    round: string;
   } | null>(null);
 
   // ---- Counselling Kit modal state (shared by both tabs) ----
@@ -208,6 +214,7 @@ export default function HeroSection({
       const storedCourse = localStorage.getItem('predict_course');
       const storedCategory = localStorage.getItem('predict_category');
       const storedStates = localStorage.getItem('predict_states');
+      const storedRound = localStorage.getItem('predict_round');
       const storedList = localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
       const storedSelected = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges');
 
@@ -216,6 +223,7 @@ export default function HeroSection({
         if (storedExamType) setCollegeExamType(storedExamType);
         if (storedCourse) setSelectedCourse(storedCourse);
         if (storedCategory) setSelectedCategory(storedCategory);
+        if (storedRound) setSelectedRound(storedRound);
         if (storedStates) {
           try {
             const parsed = JSON.parse(storedStates);
@@ -231,13 +239,14 @@ export default function HeroSection({
               examType: storedExamType || 'NEET_UG',
               course: storedCourse || 'MBBS',
               category: storedCategory || 'ALL',
+              round: storedRound || 'Round 1',
               states: (() => {
-                if (!storedStates) return ['KA'];
+                if (!storedStates) return mode === 'allstate' ? ['AI'] : ['KA'];
                 try {
                   const parsed = JSON.parse(storedStates);
-                  return Array.isArray(parsed) ? parsed : ['KA'];
+                  return Array.isArray(parsed) ? parsed : (mode === 'allstate' ? ['AI'] : ['KA']);
                 } catch {
-                  return ['KA'];
+                  return mode === 'allstate' ? ['AI'] : ['KA'];
                 }
               })(),
             });
@@ -256,10 +265,6 @@ export default function HeroSection({
     }
   }, []);
 
-  // When the person jumps from a rank result to the College Predictor tab,
-  // carry the predicted rank + exam over AND auto-run the search right away
-  // (course/category/state stay at their current default selections), so the
-  // person lands straight on results without clicking Predict again.
   const goToCollegeTab = () => {
     setActiveTab('college');
 
@@ -271,7 +276,9 @@ export default function HeroSection({
       const defaultCourse = courses && courses.length > 0 ? courses[0].code : 'MBBS';
       setSelectedCourse(defaultCourse);
       setSelectedCategory('UR');
-      setSelectedStates(['KA']);
+      const statesToUse = selectedStates && selectedStates.length > 0 ? selectedStates : (mode === 'allstate' ? ['AI'] : ['KA']);
+      setSelectedStates(statesToUse);
+      setSelectedRound('Round 1');
 
       setCollegeResult(null);
       setSelectedCollegesForCounselling([]);
@@ -284,10 +291,11 @@ export default function HeroSection({
         localStorage.removeItem('predict_states');
         localStorage.removeItem('predict_course');
         localStorage.removeItem('predict_category');
+        localStorage.removeItem('predict_round');
         localStorage.setItem('predict_rank', rStr);
         localStorage.setItem('predict_examType', rankExamType);
       }
-      executeCollegeSearch(rStr, rankExamType, defaultCourse, 'UR', ['KA']);
+      executeCollegeSearch(rStr, rankExamType, defaultCourse, 'UR', statesToUse, 'Round 1');
       scrollToResults();
     }
   };
@@ -297,7 +305,8 @@ export default function HeroSection({
     eStr: string,
     cStr: string,
     catStr: string,
-    sArr: string[]
+    sArr: string[],
+    rRoundStr: string = 'Round 1'
   ) => {
     const rankNum = parseInt(rStr, 10);
     if (isNaN(rankNum) || rankNum <= 0) {
@@ -322,6 +331,7 @@ export default function HeroSection({
           courses: coursesToUse,
           category: catStr,
           states: sArr,
+          round: rRoundStr,
         }),
       });
 
@@ -330,13 +340,14 @@ export default function HeroSection({
         setCollegeError(data.error || 'Failed to predict colleges.');
       } else {
         setCollegeResult(data);
-        setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, category: catStr, states: sArr });
+        setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, category: catStr, states: sArr, round: rRoundStr });
         scrollToResults();
         if (typeof window !== 'undefined') {
           localStorage.setItem('predict_rank', rStr);
           localStorage.setItem('predict_examType', eStr);
           localStorage.setItem('predict_course', cStr);
           localStorage.setItem('predict_category', catStr);
+          localStorage.setItem('predict_round', rRoundStr);
           localStorage.setItem('predict_states', JSON.stringify(sArr));
           localStorage.setItem('collegeList', JSON.stringify(data));
           localStorage.setItem('college_prediction_results', JSON.stringify(data));
@@ -356,7 +367,7 @@ export default function HeroSection({
       localStorage.removeItem('selectedColleges');
       localStorage.removeItem('selectCollege');
     }
-    executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates);
+    executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound);
   };
 
   const toggleCollegeSelection = (college: any) => {
@@ -419,7 +430,7 @@ export default function HeroSection({
       const name = c.college_name || c.name || 'Medical College';
       const key = c.college_id || name;
       const state = c.state_name || c.state || 'All India';
-      const type = c.college_type || c.type || 'Government';
+      const type = c.college_type || c.collegeType || c.type || 'Government';
 
       let extractedCutoffs: any[] = [];
       let counsellingInfo = c.counsellingDetail || null;
@@ -477,9 +488,17 @@ export default function HeroSection({
           closest_cutoff: topCutoff,
           counsellingDetail: counsellingInfo,
           cutoffs: extractedCutoffs,
+          allRoundCutoffs: c.allRoundCutoffs || null,
+          overallRangeStr: c.overallRangeStr || null,
         });
       } else {
         const existing = map.get(key);
+        if (!existing.allRoundCutoffs && c.allRoundCutoffs) {
+          existing.allRoundCutoffs = c.allRoundCutoffs;
+        }
+        if (!existing.overallRangeStr && c.overallRangeStr) {
+          existing.overallRangeStr = c.overallRangeStr;
+        }
         if (!existing.counsellingDetail && counsellingInfo) {
           existing.counsellingDetail = counsellingInfo;
         }
@@ -556,6 +575,59 @@ export default function HeroSection({
         </div>
 
         <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 grow">
+          {infoModalCollege.allRoundCutoffs && (
+            <div className="bg-slate-50/90 rounded-2xl sm:rounded-3xl border border-slate-200 overflow-hidden shadow-xs space-y-0">
+              <div
+                className="px-4 sm:px-5 py-3 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2"
+                style={{ background: BRAND_GRADIENT }}
+              >
+                <h4 className="font-black text-black text-sm">All Rounds &amp; Categories Cutoff Matrix</h4>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 text-black px-2.5 py-0.5 rounded-full">
+                  UgMasterCollegeList Dataset
+                </span>
+              </div>
+              <div className="p-3 sm:p-4 overflow-x-auto">
+                <table className="w-full text-left text-xs min-w-[500px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-100/80 text-slate-700 font-extrabold">
+                      <th className="p-2.5">Counselling Round</th>
+                      <th className="p-2.5 text-indigo-700">General (UR)</th>
+                      <th className="p-2.5 text-indigo-700">OBC-NCL</th>
+                      <th className="p-2.5 text-indigo-700">EWS</th>
+                      <th className="p-2.5 text-indigo-700">SC</th>
+                      <th className="p-2.5 text-indigo-700">ST</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {['Round 1', 'Round 2', 'Round 3', 'Stray'].map((rnd) => {
+                      const rData = infoModalCollege.allRoundCutoffs[rnd] || {};
+                      return (
+                        <tr key={rnd} className="hover:bg-slate-50 font-semibold">
+                          <td className="p-2.5 font-black text-slate-800">{rnd}</td>
+                          <td className="p-2.5 font-mono font-bold text-slate-900">
+                            {rData['Gen'] ? `AIR ~${fmt(rData['Gen'])}` : '—'}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-slate-900">
+                            {rData['OBC-NCL'] ? `AIR ~${fmt(rData['OBC-NCL'])}` : '—'}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-slate-900">
+                            {rData['EWS'] ? `AIR ~${fmt(rData['EWS'])}` : '—'}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-slate-900">
+                            {rData['SC'] ? `AIR ~${fmt(rData['SC'])}` : '—'}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-slate-900">
+                            {rData['ST'] ? `AIR ~${fmt(rData['ST'])}` : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {(() => {
             const ALL_NEET_CATS = [
               { code: 'UR', name: 'General (UR)', factor: 1.0 },
@@ -1223,7 +1295,7 @@ export default function HeroSection({
 
                     {/* Filter Drawer Panel */}
                     {isFilterOpen && (
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in duration-200">
+                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in duration-200">
                         <div>
                           <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
                             Admission Chance
@@ -1242,22 +1314,6 @@ export default function HeroSection({
 
                         <div>
                           <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            Counselling Round
-                          </label>
-                          <select
-                            value={roundFilter}
-                            onChange={(e) => setRoundFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All Counselling Rounds</option>
-                            <option value="Round 1">Round 1</option>
-                            <option value="Round 2">Round 2</option>
-                            <option value="Round 3">Round 3 / Mop-up</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
                             College Type
                           </label>
                           <select
@@ -1271,6 +1327,43 @@ export default function HeroSection({
                             <option value="Deemed">Deemed University</option>
                           </select>
                         </div>
+
+                        <div>
+                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                            Counselling Round
+                          </label>
+                          <select
+                            value={roundFilter}
+                            onChange={(e) => setRoundFilter(e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
+                          >
+                            <option value="all">All Rounds</option>
+                            <option value="Round 1">Round 1</option>
+                            <option value="Round 2">Round 2</option>
+                            <option value="Round 3">Round 3 / Mop-up</option>
+                            <option value="Stray">Stray Vacancy Round</option>
+                          </select>
+                        </div>
+
+                        {roundFilter !== 'all' && selectedCategory === 'ALL' && (
+                          <div>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                              Round Category
+                            </label>
+                            <select
+                              value={roundCategoryFilter}
+                              onChange={(e) => setRoundCategoryFilter(e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
+                            >
+                              <option value="all">All Categories</option>
+                              <option value="Gen">General (UR)</option>
+                              <option value="OBC-NCL">OBC-NCL</option>
+                              <option value="EWS">EWS</option>
+                              <option value="SC">SC</option>
+                              <option value="ST">ST</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1285,15 +1378,38 @@ export default function HeroSection({
                         }
 
                         if (roundFilter !== 'all') {
-                          const hasRound = (c.cutoffs || []).some((cut: any) => {
-                            const rStr = (cut.round || cut.round_name || 'Round 1').toLowerCase();
-                            return rStr.includes(roundFilter.toLowerCase());
-                          });
-                          if ((c.cutoffs || []).length > 0 && !hasRound) return false;
+                          let targetCat: string | null = null;
+                          if (selectedCategory !== 'ALL') {
+                            targetCat = selectedCategory === 'UR' ? 'Gen' : selectedCategory;
+                          } else if (roundCategoryFilter !== 'all') {
+                            targetCat = roundCategoryFilter;
+                          }
+
+                          const roundData = c.allRoundCutoffs?.[roundFilter];
+
+                          if (!roundData) return false;
+
+                          const userRankNum = parseInt(collegeRank, 10) || 0;
+
+                          if (targetCat) {
+                            const roundVal = roundData[targetCat];
+                            if (typeof roundVal !== 'number' || roundVal <= 0) {
+                              return false;
+                            }
+                            if (userRankNum > 0 && userRankNum > Math.round(roundVal * 1.15)) {
+                              return false;
+                            }
+                          } else {
+                            const eligibleCutoffs = Object.values(roundData).filter(
+                              (v) => typeof v === 'number' && (v as number) > 0 && (userRankNum <= 0 || userRankNum <= Math.round((v as number) * 1.15))
+                            );
+
+                            if (eligibleCutoffs.length === 0) return false;
+                          }
                         }
 
                         if (typeFilter !== 'all') {
-                          const cType = c.college_type || c.type || 'Government';
+                          const cType = c.college_type || c.collegeType || c.type || 'Government';
                           if (!cType.toLowerCase().includes(typeFilter.toLowerCase())) return false;
                         }
 
@@ -1315,16 +1431,15 @@ export default function HeroSection({
                             matchCourseName(selectedCourse, cut.course_name || cut.course || '')
                           );
 
-                        const hasSpecificStates = selectedStates.filter(code => code !== 'AI').length > 0;
+                        const hasSpecificStates = selectedStates.filter(code => code !== 'AI' && code !== 'ALL').length > 0;
                         const matchesState =
                           !hasSpecificStates ||
                           selectedStates.some((code) => {
-                            if (code === 'AI') return false;
+                            if (code === 'AI' || code === 'ALL') return false;
                             const stateName = (
                               INDIAN_STATES.find((s) => s.code === code)?.name || code
-                            ).toLowerCase();
-                            const collegeState = c.state_name.toLowerCase();
-                            return collegeState.includes(stateName) || stateName.includes(collegeState);
+                            );
+                            return isStateMatched(c.state_name, stateName);
                           });
 
                         return matchesSearch && matchesCourse && matchesState;
@@ -1384,24 +1499,67 @@ export default function HeroSection({
                                   </p>
 
                                   {(() => {
-                                    const courseMap = new Map<string, number>();
-                                    (c.cutoffs || []).forEach((cut: any) => {
-                                      const crs = cut.course_name || cut.course || 'MBBS';
-                                      const r = cut.closing_rank || 0;
-                                      if (matchCourseName(selectedCourse, crs)) {
-                                        if (!courseMap.has(crs) || (r > 0 && r < courseMap.get(crs)!)) {
-                                          courseMap.set(crs, r);
+                                    const isRoundActive = roundFilter !== 'all';
+                                    const categoryCodeMap: Record<string, string> = {
+                                      'Gen': 'General',
+                                      'OBC-NCL': 'OBC',
+                                      'EWS': 'EWS',
+                                      'SC': 'SC',
+                                      'ST': 'ST',
+                                    };
+
+                                    if (isRoundActive) {
+                                      const roundData = c.allRoundCutoffs?.[roundFilter] || {};
+
+                                      let effectiveCatKey: string | null = null;
+                                      if (selectedCategory !== 'ALL') {
+                                        effectiveCatKey = selectedCategory === 'UR' ? 'Gen' : selectedCategory;
+                                      } else if (roundCategoryFilter !== 'all') {
+                                        effectiveCatKey = roundCategoryFilter;
+                                      }
+
+                                      if (effectiveCatKey) {
+                                        const roundVal = roundData[effectiveCatKey];
+                                        if (typeof roundVal === 'number' && roundVal > 0) {
+                                          return (
+                                            <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200">
+                                                <span>{roundFilter} ({categoryCodeMap[effectiveCatKey] || effectiveCatKey}):</span>
+                                                <span className="font-mono text-indigo-600">AIR ~{fmt(roundVal)}</span>
+                                              </span>
+                                            </div>
+                                          );
+                                        }
+                                      } else {
+                                        const userRankNum = parseInt(collegeRank, 10) || 0;
+                                        const validEntries = Object.entries(roundData).filter(
+                                          ([_, v]) => typeof v === 'number' && (v as number) > 0 && (userRankNum <= 0 || userRankNum <= Math.round((v as number) * 1.15))
+                                        );
+
+                                        if (validEntries.length > 0) {
+                                          return (
+                                            <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                              {validEntries.map(([catKey, val]) => (
+                                                <span
+                                                  key={catKey}
+                                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200"
+                                                >
+                                                  <span>{roundFilter} ({categoryCodeMap[catKey] || catKey}):</span>
+                                                  <span className="font-mono text-indigo-600">AIR ~{fmt(val as number)}</span>
+                                                </span>
+                                              ))}
+                                            </div>
+                                          );
                                         }
                                       }
-                                    });
-                                    const courseList = Array.from(courseMap.entries());
+                                    }
 
-                                    if (courseList.length === 0) {
-                                      const displayCourse = selectedCourse === 'ALL' ? 'MBBS' : selectedCourse;
+                                    if (c.overallRangeStr) {
                                       return (
-                                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                                          <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-indigo-50 text-indigo-700 border border-indigo-150">
-                                            {displayCourse}: AIR ~{fmt(c.closest_cutoff)}
+                                        <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 text-slate-800 border border-slate-200">
+                                            <span>Overall Rank Range:</span>
+                                            <span className="font-mono text-slate-900">{c.overallRangeStr}</span>
                                           </span>
                                         </div>
                                       );
@@ -1409,17 +1567,10 @@ export default function HeroSection({
 
                                     return (
                                       <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-                                        {courseList.map(([crsName, rankVal]) => (
-                                          <span
-                                            key={crsName}
-                                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black bg-indigo-50 text-indigo-800 border border-indigo-150"
-                                          >
-                                            <span>{crsName}:</span>
-                                            <span className="font-mono text-indigo-600">
-                                              AIR ~{fmt(rankVal || c.closest_cutoff)}
-                                            </span>
-                                          </span>
-                                        ))}
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-150">
+                                          <span>MBBS:</span>
+                                          <span className="font-mono text-indigo-600">AIR ~{fmt(c.closest_cutoff)}</span>
+                                        </span>
                                       </div>
                                     );
                                   })()}
@@ -1439,10 +1590,33 @@ export default function HeroSection({
                                   {c.best_chance === 'High' ? 'High Chance' : c.best_chance === 'Medium' ? 'Medium Chance' : 'Low Chance'}
                                 </span>
 
-                                <span className="text-black-500 font-extrabold text-xs whitespace-nowrap">
-                                  Closing Cutoff:{' '}
-                                  <b className="text-slate-900 font-mono text-sm ml-1">{fmt(c.closest_cutoff)}</b>
-                                </span>
+                                {(() => {
+                                  let displayCutoff = c.closest_cutoff;
+                                  const isRoundActive = roundFilter !== 'all';
+                                  let effectiveCatKey: string | null = null;
+                                  if (selectedCategory !== 'ALL') {
+                                    effectiveCatKey = selectedCategory === 'UR' ? 'Gen' : selectedCategory;
+                                  } else if (roundCategoryFilter !== 'all') {
+                                    effectiveCatKey = roundCategoryFilter;
+                                  }
+
+                                  if (isRoundActive && c.allRoundCutoffs?.[roundFilter]) {
+                                    const roundData = c.allRoundCutoffs[roundFilter];
+                                    if (effectiveCatKey && typeof roundData[effectiveCatKey] === 'number') {
+                                      displayCutoff = roundData[effectiveCatKey];
+                                    } else {
+                                      const nums = Object.values(roundData).filter((v): v is number => typeof v === 'number' && v > 0);
+                                      if (nums.length > 0) displayCutoff = Math.min(...nums);
+                                    }
+                                  }
+
+                                  return (
+                                    <span className="text-slate-600 font-extrabold text-xs whitespace-nowrap">
+                                      Closing Cutoff:{' '}
+                                      <b className="text-slate-900 font-mono text-sm ml-1">{fmt(displayCutoff)}</b>
+                                    </span>
+                                  );
+                                })()}
 
                                 <button
                                   type="button"

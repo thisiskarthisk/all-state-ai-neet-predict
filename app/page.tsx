@@ -53,7 +53,7 @@ export default function HomePage() {
   const [examType, setExamType] = useState('NEET_UG');
   const [selectedCourse, setSelectedCourse] = useState('MBBS');
   const [selectedCategory, setSelectedCategory] = useState('UR');
-  const [selectedStates, setSelectedStates] = useState<string[]>(['KA']);
+  const [selectedStates, setSelectedStates] = useState<string[]>(['ALL']);
 
   const [collegeResult, setCollegeResult] = useState<any>(null);
   const [collegeLoading, setCollegeLoading] = useState(false);
@@ -79,7 +79,7 @@ export default function HomePage() {
   const isHomePage = pathname === '/';
   const isFaqPage = pathname.includes('/faq');
 
-  const fmt = (n: number) => n?.toLocaleString('en-IN') || '—';
+  const fmt = (n?: number) => typeof n === 'number' && !isNaN(n) ? Math.round(n).toLocaleString('en-IN') : '—';
 
   const getMaxMarks = (exam: string) => {
     if (exam === 'NEET_PG') return 800;
