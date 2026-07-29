@@ -161,9 +161,25 @@ export default function HeroSection({
   // Filter drawer controls
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [chanceFilter, setChanceFilter] = useState<'all' | 'High' | 'Medium' | 'Reach'>('all');
-  const [roundFilter, setRoundFilter] = useState<'all' | 'Round 1' | 'Round 2' | 'Round 3' | 'Stray'>('Round 1');
+  const [roundFilter, setRoundFilter] = useState<'all' | 'Round 1' | 'Round 2' | 'Round 3' | 'Stray'>('all');
   const [roundCategoryFilter, setRoundCategoryFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'Government' | 'Private' | 'Deemed'>('all');
+
+  // Automatically update default roundFilter based on selected states:
+  // All States / AI -> 'all' (All Rounds)
+  // Specific State -> 'Round 1'
+  useEffect(() => {
+    const isAllStates =
+      selectedStates.length === 0 ||
+      selectedStates.includes('AI') ||
+      selectedStates.includes('ALL');
+
+    if (isAllStates) {
+      setRoundFilter('all');
+    } else {
+      setRoundFilter('Round 1');
+    }
+  }, [selectedStates]);
 
   const scrollToResults = () => {
     setTimeout(() => {
