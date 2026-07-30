@@ -79,7 +79,14 @@ export default function HomePage() {
   const isHomePage = pathname === '/';
   const isFaqPage = pathname.includes('/faq');
 
-  const fmt = (n?: number) => typeof n === 'number' && !isNaN(n) ? Math.round(n).toLocaleString('en-IN') : '—';
+  const fmt = (n?: number | string) => {
+    if (n === null || n === undefined) return '—';
+    if (typeof n === 'number') {
+      if (isNaN(n)) return '—';
+      return Math.trunc(n).toLocaleString('en-IN');
+    }
+    return String(n).replace(/\.\d+/g, '');
+  };
 
   const getMaxMarks = (exam: string) => {
     if (exam === 'NEET_PG') return 800;

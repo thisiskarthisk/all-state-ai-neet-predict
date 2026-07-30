@@ -44,38 +44,112 @@ export async function POST(req: Request) {
     const accessToken = await getZohoAccessToken();
     const apiUrl = process.env.ZOHO_API_URL || 'https://www.zohoapis.in';
 
-    // 2. Format Selected Colleges list into clean text for CRM Description
+    // 2. Format Selected Colleges & registration Date/Time for Zoho CRM fields and Description
+    const now = new Date();
+    const isoDateTime = now.toISOString(); // Valid ISO 8601 datetime for Zoho CRM datetime field type
+    const todayDate = isoDateTime.split('T')[0]; // Valid YYYY-MM-DD date for Zoho CRM date field type
+    const cleanDateTimeStr = `${todayDate} ${now.toTimeString().split(' ')[0]}`;
+
+    // Extract pure integer number for Neet_Rank (Zoho CRM expects integer data type)
+    const rawRank = studentProfile?.rank;
+    let intRank: number | null = null;
+    if (rawRank) {
+      const digitsOnly = String(rawRank).replace(/\D/g, '');
+      if (digitsOnly) {
+        const parsed = parseInt(digitsOnly, 10);
+        if (!isNaN(parsed)) intRank = parsed;
+      }
+    }
+
+    const collegeNamesList = (selectedColleges || [])
+      .map((c: any) => (typeof c === 'string' ? c : (c.college_name || c.name)))
+      .filter(Boolean);
+    const collegeNamesStr = collegeNamesList.length > 0 ? collegeNamesList.join(', ') : 'None';
+
     const collegeListStr = (selectedColleges || [])
       .map((c: any, idx: number) => {
-        const cName = c.college_name || c.name || `College ${idx + 1}`;
-        const cState = c.state_name || c.state || '';
-        const cutoff = c.closest_cutoff ? ` (Closing Rank: ~${c.closest_cutoff})` : '';
-        return `${idx + 1}. ${cName} ${cState ? `[${cState}]` : ''}${cutoff}`;
+        const cName = typeof c === 'string' ? c : (c.college_name || c.name || `College ${idx + 1}`);
+        return `${idx + 1}. ${cName}`;
       })
       .join('\n');
 
+    const courseVal = studentProfile?.course || 'MBBS';
+
+    const cleanState = (st: string) => {
+      if (!st) return 'Karnataka';
+      if (st.includes('Karnataka') || st.startsWith('KA')) return 'Karnataka';
+      return st.replace(/\s*\([^)]*\)/g, '').trim() || st;
+    };
+
+    const homeStateVal = cleanState(homeState || 'Karnataka');
+    const targetStateVal = cleanState(studentProfile?.states || homeStateVal);
+
     const descriptionNotes = [
+      `Name: ${name || 'Karthi'}`,
+      `Email: ${email || 'N/A'}`,
+      `Phone: ${mobileNo || 'N/A'}`,
       `NEET Rank: ${studentProfile?.rank || 'N/A'}`,
-      `NEET Exam: ${studentProfile?.exam || 'NEET UG'}`,
-      `Target Course: ${studentProfile?.course || 'MBBS'}`,
-      `Category: ${studentProfile?.category || 'General'}`,
-      `Home State: ${homeState || 'Karnataka'}`,
-      `Preferred States: ${studentProfile?.states || 'N/A'}`,
+      `NEET Course: ${courseVal}`,
+      `Target State: ${targetStateVal}`,
+      `Home State: ${homeStateVal}`,
       `\nSelected Colleges (${(selectedColleges || []).length}):\n${collegeListStr || 'None selected'}`,
     ].join('\n');
 
-    // 3. Prepare Lead payload for Zoho CRM Leads module
+    // 3. Prepare Lead payload for Zoho CRM Leads module (Counselling Student Information)
+    const leadDataObj: Record<string, any> = {
+      Last_Name: name || 'Karthi',
+      First_Name: name || 'Karthi',
+      Student_Name: name || 'Karthi',
+      Student_name: name || 'Karthi',
+      Email: email || '',
+      Phone: mobileNo || '',
+      Mobile: mobileNo || '',
+      Lead_Source: leadSource,
+
+      // Neet Courses / Couses (all possible Zoho CRM API key variations)
+      Neet_Couses: courseVal,
+      NEET_Couses: courseVal,
+      Neet_Couse: courseVal,
+      NEET_Couse: courseVal,
+      Neet_Course: courseVal,
+      Neet_Courses: courseVal,
+      NEET_Course: courseVal,
+      NEET_Courses: courseVal,
+      Course: courseVal,
+      Courses: courseVal,
+      Target_Course: courseVal,
+
+      // Target State variations
+      Target_State: targetStateVal,
+      Target_State1: targetStateVal,
+      Target_state: targetStateVal,
+      TARGET_STATE: targetStateVal,
+      Preferred_State: targetStateVal,
+      Preferred_States: targetStateVal,
+
+      // Home State variations
+      Home_State: homeStateVal,
+      Home_State1: homeStateVal,
+      Home_state: homeStateVal,
+      HOME_STATE: homeStateVal,
+      State: homeStateVal,
+
+      // College Name variations
+      College_Name: collegeNamesStr,
+      College_name: collegeNamesStr,
+      Selected_Colleges: collegeNamesStr,
+
+      Description: descriptionNotes,
+    };
+
+    // Only attach Neet_Rank if we have a valid integer number (Zoho CRM expects integer)
+    if (intRank !== null) {
+      leadDataObj.Neet_Rank = intRank;
+      leadDataObj.NEET_Rank = intRank;
+    }
+
     const leadPayload = {
-      data: [
-        {
-          Last_Name: name || 'NEET Candidate',
-          Email: email || '',
-          Phone: mobileNo || '',
-          Mobile: mobileNo || '',
-          Lead_Source: leadSource,
-          Description: descriptionNotes,
-        },
-      ],
+      data: [leadDataObj],
       trigger: ['approval', 'workflow', 'blueprint'],
     };
 

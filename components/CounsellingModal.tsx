@@ -261,262 +261,189 @@ export default function CounsellingModal({
     return msg;
   };
 
+  const generateAndDownloadPDF = async () => {
+    const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
+    const homeStateName = homeStateObj ? homeStateObj.name : homeState;
+
+    let collegesToRenderList = selectedColleges.length > 0
+      ? selectedColleges
+      : propSelectedColleges && propSelectedColleges.length > 0
+      ? propSelectedColleges
+      : [];
+
+    if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
+      try {
+        const raw =
+          localStorage.getItem('selectCollege') ||
+          localStorage.getItem('selectedColleges') ||
+          localStorage.getItem('collegeList') ||
+          localStorage.getItem('college_prediction_results');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) collegesToRenderList = parsed;
+        }
+      } catch {}
+    }
+
+    const collegesToRender = ensureCollegeDetails(collegesToRenderList);
+
+    const host = document.createElement('div');
+    host.style.position = 'fixed';
+    host.style.left = '0';
+    host.style.top = '0';
+    host.style.opacity = '0';
+    host.style.pointerEvents = 'none';
+    host.style.zIndex = '-1';
+
+    const container = document.createElement('div');
+    container.style.width = '700px';
+    container.style.backgroundColor = '#ffffff';
+    container.style.color = '#0f172a';
+    container.style.fontFamily = 'Arial, sans-serif';
+    host.appendChild(container);
+
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+
+      container.innerHTML = buildHTML({
+        name: name || 'Medical Student',
+        studentProfile: {
+          rank: rank || 'AIR 106',
+          course: course || 'MBBS',
+          exam: examType || 'NEET UG',
+          category: category || 'General / All Categories',
+          quota: 'State / AIQ Quota',
+          states: homeStateName,
+        },
+        selectedColleges: collegesToRender,
+      });
+
+      document.body.appendChild(host);
+
+      const images = Array.from(container.querySelectorAll('img'));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      if (container.offsetHeight) {
+        const worker = html2pdf().from(container).set({
+          margin: 6,
+          filename: `NEET-Counselling-Plan.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        });
+
+        const pdfBlob = await worker.outputPdf('blob');
+        if (pdfBlob) {
+          const downloadUrl = window.URL.createObjectURL(pdfBlob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `NEET-Counselling-Plan.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
+        }
+      }
+    } catch (pdfErr) {
+      console.warn('PDF download warning:', pdfErr);
+    } finally {
+      if (host.parentNode) host.parentNode.removeChild(host);
+    }
+  };
+
   // const handleSubmit = async (e: React.FormEvent) => {
   //   e.preventDefault();
   //   setLoading(true);
   //   setError('');
 
-  //   const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
-  //   const homeStateName = homeStateObj ? homeStateObj.name : homeState;
-  //   const formattedMessage = formatWhatsAppMessage();
   //   let cleanMobile = (mobile || '').replace(/\D/g, '');
   //   if (cleanMobile.length === 10) cleanMobile = `91${cleanMobile}`;
-  //   const waUrl = `https://api.whatsapp.com/send?phone=${cleanMobile}&text=${encodeURIComponent(formattedMessage)}`;
+
+  //   const shortCode = cleanMobile.slice(-5) || '12345';
+  //   const waUrl = `https://wa.me/919176153445?text=${encodeURIComponent(`Hi CC-${shortCode}`)}`;
   //   setGeneratedWaUrl(waUrl);
 
   //   try {
-  //     // 1. Generate PDF Blob in frontend (browser) using enriched selectedColleges
-  //     /* let pdfBlob: Blob | null = null;
-  //     try {
-  //       const html2pdf = (await import('html2pdf.js')).default;
-  //       const container = document.createElement('div');
-  //       container.style.position = 'absolute';
-  //       container.style.left = '0';
-  //       container.style.top = '0';
-  //       container.style.width = '700px';
-  //       container.style.zIndex = '-1';
-  //       container.style.opacity = '0.99';
-  //       container.style.backgroundColor = '#ffffff';
-  //       container.style.color = '#0f172a';
-  //       container.style.fontFamily = 'Arial, sans-serif';
-
-  //       let collegesToRenderList = selectedColleges.length > 0
-  //         ? selectedColleges
-  //         : propSelectedColleges && propSelectedColleges.length > 0
-  //         ? propSelectedColleges
-  //         : [];
-
-  //       if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
-  //         try {
-  //           const raw = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges') || localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
-  //           if (raw) {
-  //             const parsed = JSON.parse(raw);
-  //             if (Array.isArray(parsed) && parsed.length > 0) {
-  //               collegesToRenderList = parsed;
-  //             }
-  //           }
-  //         } catch {}
-  //       }
-
-  //       const collegesToRender = ensureCollegeDetails(collegesToRenderList);
-
-  //       container.innerHTML = buildHTML({
-  //         name: name || 'Medical Student',
-  //         studentProfile: {
-  //           rank: rank || 'AIR 106',
-  //           course: course || 'MBBS',
-  //           exam: examType || 'NEET UG',
-  //           category: category || 'General / All Categories',
-  //           quota: 'State / AIQ Quota',
-  //           states: homeStateName,
-  //         },
-  //         selectedColleges: collegesToRender,
-  //       });
-
-  //       document.body.appendChild(container);
-
-  //       // Wait 200ms for browser to compute layout & paint container before html2canvas capture
-  //       await new Promise((resolve) => setTimeout(resolve, 200));
-
-  //       const opt = {
-  //         margin: 6,
-  //         filename: `counselling-plan-${cleanMobile}.pdf`,
-  //         image: { type: 'jpeg' as const, quality: 0.98 },
-  //         html2canvas: {
-  //           scale: 2,
-  //           useCORS: true,
-  //           logging: false,
-  //           scrollX: 0,
-  //           scrollY: 0,
-  //           windowWidth: 800,
-  //         },
-  //         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
-  //       };
-
-  //       const worker = html2pdf().from(container).set(opt);
-  //       pdfBlob = await worker.outputPdf('blob');
-  //       //document.body.removeChild(container);
-
-  //       // Instantly download generated PDF in browser
-  //       if (pdfBlob) {
-  //         const downloadUrl = window.URL.createObjectURL(pdfBlob);
-  //         const link = document.createElement('a');
-  //         link.href = downloadUrl;
-  //         link.download = `NEET-Counselling-Plan-${cleanMobile}.pdf`;
-  //         document.body.appendChild(link);
-  //         link.click();
-  //         document.body.removeChild(link);
-  //         setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
-  //         return;
-  //       }
-  //     } catch (pdfErr) {
-  //       console.warn('Frontend PDF generation warning:', pdfErr);
-  //     } */
-  //     let pdfBlob: Blob | null = null;
-
-  //     // html2pdf clones the element passed to .from() into its own measuring
-  //     // container and sizes the canvas from that container's height. Any
-  //     // position/z-index we set on that element is copied onto the clone, and an
-  //     // out-of-flow clone collapses the container to height 0 -> blank page.
-  //     // So: hide the *wrapper*, and hand html2pdf a plain in-flow child.
-  //     const host = document.createElement('div');
-  //     host.style.position = 'fixed';
-  //     host.style.left = '0';
-  //     host.style.top = '0';
-  //     host.style.opacity = '0';
-  //     host.style.pointerEvents = 'none';
-  //     host.style.zIndex = '-1';
-
-  //     const container = document.createElement('div');
-  //     container.style.width = '700px';
-  //     container.style.backgroundColor = '#ffffff';
-  //     container.style.color = '#0f172a';
-  //     container.style.fontFamily = 'Arial, sans-serif';
-  //     host.appendChild(container);
-
   //     let collegesToRenderList = selectedColleges.length > 0
   //       ? selectedColleges
   //       : propSelectedColleges && propSelectedColleges.length > 0
   //       ? propSelectedColleges
   //       : [];
 
-  //     // console.log("collegesToRenderList" , collegesToRenderList)
-
   //     if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
   //       try {
-  //         const raw = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges') || localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
-  //         console.log("raw" , raw)
-
+  //         const raw =
+  //           localStorage.getItem('selectCollege') ||
+  //           localStorage.getItem('selectedColleges') ||
+  //           localStorage.getItem('collegeList') ||
+  //           localStorage.getItem('college_prediction_results');
   //         if (raw) {
   //           const parsed = JSON.parse(raw);
-  //           if (Array.isArray(parsed) && parsed.length > 0) {
-  //             collegesToRenderList = parsed;
-  //           }
+  //           if (Array.isArray(parsed) && parsed.length > 0) collegesToRenderList = parsed;
   //         }
   //       } catch {}
   //     }
 
   //     const collegesToRender = ensureCollegeDetails(collegesToRenderList);
 
+  //     const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
+  //     const homeStateName = homeStateObj ? homeStateObj.name : homeState;
+
+  //     // 1. Send Email Report
   //     if (email) {
   //       try {
   //         await fetch('/api/counselling/send-email', {
   //           method: 'POST',
   //           headers: { 'Content-Type': 'application/json' },
   //           body: JSON.stringify({
-  //             name: name || 'Student', email: email, mobileNo: mobile,
+  //             name: name || 'Student',
+  //             email,
+  //             mobileNo: mobile,
+  //             homeState: homeStateName,
   //             studentProfile: { rank, course, exam: examType, category, states: preferredStates },
-  //             selectedColleges: collegesToRender, type: 'counselling',
+  //             selectedColleges: collegesToRender,
+  //             type: 'counselling',
   //           }),
   //         });
-  //       } catch (emailErr) { console.warn('[CounsellingModal] Send email error:', emailErr); }
+  //       } catch (emailErr) {
+  //         console.warn('[CounsellingModal] Send email error:', emailErr);
+  //       }
   //     }
 
-  //     // Temporarily disable WhatsApp messages
-  //     const waMessageDisabled = true;
-
-  //     if (!waMessageDisabled) {
-  //       try {
-  //         const html2pdf = (await import('html2pdf.js')).default;
-
-  //         container.innerHTML = buildHTML({
-  //           name: name || 'Medical Student',
-  //           studentProfile: {
-  //             rank: rank || 'AIR 106',
-  //             course: course || 'MBBS',
-  //             exam: examType || 'NEET UG',
-  //             category: category || 'General / All Categories',
-  //             quota: 'State / AIQ Quota',
-  //             states: homeStateName,
-  //           },
-  //           selectedColleges: collegesToRender,
-  //         });
-
-  //         document.body.appendChild(host);
-
-  //         // Wait for any <img> tags inside the container to load
-  //         const images = Array.from(container.querySelectorAll('img'));
-  //         await Promise.all(images.map(img => {
-  //           if (img.complete) return Promise.resolve();
-  //           return new Promise(resolve => {
-  //             img.onload = resolve;
-  //             img.onerror = resolve; // Resolve on error so it doesn't hang forever
-  //           });
-  //         }));
-
-  //         // Force the browser to calculate layout heights before capturing
-  //         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  //         await new Promise((resolve) => setTimeout(resolve, 100));
-
-  //         // A zero-height source always yields a blank PDF - fail loudly instead.
-  //         if (!container.offsetHeight) {
-  //           throw new Error('PDF source has no layout height - refusing to render a blank page');
-  //         }
-
-  //         const worker = html2pdf().from(container).set({
-  //           margin: 6,
-  //           filename: `counselling-plan-${cleanMobile}.pdf`,
-  //           image: { type: 'jpeg', quality: 0.98 },
-  //           html2canvas: {
-  //             scale: 2,
-  //             useCORS: true,
-  //             allowTaint: true,
-  //             logging: false,
-  //             backgroundColor: '#ffffff',
-  //           },
-  //           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  //         });
-  //         pdfBlob = await worker.outputPdf('blob');
-
-  //         if (pdfBlob) {
-  //           const downloadUrl = window.URL.createObjectURL(pdfBlob);
-  //           const link = document.createElement('a');
-  //           link.href = downloadUrl;
-  //           link.download = `NEET-Counselling-Plan-${cleanMobile}.pdf`;
-  //           document.body.appendChild(link);
-  //           link.click();
-  //           document.body.removeChild(link);
-  //           setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
-  //         }
-  //       } catch (pdfErr) {
-  //         console.warn('Frontend PDF generation warning:', pdfErr);
-  //       } finally {
-  //         if (host.parentNode) {
-  //           host.parentNode.removeChild(host);
-  //         }
-  //       }
-
-  //       // 3. Send PDF Blob and data via multipart/form-data to /api/counselling/generate-and-send
-  //       const formData = new FormData();
-  //       if (pdfBlob) {
-  //         formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
-  //       }
-  //       formData.append('name', name || 'Student');
-  //       formData.append('phone', mobile);
-  //       formData.append('email', email);
-  //       formData.append('homeState', homeState);
-  //       formData.append('rank', rank);
-  //       formData.append('exam', examType);
-  //       formData.append('course', course);
-  //       formData.append('category', category);
-  //       formData.append('states', preferredStates);
-
-  //       // console.log('formData',formData)
-
-  //       await fetch('/api/counselling/generate-and-send', {
+  //     // 2. Push Lead to Zoho CRM
+  //     try {
+  //       await fetch('/api/zoho-crm', {
   //         method: 'POST',
-  //         body: formData,
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           name: name || 'Student',
+  //           email,
+  //           mobileNo: mobile,
+  //           homeState: homeStateName,
+  //           studentProfile: { rank, course, exam: examType, category, states: preferredStates },
+  //           selectedColleges: collegesToRender,
+  //           leadSource: 'Counselling Modal Form',
+  //         }),
   //       });
+  //     } catch (zohoErr) {
+  //       console.warn('[CounsellingModal] Zoho CRM lead push error:', zohoErr);
   //     }
 
   //     onClose();
@@ -529,84 +456,114 @@ export default function CounsellingModal({
   //   }
   // };
 
-  
-  
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    let cleanMobile = (mobile || '').replace(/\D/g, '');
-    if (cleanMobile.length === 10) cleanMobile = `91${cleanMobile}`;
-
     const homeStateObj = INDIAN_STATES.find((s) => s.code === homeState);
     const homeStateName = homeStateObj ? homeStateObj.name : homeState;
+    const formattedMessage = formatWhatsAppMessage();
+    let cleanMobile = (mobile || '').replace(/\D/g, '');
+    if (cleanMobile.length === 10) cleanMobile = `91${cleanMobile}`;
+    const waUrl = `https://api.whatsapp.com/send?phone=${cleanMobile}&text=${encodeURIComponent(formattedMessage)}`;
+    setGeneratedWaUrl(waUrl);
 
     try {
-      let collegesToRenderList = selectedColleges.length > 0
-        ? selectedColleges
-        : propSelectedColleges && propSelectedColleges.length > 0
-        ? propSelectedColleges
-        : [];
+      // 1. Generate PDF Blob in frontend (browser) using enriched selectedColleges
+      /* let pdfBlob: Blob | null = null;
+      try {
+        const html2pdf = (await import('html2pdf.js')).default;
+        const container = document.createElement('div');
+        container.style.position = 'absolute';
+        container.style.left = '0';
+        container.style.top = '0';
+        container.style.width = '700px';
+        container.style.zIndex = '-1';
+        container.style.opacity = '0.99';
+        container.style.backgroundColor = '#ffffff';
+        container.style.color = '#0f172a';
+        container.style.fontFamily = 'Arial, sans-serif';
 
-      if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
-        try {
-          const raw =
-            localStorage.getItem('selectCollege') ||
-            localStorage.getItem('selectedColleges') ||
-            localStorage.getItem('collegeList') ||
-            localStorage.getItem('college_prediction_results');
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) collegesToRenderList = parsed;
-          }
-        } catch {}
-      }
+        let collegesToRenderList = selectedColleges.length > 0
+          ? selectedColleges
+          : propSelectedColleges && propSelectedColleges.length > 0
+          ? propSelectedColleges
+          : [];
 
-      const collegesToRender = ensureCollegeDetails(collegesToRenderList);
-
-      // 1. EMAIL — plain text/data message, no PDF attached
-      if (email) {
-        try {
-          await fetch('/api/counselling/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: name || 'Student',
-              email,
-              mobileNo: mobile,
-              studentProfile: { rank, course, exam: examType, category, states: preferredStates },
-              selectedColleges: collegesToRender,
-              type: 'counselling',
-            }),
-          });
-        } catch (emailErr) {
-          console.warn('[CounsellingModal] Send email error:', emailErr);
+        if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges') || localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                collegesToRenderList = parsed;
+              }
+            }
+          } catch {}
         }
-      }
 
-      // 2. ZOHO CRM — Push Lead to Zoho CRM Leads Module
-      // try {
-      //   await fetch('/api/zoho-crm', {
-      //     method: 'POST',
-      //     headers: { 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({
-      //       name: name || 'Student',
-      //       email,
-      //       mobileNo: mobile,
-      //       homeState,
-      //       studentProfile: { rank, course, exam: examType, category, states: preferredStates },
-      //       selectedColleges: collegesToRender,
-      //       leadSource: 'Counselling Modal Form',
-      //     }),
-      //   });
-      // } catch (zohoErr) {
-      //   console.warn('[CounsellingModal] Zoho CRM lead push error:', zohoErr);
-      // }
+        const collegesToRender = ensureCollegeDetails(collegesToRenderList);
 
-      // 2. Generate the PDF client-side (this file becomes the WhatsApp document)
+        container.innerHTML = buildHTML({
+          name: name || 'Medical Student',
+          studentProfile: {
+            rank: rank || 'AIR 106',
+            course: course || 'MBBS',
+            exam: examType || 'NEET UG',
+            category: category || 'General / All Categories',
+            quota: 'State / AIQ Quota',
+            states: homeStateName,
+          },
+          selectedColleges: collegesToRender,
+        });
+
+        document.body.appendChild(container);
+
+        // Wait 200ms for browser to compute layout & paint container before html2canvas capture
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const opt = {
+          margin: 6,
+          filename: `counselling-plan-${cleanMobile}.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 800,
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+        };
+
+        const worker = html2pdf().from(container).set(opt);
+        pdfBlob = await worker.outputPdf('blob');
+        //document.body.removeChild(container);
+
+        // Instantly download generated PDF in browser
+        if (pdfBlob) {
+          const downloadUrl = window.URL.createObjectURL(pdfBlob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `NEET-Counselling-Plan-${cleanMobile}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
+          return;
+        }
+      } catch (pdfErr) {
+        console.warn('Frontend PDF generation warning:', pdfErr);
+      } */
       let pdfBlob: Blob | null = null;
 
+      // html2pdf clones the element passed to .from() into its own measuring
+      // container and sizes the canvas from that container's height. Any
+      // position/z-index we set on that element is copied onto the clone, and an
+      // out-of-flow clone collapses the container to height 0 -> blank page.
+      // So: hide the *wrapper*, and hand html2pdf a plain in-flow child.
       const host = document.createElement('div');
       host.style.position = 'fixed';
       host.style.left = '0';
@@ -622,87 +579,159 @@ export default function CounsellingModal({
       container.style.fontFamily = 'Arial, sans-serif';
       host.appendChild(container);
 
+      let collegesToRenderList = selectedColleges.length > 0
+        ? selectedColleges
+        : propSelectedColleges && propSelectedColleges.length > 0
+        ? propSelectedColleges
+        : [];
+
+      // console.log("collegesToRenderList" , collegesToRenderList)
+
+      if (collegesToRenderList.length === 0 && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges') || localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
+          console.log("raw" , raw)
+
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              collegesToRenderList = parsed;
+            }
+          }
+        } catch {}
+      }
+
+      const collegesToRender = ensureCollegeDetails(collegesToRenderList);
+
+      if (email) {
+        try {
+          await fetch('/api/counselling/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name || 'Student', email: email, mobileNo: mobile,
+              studentProfile: { rank, course, exam: examType, category, states: preferredStates },
+              selectedColleges: collegesToRender, type: 'counselling',
+            }),
+          });
+        } catch (emailErr) { console.warn('[CounsellingModal] Send email error:', emailErr); }
+      }
+
+
+      // 2. Push Lead to Zoho CRM
       try {
-        const html2pdf = (await import('html2pdf.js')).default;
-
-        container.innerHTML = buildHTML({
-          name: name || 'Medical Student',
-          studentProfile: {
-            rank: rank || 'AIR 106',
-            course: course || 'MBBS',
-            exam: examType || 'NEET UG',
-            category: category || 'General / All Categories',
-            quota: 'State / AIQ Quota',
-            states: homeStateName,
-          },
-          selectedColleges: collegesToRender,
+        await fetch('/api/zoho-crm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name || 'Student',
+            email,
+            mobileNo: mobile,
+            homeState: homeStateName,
+            studentProfile: { rank, course, exam: examType, category, states: preferredStates },
+            selectedColleges: collegesToRender,
+            leadSource: 'Counselling Modal Form',
+          }),
         });
+      } catch (zohoErr) {
+        console.warn('[CounsellingModal] Zoho CRM lead push error:', zohoErr);
+      }
 
-        document.body.appendChild(host);
+      // Temporarily disable WhatsApp messages
+      const waMessageDisabled = true;
 
-        const images = Array.from(container.querySelectorAll('img'));
-        await Promise.all(
-          images.map((img) => {
+      if (!waMessageDisabled) {
+        try {
+          const html2pdf = (await import('html2pdf.js')).default;
+
+          container.innerHTML = buildHTML({
+            name: name || 'Medical Student',
+            studentProfile: {
+              rank: rank || 'AIR 106',
+              course: course || 'MBBS',
+              exam: examType || 'NEET UG',
+              category: category || 'General / All Categories',
+              quota: 'State / AIQ Quota',
+              states: homeStateName,
+            },
+            selectedColleges: collegesToRender,
+          });
+
+          document.body.appendChild(host);
+
+          // Wait for any <img> tags inside the container to load
+          const images = Array.from(container.querySelectorAll('img'));
+          await Promise.all(images.map(img => {
             if (img.complete) return Promise.resolve();
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
               img.onload = resolve;
-              img.onerror = resolve;
+              img.onerror = resolve; // Resolve on error so it doesn't hang forever
             });
-          })
-        );
+          }));
 
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await new Promise((resolve) => setTimeout(resolve, 100));
+          // Force the browser to calculate layout heights before capturing
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
-        if (!container.offsetHeight) {
-          throw new Error('PDF source has no layout height - refusing to render a blank page');
+          // A zero-height source always yields a blank PDF - fail loudly instead.
+          if (!container.offsetHeight) {
+            throw new Error('PDF source has no layout height - refusing to render a blank page');
+          }
+
+          const worker = html2pdf().from(container).set({
+            margin: 6,
+            filename: `counselling-plan-${cleanMobile}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          });
+          pdfBlob = await worker.outputPdf('blob');
+
+          if (pdfBlob) {
+            const downloadUrl = window.URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `NEET-Counselling-Plan-${cleanMobile}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
+          }
+        } catch (pdfErr) {
+          console.warn('Frontend PDF generation warning:', pdfErr);
+        } finally {
+          if (host.parentNode) {
+            host.parentNode.removeChild(host);
+          }
         }
 
-        const worker = html2pdf().from(container).set({
-          margin: 6,
-          filename: `counselling-plan-${cleanMobile}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // 3. Send PDF Blob and data via multipart/form-data to /api/counselling/generate-and-send
+        const formData = new FormData();
+        if (pdfBlob) {
+          formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
+        }
+        formData.append('name', name || 'Student');
+        formData.append('phone', mobile);
+        formData.append('email', email);
+        formData.append('homeState', homeState);
+        formData.append('rank', rank);
+        formData.append('exam', examType);
+        formData.append('course', course);
+        formData.append('category', category);
+        formData.append('states', preferredStates);
+
+        // console.log('formData',formData)
+
+        await fetch('/api/counselling/generate-and-send', {
+          method: 'POST',
+          body: formData,
         });
-
-        pdfBlob = await worker.outputPdf('blob');
-      } catch (pdfErr) {
-        console.warn('Frontend PDF generation warning:', pdfErr);
-      } finally {
-        if (host.parentNode) host.parentNode.removeChild(host);
-      }
-
-      if (!pdfBlob) {
-        throw new Error('PDF could not be generated, cannot send WhatsApp document');
-      }
-
-      // 3. WHATSAPP — send PDF to backend, backend pushes it via WATI
-      const formData = new FormData();
-      formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
-      formData.append('name', name || 'Student');
-      formData.append('phone', cleanMobile);
-      formData.append('email', email);
-      formData.append('homeState', homeState);
-      formData.append('rank', rank);
-      formData.append('exam', examType);
-      formData.append('course', course);
-      formData.append('category', category);
-      formData.append('states', preferredStates);
-
-      const waRes = await fetch('/api/counselling/generate-and-send', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!waRes.ok) {
-        throw new Error('WhatsApp send failed');
       }
 
       onClose();
@@ -714,7 +743,8 @@ export default function CounsellingModal({
       setLoading(false);
     }
   };
-  
+
+
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/75 backdrop-blur-sm overflow-y-auto overscroll-contain"
@@ -746,10 +776,10 @@ export default function CounsellingModal({
             <div className="text-center pr-8">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase mb-2">
                 {isHandbook ? <Download className="w-3.5 h-3.5" /> : <MessageSquare className="w-3.5 h-3.5" />}
-                {isHandbook ? 'Free NEET Handbook' : 'Email Counselling Alert'}
+                {isHandbook ? 'Free NEET Handbook' : 'Confirm Your Information'}
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug break-words">
-                {isHandbook ? 'Download Free NEET Counselling Guide' : 'Get Your Counselling Kit on Email'}
+                {isHandbook ? 'Download Free NEET Counselling Guide' : 'Download Your Counselling Kit'}
               </h2>
             </div>
           )}
@@ -757,29 +787,40 @@ export default function CounsellingModal({
 
         {/* ===== SCROLLABLE CONTENT ===== */}
         {success ? (
-          <div className="overflow-y-auto overscroll-contain flex-1 min-h-0 px-5 sm:px-7 md:px-8 py-6 sm:py-8 text-center space-y-4">
+          <div className="overflow-y-auto overscroll-contain flex-1 min-h-0 px-5 sm:px-7 md:px-8 py-6 sm:py-8 text-center space-y-5">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-400">
               <CheckCircle2 className="w-10 h-10" />
             </div>
 
             <h4 className="font-extrabold text-white text-xl sm:text-2xl leading-tight">
-              Your Personalized Medical College Report Is Being Prepared.
+              🎉 Your report is ready.
             </h4>
 
-            <div className="text-sm text-slate-300 font-medium max-w-md mx-auto leading-relaxed space-y-3">
-              <p className="text-emerald-400 font-bold text-base">Thank you for sharing your details.</p>
-              <p>We're generating a personalized report based on your NEET Rank, Category, and College Preferences.</p>
-              <p className="text-slate-400 text-xs font-semibold">
-                You'll receive it shortly on your Email{email ? <span className="text-white font-bold"> ({email})</span> : ''}.
-              </p>
+            <p className="text-sm text-slate-300 font-semibold max-w-md mx-auto leading-relaxed">
+              Click below to receive it instantly on WhatsApp.
+            </p>
+
+            <div className="pt-2">
+              <a
+                href={generatedWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  generateAndDownloadPDF();
+                }}
+                className="inline-flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99]"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span>Receive My Report</span>
+              </a>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <div className="pt-1">
               <button
                 onClick={handleClose}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm transition-colors"
+                className="text-xs text-slate-400 font-bold hover:text-white transition-colors"
               >
-                Done
+                Close
               </button>
             </div>
           </div>
@@ -837,6 +878,30 @@ export default function CounsellingModal({
                     placeholder="you@example.com"
                     className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-base sm:text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
                   />
+                </div>
+              </div>
+
+              {/* Home State Dropdown */}
+              <div>
+                <label htmlFor="ccm-homestate" className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Home State <span className="text-amber-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    id="ccm-homestate"
+                    value={homeState}
+                    onChange={(e) => setHomeState(e.target.value)}
+                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-base sm:text-sm text-white outline-none focus:border-emerald-500 transition-colors appearance-none cursor-pointer"
+                  >
+                    {INDIAN_STATES.map((st) => (
+                      <option key={st.code} value={st.code} className="bg-[#0b0f19] text-white">
+                        {st.name} {st.code !== 'AI' ? `(${st.code})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">
+                    ▼
+                  </div>
                 </div>
               </div>
 
@@ -950,7 +1015,7 @@ export default function CounsellingModal({
                     className="mt-0.5 w-4 h-4 rounded border-slate-800 bg-[#0b0f19] text-emerald-600 focus:ring-0 accent-emerald-600 shrink-0"
                   />
                   <span className="text-xs text-slate-400 leading-relaxed font-medium">
-                    I agree to receive {isHandbook ? 'the Free Counselling Handbook' : 'my personalized Counselling Kit'} on Email.
+                    I agree to receive {isHandbook ? 'the Free Counselling Handbook' : 'my personalized college info'} on whatsapp & Email.
                   </span>
                 </label>
               </div>
@@ -971,13 +1036,13 @@ export default function CounsellingModal({
                   </span>
                 ) : (
                   <>
-                    {isHandbook ? <Download className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
-                    {isHandbook ? 'Download Free Guide' : 'Get My Personalised Counselling Update'}
+                    {isHandbook ? <Download className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                    {isHandbook ? 'Download Free Guide' : 'Download Now'}
                   </>
                 )}
               </button>
               <p className="text-[11px] text-center text-slate-500 mt-2 font-medium">
-                Instant delivery to your Email. No spam.
+                Instant Download PDF. No spam.
               </p>
             </div>
           </form>

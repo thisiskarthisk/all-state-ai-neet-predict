@@ -196,13 +196,13 @@ export function predictCollegesFromMasterData(
       for (const c of catsToEvaluate) {
         const val = item[`${r} ${c}`];
         if (typeof val === 'number' && val > 0) {
-          const cutNum = Math.round(val);
+          const cutNum = val;
           allNumericCutoffs.push(cutNum);
           matchingCutoffEntries.push({
             course: 'MBBS',
             category: categoryCodeToName(c),
             round: r,
-            openingRank: Math.round(cutNum * 0.8),
+            openingRank: cutNum * 0.8,
             closingRank: cutNum,
             chanceOfAdmission: studentRank <= cutNum ? 'High' : (studentRank <= cutNum * 1.05 ? 'Medium' : 'Low')
           });
@@ -244,9 +244,6 @@ export function predictCollegesFromMasterData(
 
     if (!maxCutoff || maxCutoff <= 0) continue;
     if (!minCutoff || minCutoff <= 0) minCutoff = Math.max(1, Math.floor(maxCutoff * 0.5));
-
-    minCutoff = Math.round(minCutoff);
-    maxCutoff = Math.round(maxCutoff);
 
     // Calculate Admission Chance:
     let chance: 'High' | 'Medium' | 'Low' | null = null;

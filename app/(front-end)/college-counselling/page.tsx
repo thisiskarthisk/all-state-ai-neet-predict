@@ -306,7 +306,14 @@ export default function CollegeCounsellingPage() {
 
   if (!mounted) return null;
 
-  const fmt = (n?: number) => typeof n === 'number' && !isNaN(n) ? Math.round(n).toLocaleString('en-IN') : '—';
+  const fmt = (n?: number | string) => {
+    if (n === null || n === undefined) return '—';
+    if (typeof n === 'number') {
+      if (isNaN(n)) return '—';
+      return Math.trunc(n).toLocaleString('en-IN');
+    }
+    return String(n).replace(/\.\d+/g, '');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans leading-relaxed section-dark">
@@ -413,13 +420,13 @@ export default function CollegeCounsellingPage() {
                   </div>
                 </div>
 
-                <button
+                {/* <button
                   onClick={() => setExpertModalOpen(true)}
                   className="section-dark-btn w-full mt-2 py-3 px-4 rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Handshake className="w-4 h-4" />
                   <span>Show counselling window</span>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -894,8 +901,8 @@ export default function CollegeCounsellingPage() {
                     onClick={() => setExpertModalOpen(true)}
                     className="section-dark-btn inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer"
                   >
-                    <Handshake className="w-4 h-4" />
-                    <span>Alert my counselling window on Email</span>
+                    <Download className="w-4 h-4" />
+                    <span>Download My Counselling Info</span>
                   </button>
                 </div>
 
