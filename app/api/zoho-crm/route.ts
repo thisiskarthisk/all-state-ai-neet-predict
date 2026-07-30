@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       homeState: homeStateVal,
       extraFields: {
         College_Name: collegeNamesStr,
-        NEET_Rank: intRank || '',
+        Neet_Rank: intRank || '',
         Platform: 'Web',
         Form_Name: 'College Predictor',
       },
