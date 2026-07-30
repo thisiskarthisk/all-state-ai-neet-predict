@@ -637,47 +637,42 @@ export default function CounsellingModal({
         console.warn('[CounsellingModal] Zoho CRM lead push error:', zohoErr);
       }
 
-      // Temporarily disable WhatsApp messages
-      const waMessageDisabled = true;
+      // Generate & Download PDF
+      try {
+        const html2pdf = (await import('html2pdf.js')).default;
 
-      if (!waMessageDisabled) {
-        try {
-          const html2pdf = (await import('html2pdf.js')).default;
+        container.innerHTML = buildHTML({
+          name: name || 'Medical Student',
+          studentProfile: {
+            rank: rank || 'AIR 106',
+            course: course || 'MBBS',
+            exam: examType || 'NEET UG',
+            category: category || 'General / All Categories',
+            quota: 'State / AIQ Quota',
+            states: homeStateName,
+          },
+          selectedColleges: collegesToRender,
+        });
 
-          container.innerHTML = buildHTML({
-            name: name || 'Medical Student',
-            studentProfile: {
-              rank: rank || 'AIR 106',
-              course: course || 'MBBS',
-              exam: examType || 'NEET UG',
-              category: category || 'General / All Categories',
-              quota: 'State / AIQ Quota',
-              states: homeStateName,
-            },
-            selectedColleges: collegesToRender,
-          });
+        document.body.appendChild(host);
 
-          document.body.appendChild(host);
-
-          // Wait for any <img> tags inside the container to load
-          const images = Array.from(container.querySelectorAll('img'));
-          await Promise.all(images.map(img => {
+        // Wait for any <img> tags inside the container to load
+        const images = Array.from(container.querySelectorAll('img'));
+        await Promise.all(
+          images.map((img) => {
             if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
               img.onload = resolve;
-              img.onerror = resolve; // Resolve on error so it doesn't hang forever
+              img.onerror = resolve;
             });
-          }));
+          })
+        );
 
-          // Force the browser to calculate layout heights before capturing
-          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-          await new Promise((resolve) => setTimeout(resolve, 100));
+        // Force the browser to calculate layout heights before capturing
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
-          // A zero-height source always yields a blank PDF - fail loudly instead.
-          if (!container.offsetHeight) {
-            throw new Error('PDF source has no layout height - refusing to render a blank page');
-          }
-
+        if (container.offsetHeight) {
           const worker = html2pdf().from(container).set({
             margin: 6,
             filename: `counselling-plan-${cleanMobile}.pdf`,
@@ -689,7 +684,7 @@ export default function CounsellingModal({
               logging: false,
               backgroundColor: '#ffffff',
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           });
           pdfBlob = await worker.outputPdf('blob');
 
@@ -703,15 +698,17 @@ export default function CounsellingModal({
             document.body.removeChild(link);
             setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1500);
           }
-        } catch (pdfErr) {
-          console.warn('Frontend PDF generation warning:', pdfErr);
-        } finally {
-          if (host.parentNode) {
-            host.parentNode.removeChild(host);
-          }
         }
+      } catch (pdfErr) {
+        console.warn('Frontend PDF generation warning:', pdfErr);
+      } finally {
+        if (host.parentNode) {
+          host.parentNode.removeChild(host);
+        }
+      }
 
-        // 3. Send PDF Blob and data via multipart/form-data to /api/counselling/generate-and-send
+      // 3. Send PDF Blob and data to /api/counselling/generate-and-send
+      try {
         const formData = new FormData();
         if (pdfBlob) {
           formData.append('pdf', pdfBlob, `counselling-plan-${cleanMobile}.pdf`);
@@ -719,19 +716,19 @@ export default function CounsellingModal({
         formData.append('name', name || 'Student');
         formData.append('phone', mobile);
         formData.append('email', email);
-        formData.append('homeState', homeState);
+        formData.append('homeState', homeStateName);
         formData.append('rank', rank);
         formData.append('exam', examType);
         formData.append('course', course);
         formData.append('category', category);
         formData.append('states', preferredStates);
 
-        // console.log('formData',formData)
-
         await fetch('/api/counselling/generate-and-send', {
           method: 'POST',
           body: formData,
         });
+      } catch (sendErr) {
+        console.warn('[CounsellingModal] Send generate-and-send error:', sendErr);
       }
 
       onClose();
