@@ -1923,12 +1923,14 @@ import {
   Plus,
   Filter,
   Sparkles,
+  Download,
 } from 'lucide-react';
 import MedicalPulseLoader from '@/components/MedicalPulseLoader';
 import CounsellingModal from '@/components/CounsellingModal';
 import MultiSelect from '@/components/Multiselect';
 import Dropdown from '@/components/dropdown';
 import { isStateMatched } from '@/lib/data/collegeMatcher';
+import { downloadCounsellingPdf } from '@/lib/downloadPdf';
 import {
   SUPPORTED_EXAMS,
   getCoursesByExam,
@@ -2127,17 +2129,67 @@ export default function HeroSection({
 
   // ---- Lead Capture Modal for College Predictor ----
   const [isPredictLeadModalOpen, setIsPredictLeadModalOpen] = useState(false);
+  const [hasSubmittedPredictLeadInSession, setHasSubmittedPredictLeadInSession] = useState(false);
   const [predictLeadName, setPredictLeadName] = useState('');
   const [predictLeadEmail, setPredictLeadEmail] = useState('');
   const [predictLeadMobile, setPredictLeadMobile] = useState('');
+  const [predictLeadHomeState, setPredictLeadHomeState] = useState('Karnataka');
+  const [predictCollegeInput, setPredictCollegeInput] = useState('');
+  const [predictPreferredColleges, setPredictPreferredColleges] = useState<string[]>([]);
   const [predictLeadLoading, setPredictLeadLoading] = useState(false);
   const [predictLeadError, setPredictLeadError] = useState('');
 
+  const handleAddPreferredCollege = () => {
+    const val = predictCollegeInput.trim();
+    if (!val) return;
+    if (!predictPreferredColleges.includes(val)) {
+      setPredictPreferredColleges((prev) => [...prev, val]);
+    }
+    setPredictCollegeInput('');
+  };
+
+  const handleRemovePreferredCollege = (indexToRemove: number) => {
+    setPredictPreferredColleges((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const availableCourses = getCoursesByExam(collegeExamType as any);
 
-  // Restore states from localStorage on client mount if they exist
+  // Sync form inputs to localStorage dynamically as user updates them
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      if (collegeRank) localStorage.setItem('predict_rank', collegeRank);
+      if (collegeExamType) localStorage.setItem('predict_examType', collegeExamType);
+      if (selectedCourse) localStorage.setItem('predict_course', selectedCourse);
+      if (selectedCategory) localStorage.setItem('predict_category', selectedCategory);
+      if (selectedRound) localStorage.setItem('predict_round', selectedRound);
+      if (selectedStates && selectedStates.length > 0) {
+        localStorage.setItem('predict_states', JSON.stringify(selectedStates));
+      }
+    }
+  }, [collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound]);
+
+  // Restore states from localStorage on client mount if navigating back, OR clear if reloaded
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const navEntries = performance.getEntriesByType('navigation');
+      const isReload = navEntries.length > 0 && (navEntries[0] as PerformanceNavigationTiming).type === 'reload';
+
+      // If user reloaded/refreshed the page -> clear localStorage fresh!
+      if (isReload) {
+        localStorage.removeItem('predict_rank');
+        localStorage.removeItem('predict_examType');
+        localStorage.removeItem('predict_course');
+        localStorage.removeItem('predict_category');
+        localStorage.removeItem('predict_states');
+        localStorage.removeItem('predict_round');
+        localStorage.removeItem('collegeList');
+        localStorage.removeItem('college_prediction_results');
+        localStorage.removeItem('selectCollege');
+        localStorage.removeItem('selectedColleges');
+        return;
+      }
+
+      // If navigation (e.g. Back button click) -> restore state from localStorage
       const urlParams = new URLSearchParams(window.location.search);
       const isRestore = urlParams.get('restore') === 'true';
       const tabParam = urlParams.get('tab');
@@ -2151,7 +2203,7 @@ export default function HeroSection({
       const storedList = localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
       const storedSelected = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges');
 
-      if (isRestore || tabParam === 'college') {
+      if (isRestore || tabParam === 'college' || storedRank || storedList || storedSelected) {
         if (storedRank) setCollegeRank(storedRank);
         if (storedExamType) setCollegeExamType(storedExamType);
         if (storedCourse) setSelectedCourse(storedCourse);
@@ -2191,7 +2243,9 @@ export default function HeroSection({
             if (Array.isArray(parsedSel)) setSelectedCollegesForCounselling(parsedSel);
           } catch {}
         }
-        setActiveTab('college');
+        if (storedList || storedRank || tabParam === 'college') {
+          setActiveTab('college');
+        }
       } else if (tabParam === 'rank') {
         setActiveTab('rank');
       }
@@ -2301,10 +2355,21 @@ export default function HeroSection({
       return;
     }
     setCollegeError('');
+
+    // If user has already submitted the lead capture modal during this page session, skip modal & search directly
+    if (hasSubmittedPredictLeadInSession) {
+      executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound);
+      return;
+    }
+
     setPredictLeadError('');
     setPredictLeadName('');
     setPredictLeadEmail('');
     setPredictLeadMobile('');
+    const stateName = INDIAN_STATES.find((s) => s.code === (selectedStates[0] || 'KA'))?.name || selectedStates[0] || 'Karnataka';
+    setPredictLeadHomeState(stateName);
+    setPredictCollegeInput('');
+    setPredictPreferredColleges([]);
     setIsPredictLeadModalOpen(true);
   };
 
@@ -2326,8 +2391,10 @@ export default function HeroSection({
 
     setPredictLeadLoading(true);
 
+    const preferredCollegeListStr = predictPreferredColleges.join(', ');
+
     try {
-      const homeStateName = INDIAN_STATES.find((s) => s.code === (selectedStates[0] || 'KA'))?.name || selectedStates[0] || 'Karnataka';
+      // 1. Push lead to Zoho CRM
       await fetch('/api/zoho-crm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2335,20 +2402,45 @@ export default function HeroSection({
           name: predictLeadName.trim(),
           email: predictLeadEmail.trim(),
           mobileNo: predictLeadMobile.trim(),
-          homeState: homeStateName,
+          homeState: predictLeadHomeState,
           studentProfile: {
             rank: collegeRank,
             course: selectedCourse,
             exam: collegeExamType,
             category: selectedCategory,
             states: selectedStates.join(', '),
+            preferredColleges: preferredCollegeListStr,
           },
+          selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
           leadSource: 'College Predictor Modal Form',
         }),
       });
+
+      // 2. Send email notification
+      await fetch('/api/counselling/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: predictLeadName.trim(),
+          email: predictLeadEmail.trim(),
+          mobileNo: predictLeadMobile.trim(),
+          homeState: predictLeadHomeState,
+          studentProfile: {
+            rank: collegeRank,
+            course: selectedCourse,
+            exam: collegeExamType,
+            category: selectedCategory,
+            states: selectedStates.join(', '),
+            preferredColleges: preferredCollegeListStr,
+          },
+          selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
+          type: 'counselling',
+        }),
+      });
     } catch (zohoErr) {
-      console.warn('[HeroSection] Lead push to Zoho CRM warning:', zohoErr);
+      console.warn('[HeroSection] Lead submission warning:', zohoErr);
     } finally {
+      setHasSubmittedPredictLeadInSession(true);
       setPredictLeadLoading(false);
       setIsPredictLeadModalOpen(false);
       setSelectedCollegesForCounselling([]);
@@ -2368,6 +2460,7 @@ export default function HeroSection({
     setCollegeError('');
     setCollegeResult(null);
     setSelectedCollegesForCounselling([]);
+    setHasSubmittedPredictLeadInSession(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('predict_rank');
       localStorage.removeItem('college_prediction_results');
@@ -3774,6 +3867,74 @@ export default function HeroSection({
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Which state you belong to? <span className="text-amber-500">*</span>
+                  </label>
+                  <select
+                    value={predictLeadHomeState}
+                    onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                  >
+                    {INDIAN_STATES.map((st) => (
+                      <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                        {st.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Do you have any preferred college?
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={predictCollegeInput}
+                      onChange={(e) => setPredictCollegeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddPreferredCollege();
+                        }
+                      }}
+                      placeholder="Type preferred college name"
+                      className="flex-1 rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddPreferredCollege}
+                      className="w-11 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-colors shrink-0 shadow-sm cursor-pointer"
+                      title="Add Preferred College"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Added Preferred Colleges Chips */}
+                  {predictPreferredColleges.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2.5">
+                      {predictPreferredColleges.map((col, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold"
+                        >
+                          <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                          <span>{col}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePreferredCollege(idx)}
+                            className="w-4 h-4 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 flex items-center justify-center transition-colors ml-0.5 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {predictLeadError && (
                   <p className="text-xs text-rose-400 font-bold break-words">{predictLeadError}</p>
                 )}
@@ -3781,7 +3942,7 @@ export default function HeroSection({
                 <button
                   type="submit"
                   disabled={predictLeadLoading}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   {predictLeadLoading ? (
                     <>

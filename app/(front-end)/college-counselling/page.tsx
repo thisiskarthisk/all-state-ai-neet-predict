@@ -34,6 +34,8 @@ import MedicalPulseLoader from '@/components/MedicalPulseLoader';
 import CounsellingModal from '@/components/CounsellingModal';
 import { getAuthorityForState } from '@/lib/ai/counsellingAuthorities';
 import Reveal from '../section/reveal';
+import { downloadCounsellingPdf } from '@/lib/downloadPdf';
+import { INDIAN_STATES } from '@/constants';
 
 // Color themes mapping for dynamic styling across timeline stages
 const stepThemes = [
@@ -201,23 +203,29 @@ export default function CollegeCounsellingPage() {
       const storedStates = localStorage.getItem('predict_states');
       const storedColleges = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges');
 
-      let statesArr: string[] = ['Karnataka (KA)'];
+      let statesArr: string[] = [];
       if (storedStates) {
         try {
           const parsed = JSON.parse(storedStates);
           statesArr = Array.isArray(parsed) ? parsed : [parsed];
         } catch {
-          statesArr = ['Karnataka (KA)'];
+          statesArr = [];
         }
       }
 
+      const mappedStates = statesArr.map((stCode) => {
+        if (stCode === 'AI' || stCode === 'ALL') return 'All India (AIQ)';
+        const found = INDIAN_STATES.find((s) => s.code === stCode || s.name === stCode);
+        return found ? `${found.name} (${found.code})` : stCode;
+      });
+
       setProfile({
         course: storedCourse === 'ALL' ? 'MBBS' : storedCourse,
-        exam: storedExamType.replace(/_/g, ' '),
+        exam: storedExamType ? storedExamType.replace(/_/g, ' ') : 'NEET UG',
         category: storedCategory === 'ALL' ? 'General / All Categories' : storedCategory,
         quota: 'State Quota (85%) / AIQ',
-        states: statesArr,
-        rank: storedRank,
+        states: mappedStates.length > 0 ? mappedStates : ['All India (AIQ)'],
+        rank: storedRank || '—',
       });
 
       if (storedColleges) {
@@ -412,10 +420,10 @@ export default function CollegeCounsellingPage() {
                     </p>
                     <p className="text-xs font-extrabold text-slate-800 leading-snug">
                       {Array.isArray(profile?.states)
-                        ? profile?.states.length === 0 || profile?.states.includes('AI')
-                          ? 'Karnataka (KA)'
+                        ? profile?.states.length === 0
+                          ? 'All India (AIQ)'
                           : profile?.states.join(', ')
-                        : profile?.states || 'Karnataka (KA)'}
+                        : profile?.states || 'All India (AIQ)'}
                     </p>
                   </div>
                 </div>
@@ -898,11 +906,38 @@ export default function CollegeCounsellingPage() {
                 {/* 3. FIXED BOTTOM FOOTER BAR */}
                 <div className="sticky bottom-0 z-20 shrink-0 p-4 sm:p-5 border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-[0_-6px_16px_rgba(15,23,42,0.06)] flex items-center justify-end gap-2 sm:gap-3">
                   <button
-                    onClick={() => setExpertModalOpen(true)}
-                    className="section-dark-btn inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer"
+                    disabled={counsellingLoading || downloadingPdf}
+                    onClick={async () => {
+                      // setExpertModalOpen(true); // Commented out per user request - do not remove
+                      setDownloadingPdf(true);
+                      try {
+                        await downloadCounsellingPdf({
+                          name: profile?.name || 'Medical Student',
+                          studentProfile: profile || {},
+                          selectedColleges: selectedColleges || [],
+                        });
+                      } finally {
+                        setDownloadingPdf(false);
+                      }
+                    }}
+                    className="section-dark-btn inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-2xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Download My Counselling Info</span>
+                    {counsellingLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Generating College Timelines...</span>
+                      </>
+                    ) : downloadingPdf ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Downloading PDF...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        <span>Download My Counselling Info</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -913,13 +948,15 @@ export default function CollegeCounsellingPage() {
         </div>
       </main>
 
-      {/* Shared Counselling Modal */}
+      {/* Shared Counselling Modal (Kept as comment per user request) */}
+      {/*
       <CounsellingModal
         isOpen={expertModalOpen}
         onClose={() => setExpertModalOpen(false)}
         studentProfile={profile}
         selectedColleges={selectedColleges}
       />
+      */}
 
       {/* Responsive Styles */}
       <style jsx global>{`

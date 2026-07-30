@@ -8,7 +8,8 @@
     "start": "next start -p 14520",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "deploy:prod": "vercel deploy --project karnataka-neet-predictor --prod"
+    "deploy:dev": "vercel deploy --project neet-predictor-live",
+    "deploy:prod": "vercel deploy --project neet-predictor-live --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
