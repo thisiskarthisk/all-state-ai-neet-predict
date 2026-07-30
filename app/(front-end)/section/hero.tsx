@@ -3929,104 +3929,104 @@ export default function HeroSection({
                 </button>
               </form> */}
               <form onSubmit={handlePredictLeadSubmit} className="space-y-4 text-left">
-  {/* Row 1: Full Name + Email */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-xs font-bold text-slate-300 mb-1.5">
-        Full Name <span className="text-amber-500">*</span>
-      </label>
-      <input
-        type="text"
-        required
-        value={predictLeadName}
-        onChange={(e) => setPredictLeadName(e.target.value)}
-        placeholder="Enter your full name"
-        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
-      />
-    </div>
+                {/* Row 1: Full Name + Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Full Name <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={predictLeadName}
+                      onChange={(e) => setPredictLeadName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
 
-    <div>
-      <label className="block text-xs font-bold text-slate-300 mb-1.5">
-        Email Address <span className="text-amber-500">*</span>
-      </label>
-      <input
-        type="email"
-        required
-        value={predictLeadEmail}
-        onChange={(e) => setPredictLeadEmail(e.target.value)}
-        placeholder="you@example.com"
-        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
-      />
-    </div>
-  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Email Address <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={predictLeadEmail}
+                      onChange={(e) => setPredictLeadEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                </div>
 
-  {/* Row 2: Phone + Home State */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-xs font-bold text-slate-300 mb-1.5">
-        WhatsApp / Phone <span className="text-amber-500">*</span>
-      </label>
-      <input
-        type="tel"
-        required
-        value={predictLeadMobile}
-        onChange={(e) => setPredictLeadMobile(e.target.value)}
-        placeholder="e.g. 9876543210"
-        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
-      />
-    </div>
+                {/* Row 2: Phone + Home State */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      WhatsApp / Phone <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={predictLeadMobile}
+                      onChange={(e) => setPredictLeadMobile(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
 
-    <div>
-      <label className="block text-xs font-bold text-slate-300 mb-1.5">
-        Home State <span className="text-amber-500">*</span>
-      </label>
-      <select
-        value={predictLeadHomeState}
-        onChange={(e) => setPredictLeadHomeState(e.target.value)}
-        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-      >
-        {INDIAN_STATES.map((st) => (
-          <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
-            {st.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Which state you belong to? <span className="text-amber-500">*</span>
+                    </label>
+                    <select
+                      value={predictLeadHomeState}
+                      onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                    >
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                          {st.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-  {/* Row 3: Preferred College — full width */}
-  <div>
-    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-      Do you have any preferred college?
-    </label>
-    <MultiSelect
-      options={ALL_COLLEGE_OPTIONS}
-      selectedValues={predictPreferredColleges}
-      onChange={setPredictPreferredColleges}
-      placeholder="Search & select preferred colleges..."
-    />
-  </div>
+                {/* Row 3: Preferred College — full width */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Do you have any preferred college?
+                  </label>
+                  <MultiSelect
+                    options={ALL_COLLEGE_OPTIONS}
+                    selectedValues={predictPreferredColleges}
+                    onChange={setPredictPreferredColleges}
+                    placeholder="Search & select preferred colleges..."
+                  />
+                </div>
 
-  {predictLeadError && (
-    <p className="text-xs text-rose-400 font-bold break-words">{predictLeadError}</p>
-  )}
+                {predictLeadError && (
+                  <p className="text-xs text-rose-400 font-bold break-words">{predictLeadError}</p>
+                )}
 
-  <button
-    type="submit"
-    disabled={predictLeadLoading}
-    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
-  >
-    {predictLeadLoading ? (
-      <>
-        <Loader2 className="w-4 h-4 animate-spin" /> Saving &amp; Matching...
-      </>
-    ) : (
-      <>
-        Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
-      </>
-    )}
-  </button>
-</form>
+                <button
+                  type="submit"
+                  disabled={predictLeadLoading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+                >
+                  {predictLeadLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Saving &amp; Matching...
+                    </>
+                  ) : (
+                    <>
+                      Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           </div>,
           document.body
