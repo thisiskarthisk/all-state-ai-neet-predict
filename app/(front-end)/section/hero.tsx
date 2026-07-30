@@ -2092,22 +2092,6 @@ export default function HeroSection({
   const [roundCategoryFilter, setRoundCategoryFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'Government' | 'Private' | 'Deemed'>('all');
 
-  // Automatically update default roundFilter based on selected states:
-  // All States / AI -> 'all' (All Rounds)
-  // Specific State -> 'Round 1'
-  useEffect(() => {
-    const isAllStates =
-      selectedStates.length === 0 ||
-      selectedStates.includes('AI') ||
-      selectedStates.includes('ALL');
-
-    if (isAllStates) {
-      setRoundFilter('all');
-    } else {
-      setRoundFilter('Round 1');
-    }
-  }, [selectedStates]);
-
   const scrollToResults = () => {
     setTimeout(() => {
       const el = document.getElementById('results-section');
@@ -3377,7 +3361,7 @@ export default function HeroSection({
                 </div>
               ) : (
                 <div className="flex flex-col justify-between w-full space-y-0 relative">
-                  {/* Fixed Header with Filter Toggle Button & Search */}
+                  {/* Fixed Header & Direct Filter Fields Grid */}
                   <div className="shrink-0 pb-3 border-b border-slate-100 bg-white z-10 sticky top-0 flex flex-col space-y-3">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
@@ -3389,109 +3373,89 @@ export default function HeroSection({
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <button
-                          type="button"
-                          onClick={() => setIsFilterOpen(!isFilterOpen)}
-                          className={`px-3.5 py-2 rounded-xl border text-xs font-extrabold flex items-center gap-1.5 transition-all ${
-                            isFilterOpen || chanceFilter !== 'all' || roundFilter !== 'all' || typeFilter !== 'all'
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                          }`}
-                        >
-                          <Filter className="w-3.5 h-3.5" />
-                          <span>Filter</span>
-                          {(chanceFilter !== 'all' || roundFilter !== 'all' || typeFilter !== 'all') && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          )}
-                        </button>
-
-                        <div className="relative flex-1 sm:w-48">
-                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                          <input
-                            type="text"
-                            placeholder="Search college name..."
-                            value={collegeSearch}
-                            onChange={(e) => setCollegeSearch(e.target.value)}
-                            className="pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none focus:border-indigo-600 text-slate-800 w-full"
-                          />
-                        </div>
+                      <div className="relative w-full sm:w-64">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          placeholder="Search college name..."
+                          value={collegeSearch}
+                          onChange={(e) => setCollegeSearch(e.target.value)}
+                          className="pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none focus:border-indigo-600 text-slate-800 w-full"
+                        />
                       </div>
                     </div>
 
-                    {/* Filter Drawer Panel */}
-                    {isFilterOpen && (
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in duration-200">
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            Admission Chance
-                          </label>
-                          <select
-                            value={chanceFilter}
-                            onChange={(e) => setChanceFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All Admission Chances</option>
-                            <option value="High">High Chance</option>
-                            <option value="Medium">Medium Chance</option>
-                            <option value="Reach">Low / Reach Chance</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            College Type
-                          </label>
-                          <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All College Types</option>
-                            <option value="Government">Government</option>
-                            <option value="Private">Private</option>
-                            <option value="Deemed">Deemed University</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            Counselling Round
-                          </label>
-                          <select
-                            value={roundFilter}
-                            onChange={(e) => setRoundFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All Rounds</option>
-                            <option value="Round 1">Round 1</option>
-                            <option value="Round 2">Round 2</option>
-                            <option value="Round 3">Round 3 / Mop-up</option>
-                            <option value="Stray">Stray Vacancy Round</option>
-                          </select>
-                        </div>
-
-                        {roundFilter !== 'all' && selectedCategory === 'ALL' && (
-                          <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                              Round Category
-                            </label>
-                            <select
-                              value={roundCategoryFilter}
-                              onChange={(e) => setRoundCategoryFilter(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                            >
-                              <option value="all">All Categories</option>
-                              <option value="Gen">General (UR)</option>
-                              <option value="OBC-NCL">OBC-NCL</option>
-                              <option value="EWS">EWS</option>
-                              <option value="SC">SC</option>
-                              <option value="ST">ST</option>
-                            </select>
-                          </div>
-                        )}
+                    {/* Direct Filter Fields Grid */}
+                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          Admission Chance
+                        </label>
+                        <select
+                          value={chanceFilter}
+                          onChange={(e) => setChanceFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All Admission Chances</option>
+                          <option value="High">High Chance</option>
+                          <option value="Medium">Medium Chance</option>
+                          <option value="Reach">Low / Reach Chance</option>
+                        </select>
                       </div>
-                    )}
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          College Type
+                        </label>
+                        <select
+                          value={typeFilter}
+                          onChange={(e) => setTypeFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All College Types</option>
+                          <option value="Government">Government</option>
+                          <option value="Private">Private</option>
+                          <option value="Deemed">Deemed University</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          Counselling Round
+                        </label>
+                        <select
+                          value={roundFilter}
+                          onChange={(e) => setRoundFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All Rounds</option>
+                          <option value="Round 1">Round 1</option>
+                          <option value="Round 2">Round 2</option>
+                          <option value="Round 3">Round 3 / Mop-up</option>
+                          <option value="Stray">Stray Vacancy Round</option>
+                        </select>
+                      </div>
+
+                      {roundFilter !== 'all' && selectedCategory === 'ALL' && (
+                        <div>
+                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                            Round Category
+                          </label>
+                          <select
+                            value={roundCategoryFilter}
+                            onChange={(e) => setRoundCategoryFilter(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                          >
+                            <option value="all">All Categories</option>
+                            <option value="Gen">General (UR)</option>
+                            <option value="OBC-NCL">OBC-NCL</option>
+                            <option value="EWS">EWS</option>
+                            <option value="SC">SC</option>
+                            <option value="ST">ST</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Scrollable College List Body */}
@@ -4004,6 +3968,7 @@ export default function HeroSection({
                     selectedValues={predictPreferredColleges}
                     onChange={setPredictPreferredColleges}
                     placeholder="Search & select preferred colleges..."
+                    isDark={true}
                   />
                 </div>
 
