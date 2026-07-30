@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, mobileNo, homeState, studentProfile, selectedColleges, type } = body;
+    const { name, email, mobileNo, homeState, studentProfile, selectedColleges, preferredCollegesList: bodyCollegesList, type } = body;
 
     if (!email) {
       return NextResponse.json({ error: 'Email address is required.' }, { status: 400 });
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const requestedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     // Handle normal outside expert help (simple name + email booking)
-    if (type === 'simple' || (!selectedColleges && !studentProfile)) {
+    if (type === 'simple' || (!selectedColleges && !studentProfile && !bodyCollegesList)) {
       if (user && pass) {
         try {
           const transporter = nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
@@ -71,27 +71,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'your booking confirm' }, { status: 200 });
     }
 
-    // Extract preferred college names only
+    // Extract preferred college names without splitting single college names on commas
     let preferredCollegesList: string[] = [];
 
-    if (studentProfile?.preferredColleges) {
-      preferredCollegesList = String(studentProfile.preferredColleges)
-        .split(',')
-        .map((c) => c.trim())
+    if (Array.isArray(bodyCollegesList) && bodyCollegesList.length > 0) {
+      preferredCollegesList = bodyCollegesList
+        .map((c: any) => String(c).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim())
         .filter(Boolean);
     } else if (Array.isArray(selectedColleges) && selectedColleges.length > 0) {
       preferredCollegesList = selectedColleges
         .map((c: any) => c.college_name || c.name || '')
-        .map((s: string) => s.trim())
+        .map((s: string) => String(s).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim())
         .filter(Boolean);
+    } else if (studentProfile?.preferredColleges) {
+      if (Array.isArray(studentProfile.preferredColleges)) {
+        preferredCollegesList = studentProfile.preferredColleges
+          .map((s: any) => String(s).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+      } else {
+        const rawStr = String(studentProfile.preferredColleges).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+        if (rawStr) preferredCollegesList = [rawStr];
+      }
     }
 
     const collegeNamesHTML =
       preferredCollegesList.length > 0
         ? preferredCollegesList
             .map(
-              (colName) =>
-                `<li style="margin-bottom:6px;color:#0f172a;font-size:13px;font-weight:600;">${colName}</li>`
+              (colName, idx) =>
+                `<li style="margin-bottom:8px;color:#0f172a;font-size:13px;font-weight:600;">${idx + 1}. ${colName}</li>`
             )
             .join('')
         : '<li style="color:#64748b;font-size:13px;">None specified</li>';
@@ -112,10 +120,10 @@ export async function POST(req: NextRequest) {
       </div>
 
       <div style="background:#fff; padding:16px; border-radius:12px; border:1px solid #e2e8f0;">
-        <h4 style="margin:0 0 10px; color:#059669; font-size:14px; font-weight:700;">Preferred Colleges</h4>
-        <ol style="margin:0; padding-left:20px; font-size:13px; color:#334155; line-height:1.6;">
+        <h4 style="margin:0 0 10px; color:#059669; font-size:14px; font-weight:700;">Preferred Colleges (${preferredCollegesList.length})</h4>
+        <ul style="margin:0; padding-left:0; list-style:none; font-size:13px; color:#334155; line-height:1.6;">
           ${collegeNamesHTML}
-        </ol>
+        </ul>
       </div>
     `;
 
