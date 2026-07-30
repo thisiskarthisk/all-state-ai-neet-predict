@@ -42,6 +42,7 @@ export interface SelectedCollege {
 }
 
 export interface StudentProfile {
+  name?: string;
   course: string;
   exam: string;
   category: string;

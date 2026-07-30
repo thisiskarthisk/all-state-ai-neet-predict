@@ -1923,12 +1923,14 @@ import {
   Plus,
   Filter,
   Sparkles,
+  Download,
 } from 'lucide-react';
 import MedicalPulseLoader from '@/components/MedicalPulseLoader';
 import CounsellingModal from '@/components/CounsellingModal';
 import MultiSelect from '@/components/Multiselect';
 import Dropdown from '@/components/dropdown';
 import { isStateMatched } from '@/lib/data/collegeMatcher';
+import { downloadCounsellingPdf } from '@/lib/downloadPdf';
 import {
   SUPPORTED_EXAMS,
   getCoursesByExam,
@@ -1938,6 +1940,22 @@ import {
   getRankConfidenceLevel,
 } from '@/constants';
 import Reveal from './reveal';
+import UgMasterCollegeList from '@/lib/data/allstate/UgMasterCollegeList.json';
+
+const ALL_COLLEGE_OPTIONS: { code: string; name: string }[] = (() => {
+  if (!Array.isArray(UgMasterCollegeList)) return [];
+  const set = new Set<string>();
+  for (const item of UgMasterCollegeList as any[]) {
+    const rawName = item["College Name"];
+    if (rawName && typeof rawName === 'string' && rawName.trim()) {
+      const cleanName = rawName.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanName) {
+        set.add(cleanName);
+      }
+    }
+  }
+  return Array.from(set).sort().map((name) => ({ code: name, name }));
+})();
 
 interface HeroSectionProps {
   marks: string;
@@ -2074,22 +2092,6 @@ export default function HeroSection({
   const [roundCategoryFilter, setRoundCategoryFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'Government' | 'Private' | 'Deemed'>('all');
 
-  // Automatically update default roundFilter based on selected states:
-  // All States / AI -> 'all' (All Rounds)
-  // Specific State -> 'Round 1'
-  useEffect(() => {
-    const isAllStates =
-      selectedStates.length === 0 ||
-      selectedStates.includes('AI') ||
-      selectedStates.includes('ALL');
-
-    if (isAllStates) {
-      setRoundFilter('all');
-    } else {
-      setRoundFilter('Round 1');
-    }
-  }, [selectedStates]);
-
   const scrollToResults = () => {
     setTimeout(() => {
       const el = document.getElementById('results-section');
@@ -2127,17 +2129,67 @@ export default function HeroSection({
 
   // ---- Lead Capture Modal for College Predictor ----
   const [isPredictLeadModalOpen, setIsPredictLeadModalOpen] = useState(false);
+  const [hasSubmittedPredictLeadInSession, setHasSubmittedPredictLeadInSession] = useState(false);
   const [predictLeadName, setPredictLeadName] = useState('');
   const [predictLeadEmail, setPredictLeadEmail] = useState('');
   const [predictLeadMobile, setPredictLeadMobile] = useState('');
+  const [predictLeadHomeState, setPredictLeadHomeState] = useState('Karnataka');
+  const [predictCollegeInput, setPredictCollegeInput] = useState('');
+  const [predictPreferredColleges, setPredictPreferredColleges] = useState<string[]>([]);
   const [predictLeadLoading, setPredictLeadLoading] = useState(false);
   const [predictLeadError, setPredictLeadError] = useState('');
 
+  const handleAddPreferredCollege = () => {
+    const val = predictCollegeInput.trim();
+    if (!val) return;
+    if (!predictPreferredColleges.includes(val)) {
+      setPredictPreferredColleges((prev) => [...prev, val]);
+    }
+    setPredictCollegeInput('');
+  };
+
+  const handleRemovePreferredCollege = (indexToRemove: number) => {
+    setPredictPreferredColleges((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const availableCourses = getCoursesByExam(collegeExamType as any);
 
-  // Restore states from localStorage on client mount if they exist
+  // Sync form inputs to localStorage dynamically as user updates them
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      if (collegeRank) localStorage.setItem('predict_rank', collegeRank);
+      if (collegeExamType) localStorage.setItem('predict_examType', collegeExamType);
+      if (selectedCourse) localStorage.setItem('predict_course', selectedCourse);
+      if (selectedCategory) localStorage.setItem('predict_category', selectedCategory);
+      if (selectedRound) localStorage.setItem('predict_round', selectedRound);
+      if (selectedStates && selectedStates.length > 0) {
+        localStorage.setItem('predict_states', JSON.stringify(selectedStates));
+      }
+    }
+  }, [collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound]);
+
+  // Restore states from localStorage on client mount if navigating back, OR clear if reloaded
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const navEntries = performance.getEntriesByType('navigation');
+      const isReload = navEntries.length > 0 && (navEntries[0] as PerformanceNavigationTiming).type === 'reload';
+
+      // If user reloaded/refreshed the page -> clear localStorage fresh!
+      if (isReload) {
+        localStorage.removeItem('predict_rank');
+        localStorage.removeItem('predict_examType');
+        localStorage.removeItem('predict_course');
+        localStorage.removeItem('predict_category');
+        localStorage.removeItem('predict_states');
+        localStorage.removeItem('predict_round');
+        localStorage.removeItem('collegeList');
+        localStorage.removeItem('college_prediction_results');
+        localStorage.removeItem('selectCollege');
+        localStorage.removeItem('selectedColleges');
+        return;
+      }
+
+      // If navigation (e.g. Back button click) -> restore state from localStorage
       const urlParams = new URLSearchParams(window.location.search);
       const isRestore = urlParams.get('restore') === 'true';
       const tabParam = urlParams.get('tab');
@@ -2151,7 +2203,7 @@ export default function HeroSection({
       const storedList = localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
       const storedSelected = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges');
 
-      if (isRestore || tabParam === 'college') {
+      if (isRestore || tabParam === 'college' || storedRank || storedList || storedSelected) {
         if (storedRank) setCollegeRank(storedRank);
         if (storedExamType) setCollegeExamType(storedExamType);
         if (storedCourse) setSelectedCourse(storedCourse);
@@ -2191,7 +2243,9 @@ export default function HeroSection({
             if (Array.isArray(parsedSel)) setSelectedCollegesForCounselling(parsedSel);
           } catch {}
         }
-        setActiveTab('college');
+        if (storedList || storedRank || tabParam === 'college') {
+          setActiveTab('college');
+        }
       } else if (tabParam === 'rank') {
         setActiveTab('rank');
       }
@@ -2301,10 +2355,21 @@ export default function HeroSection({
       return;
     }
     setCollegeError('');
+
+    // If user has already submitted the lead capture modal during this page session, skip modal & search directly
+    if (hasSubmittedPredictLeadInSession) {
+      executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound);
+      return;
+    }
+
     setPredictLeadError('');
     setPredictLeadName('');
     setPredictLeadEmail('');
     setPredictLeadMobile('');
+    const stateName = INDIAN_STATES.find((s) => s.code === (selectedStates[0] || 'KA'))?.name || selectedStates[0] || 'Karnataka';
+    setPredictLeadHomeState(stateName);
+    setPredictCollegeInput('');
+    setPredictPreferredColleges([]);
     setIsPredictLeadModalOpen(true);
   };
 
@@ -2326,8 +2391,10 @@ export default function HeroSection({
 
     setPredictLeadLoading(true);
 
+    const preferredCollegeListStr = predictPreferredColleges.join(', ');
+
     try {
-      const homeStateName = INDIAN_STATES.find((s) => s.code === (selectedStates[0] || 'KA'))?.name || selectedStates[0] || 'Karnataka';
+      // 1. Push lead to Zoho CRM
       await fetch('/api/zoho-crm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2335,20 +2402,46 @@ export default function HeroSection({
           name: predictLeadName.trim(),
           email: predictLeadEmail.trim(),
           mobileNo: predictLeadMobile.trim(),
-          homeState: homeStateName,
+          homeState: predictLeadHomeState,
           studentProfile: {
             rank: collegeRank,
             course: selectedCourse,
             exam: collegeExamType,
             category: selectedCategory,
             states: selectedStates.join(', '),
+            preferredColleges: preferredCollegeListStr,
           },
+          selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
           leadSource: 'College Predictor Modal Form',
         }),
       });
+
+      // 2. Send email notification
+      await fetch('/api/counselling/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: predictLeadName.trim(),
+          email: predictLeadEmail.trim(),
+          mobileNo: predictLeadMobile.trim(),
+          homeState: predictLeadHomeState,
+          studentProfile: {
+            rank: collegeRank,
+            course: selectedCourse,
+            exam: collegeExamType,
+            category: selectedCategory,
+            states: selectedStates.join(', '),
+            preferredColleges: preferredCollegeListStr,
+          },
+          selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
+          preferredCollegesList: predictPreferredColleges,
+          type: 'counselling',
+        }),
+      });
     } catch (zohoErr) {
-      console.warn('[HeroSection] Lead push to Zoho CRM warning:', zohoErr);
+      console.warn('[HeroSection] Lead submission warning:', zohoErr);
     } finally {
+      setHasSubmittedPredictLeadInSession(true);
       setPredictLeadLoading(false);
       setIsPredictLeadModalOpen(false);
       setSelectedCollegesForCounselling([]);
@@ -2368,6 +2461,7 @@ export default function HeroSection({
     setCollegeError('');
     setCollegeResult(null);
     setSelectedCollegesForCounselling([]);
+    setHasSubmittedPredictLeadInSession(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('predict_rank');
       localStorage.removeItem('college_prediction_results');
@@ -3267,7 +3361,7 @@ export default function HeroSection({
                 </div>
               ) : (
                 <div className="flex flex-col justify-between w-full space-y-0 relative">
-                  {/* Fixed Header with Filter Toggle Button & Search */}
+                  {/* Fixed Header & Direct Filter Fields Grid */}
                   <div className="shrink-0 pb-3 border-b border-slate-100 bg-white z-10 sticky top-0 flex flex-col space-y-3">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
@@ -3279,109 +3373,89 @@ export default function HeroSection({
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <button
-                          type="button"
-                          onClick={() => setIsFilterOpen(!isFilterOpen)}
-                          className={`px-3.5 py-2 rounded-xl border text-xs font-extrabold flex items-center gap-1.5 transition-all ${
-                            isFilterOpen || chanceFilter !== 'all' || roundFilter !== 'all' || typeFilter !== 'all'
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                          }`}
-                        >
-                          <Filter className="w-3.5 h-3.5" />
-                          <span>Filter</span>
-                          {(chanceFilter !== 'all' || roundFilter !== 'all' || typeFilter !== 'all') && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          )}
-                        </button>
-
-                        <div className="relative flex-1 sm:w-48">
-                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                          <input
-                            type="text"
-                            placeholder="Search college name..."
-                            value={collegeSearch}
-                            onChange={(e) => setCollegeSearch(e.target.value)}
-                            className="pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none focus:border-indigo-600 text-slate-800 w-full"
-                          />
-                        </div>
+                      <div className="relative w-full sm:w-64">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          placeholder="Search college name..."
+                          value={collegeSearch}
+                          onChange={(e) => setCollegeSearch(e.target.value)}
+                          className="pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none focus:border-indigo-600 text-slate-800 w-full"
+                        />
                       </div>
                     </div>
 
-                    {/* Filter Drawer Panel */}
-                    {isFilterOpen && (
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in duration-200">
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            Admission Chance
-                          </label>
-                          <select
-                            value={chanceFilter}
-                            onChange={(e) => setChanceFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All Admission Chances</option>
-                            <option value="High">High Chance</option>
-                            <option value="Medium">Medium Chance</option>
-                            <option value="Reach">Low / Reach Chance</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            College Type
-                          </label>
-                          <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All College Types</option>
-                            <option value="Government">Government</option>
-                            <option value="Private">Private</option>
-                            <option value="Deemed">Deemed University</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            Counselling Round
-                          </label>
-                          <select
-                            value={roundFilter}
-                            onChange={(e) => setRoundFilter(e.target.value as any)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            <option value="all">All Rounds</option>
-                            <option value="Round 1">Round 1</option>
-                            <option value="Round 2">Round 2</option>
-                            <option value="Round 3">Round 3 / Mop-up</option>
-                            <option value="Stray">Stray Vacancy Round</option>
-                          </select>
-                        </div>
-
-                        {roundFilter !== 'all' && selectedCategory === 'ALL' && (
-                          <div>
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                              Round Category
-                            </label>
-                            <select
-                              value={roundCategoryFilter}
-                              onChange={(e) => setRoundCategoryFilter(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                            >
-                              <option value="all">All Categories</option>
-                              <option value="Gen">General (UR)</option>
-                              <option value="OBC-NCL">OBC-NCL</option>
-                              <option value="EWS">EWS</option>
-                              <option value="SC">SC</option>
-                              <option value="ST">ST</option>
-                            </select>
-                          </div>
-                        )}
+                    {/* Direct Filter Fields Grid */}
+                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          Admission Chance
+                        </label>
+                        <select
+                          value={chanceFilter}
+                          onChange={(e) => setChanceFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All Admission Chances</option>
+                          <option value="High">High Chance</option>
+                          <option value="Medium">Medium Chance</option>
+                          <option value="Reach">Low / Reach Chance</option>
+                        </select>
                       </div>
-                    )}
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          College Type
+                        </label>
+                        <select
+                          value={typeFilter}
+                          onChange={(e) => setTypeFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All College Types</option>
+                          <option value="Government">Government</option>
+                          <option value="Private">Private</option>
+                          <option value="Deemed">Deemed University</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                          Counselling Round
+                        </label>
+                        <select
+                          value={roundFilter}
+                          onChange={(e) => setRoundFilter(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                        >
+                          <option value="all">All Rounds</option>
+                          <option value="Round 1">Round 1</option>
+                          <option value="Round 2">Round 2</option>
+                          <option value="Round 3">Round 3 / Mop-up</option>
+                          <option value="Stray">Stray Vacancy Round</option>
+                        </select>
+                      </div>
+
+                      {roundFilter !== 'all' && selectedCategory === 'ALL' && (
+                        <div>
+                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                            Round Category
+                          </label>
+                          <select
+                            value={roundCategoryFilter}
+                            onChange={(e) => setRoundCategoryFilter(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                          >
+                            <option value="all">All Categories</option>
+                            <option value="Gen">General (UR)</option>
+                            <option value="OBC-NCL">OBC-NCL</option>
+                            <option value="EWS">EWS</option>
+                            <option value="SC">SC</option>
+                            <option value="ST">ST</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Scrollable College List Body */}
@@ -3703,12 +3777,7 @@ export default function HeroSection({
       {isPredictLeadModalOpen &&
         mounted &&
         createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto overscroll-contain"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setIsPredictLeadModalOpen(false);
-            }}
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto overscroll-contain">
             <div className="relative w-full max-w-md bg-[#090d16] text-white rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200 my-auto">
               <button
                 type="button"
@@ -3731,7 +3800,7 @@ export default function HeroSection({
                 </p>
               </div>
 
-              <form onSubmit={handlePredictLeadSubmit} className="space-y-4 text-left">
+              {/* <form onSubmit={handlePredictLeadSubmit} className="space-y-4 text-left">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
                     Full Name <span className="text-amber-500">*</span>
@@ -3774,6 +3843,35 @@ export default function HeroSection({
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Which state you belong to? <span className="text-amber-500">*</span>
+                  </label>
+                  <select
+                    value={predictLeadHomeState}
+                    onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                  >
+                    {INDIAN_STATES.map((st) => (
+                      <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                        {st.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Do you have any preferred college?
+                  </label>
+                  <MultiSelect
+                    options={ALL_COLLEGE_OPTIONS}
+                    selectedValues={predictPreferredColleges}
+                    onChange={setPredictPreferredColleges}
+                    placeholder="Search & select preferred colleges..."
+                  />
+                </div>
+
                 {predictLeadError && (
                   <p className="text-xs text-rose-400 font-bold break-words">{predictLeadError}</p>
                 )}
@@ -3781,7 +3879,7 @@ export default function HeroSection({
                 <button
                   type="submit"
                   disabled={predictLeadLoading}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   {predictLeadLoading ? (
                     <>
@@ -3789,7 +3887,107 @@ export default function HeroSection({
                     </>
                   ) : (
                     <>
-                      Submit &amp; View Colleges <ArrowRight className="w-4 h-4" />
+                      Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form> */}
+              <form onSubmit={handlePredictLeadSubmit} className="space-y-4 text-left">
+                {/* Row 1: Full Name + Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Full Name <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={predictLeadName}
+                      onChange={(e) => setPredictLeadName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Email Address <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={predictLeadEmail}
+                      onChange={(e) => setPredictLeadEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Phone + Home State */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      WhatsApp / Phone <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={predictLeadMobile}
+                      onChange={(e) => setPredictLeadMobile(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Which state you belong to? <span className="text-amber-500">*</span>
+                    </label>
+                    <select
+                      value={predictLeadHomeState}
+                      onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                      className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                    >
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                          {st.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Row 3: Preferred College — full width */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Do you have any preferred college?
+                  </label>
+                  <MultiSelect
+                    options={ALL_COLLEGE_OPTIONS}
+                    selectedValues={predictPreferredColleges}
+                    onChange={setPredictPreferredColleges}
+                    placeholder="Search & select preferred colleges..."
+                    isDark={true}
+                  />
+                </div>
+
+                {predictLeadError && (
+                  <p className="text-xs text-rose-400 font-bold break-words">{predictLeadError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={predictLeadLoading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+                >
+                  {predictLeadLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Saving &amp; Matching...
+                    </>
+                  ) : (
+                    <>
+                      Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
