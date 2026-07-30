@@ -1,30 +1,5 @@
 import { NextResponse } from 'next/server';
-
-/**
- * Utility to get a fresh Zoho CRM Access Token using Refresh Token
- */
-async function getZohoAccessToken(): Promise<string> {
-  const accountsUrl = process.env.ZOHO_ACCOUNTS_URL || 'https://accounts.zoho.in';
-  const clientId = process.env.ZOHO_CLIENT_ID;
-  const clientSecret = process.env.ZOHO_CLIENT_SECRET;
-  const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
-
-  if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error('Zoho CRM credentials missing in environment variables.');
-  }
-
-  const tokenUrl = `${accountsUrl}/oauth/v2/token?refresh_token=${refreshToken}&client_id=${clientId}&client_secret=${clientSecret}&grant_type=refresh_token`;
-
-  const res = await fetch(tokenUrl, { method: 'POST' });
-  const data = await res.json();
-
-  if (!res.ok || !data.access_token) {
-    console.error('[Zoho CRM] Token Error Response:', data);
-    throw new Error(data.error || 'Failed to refresh Zoho CRM access token.');
-  }
-
-  return data.access_token;
-}
+import { getZohoAccessToken } from '@/lib/zoho';
 
 export async function POST(req: Request) {
   try {
