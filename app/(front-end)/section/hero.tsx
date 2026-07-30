@@ -3913,7 +3913,7 @@ export default function HeroSection({
                   </div>
 
                   {/* Added Preferred Colleges Chips */}
-                  {predictPreferredColleges.length > 0 && (
+                  {/* {predictPreferredColleges.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2.5">
                       {predictPreferredColleges.map((col, idx) => (
                         <span
@@ -3926,6 +3926,27 @@ export default function HeroSection({
                             type="button"
                             onClick={() => handleRemovePreferredCollege(idx)}
                             className="w-4 h-4 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 flex items-center justify-center transition-colors ml-0.5 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )} */}
+                  {/* Added Preferred Colleges Chips */}
+                  {predictPreferredColleges.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2.5">
+                      {predictPreferredColleges.map((col, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 max-w-full px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold"
+                        >
+                          <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                          <span className="break-all">{col}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePreferredCollege(idx)}
+                            className="w-4 h-4 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 flex items-center justify-center transition-colors ml-0.5 cursor-pointer shrink-0"
                           >
                             <X className="w-3 h-3" />
                           </button>
