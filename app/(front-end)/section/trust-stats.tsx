@@ -2,7 +2,13 @@
 
 import Reveal from './reveal';
 
-export default function TrustStats() {
+interface TrustStatsProps {
+  mode?: 'karnataka' | 'allstate';
+}
+
+export default function TrustStats({ mode = 'allstate' }: TrustStatsProps) {
+  const isKarnataka = mode === 'karnataka';
+
   return (
     <section
       className="w-full bg-gradient-to-r from-sky-500 to-teal-400 py-12 md:py-16 overflow-hidden"
@@ -11,7 +17,9 @@ export default function TrustStats() {
       <Reveal>
         <div className="max-w-7xl mx-auto px-6 flex justify-center items-center">
           <h3 className="trust-text">
-            Which MBBS college can you get? Compare Government, Private & Deemed colleges across India.
+            {isKarnataka
+              ? 'Open to students from every state — no Karnataka domicile needed'
+              : 'Which MBBS college can you get? Compare Government, Private & Deemed colleges across India.'}
           </h3>
         </div>
       </Reveal>

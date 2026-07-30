@@ -434,7 +434,7 @@ export default function HomePage() {
           handleNavigateToCollegePredictor={handleNavigateToCollegePredictor}
         />
 
-        <TrustStats />
+        <TrustStats mode="allstate" />
 
         <WhySection />
 

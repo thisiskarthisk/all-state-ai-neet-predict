@@ -305,7 +305,7 @@ export default function KarnatakaMbbsCollegesPage() {
           handleNavigateToCollegePredictor={handleNavigateToCollegePredictor}
         />
 
-        <TrustStats />
+        <TrustStats mode="karnataka" />
 
         <WhySection />
 
