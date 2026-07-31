@@ -466,7 +466,7 @@ export default function CollegeComparisonPage() {
                   disabled={isCompareDisabled || isComparing}
                   onClick={handleCompareNow}
                 >
-                  {isComparing ? 'Processing AI Comparison...' : 'Compare Now'}
+                  {isComparing ? 'Processing Comparison...' : 'Compare Now'}
                 </button>
 
                 {formError && (
@@ -599,7 +599,7 @@ export default function CollegeComparisonPage() {
                     type="button"
                     disabled={isPdfGenerating}
                     onClick={handleDownloadPdf}
-                    className="w-full max-w-sm mx-auto mt-6 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0095ff] to-[#00e5bf] hover:from-[#0080ff] hover:to-[#00d094] text-white font-extrabold text-sm shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-60"
+                    className="w-full max-w-sm mx-auto mt-6 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0095ff] to-[#00e5bf] hover:from-[#0080ff] hover:to-[#00d094] text-black font-extrabold text-sm shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-60"
                   >
                     <Download className="w-4 h-4 shrink-0" />
                     <span>{isPdfGenerating ? 'Generating PDF...' : 'Download Comparison PDF'}</span>

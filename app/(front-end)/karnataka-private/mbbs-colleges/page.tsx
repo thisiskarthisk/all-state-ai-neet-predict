@@ -19,7 +19,7 @@ import Header from '../../section/header';
 import HeroSection from '../../section/hero';
 import TrustStats from '../../section/trust-stats';
 import WhySection from '../../section/why';
-import CollegeComparison from '../../section/compare-mbbs-colleges';
+import CollegeComparison from '../../section/college-comparison';
 import HowItWorksSection from '../../section/how-it-works';
 import CounsellingSection from '../../section/counselling';
 import HomeFAQ from '../../section/home-faq';
