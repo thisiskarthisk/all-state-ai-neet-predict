@@ -19,6 +19,7 @@ import Header from './(front-end)/section/header';
 import HeroSection from './(front-end)/section/hero';
 import TrustStats from './(front-end)/section/trust-stats';
 import WhySection from './(front-end)/section/why';
+import CollegeComparison from './(front-end)/section/compare-mbbs-colleges';
 import HandbookSection from './(front-end)/section/handbook';
 import HowItWorksSection from './(front-end)/section/how-it-works';
 import CounsellingSection from './(front-end)/section/counselling';
@@ -437,6 +438,8 @@ export default function HomePage() {
         <TrustStats mode="allstate" />
 
         <WhySection />
+
+        <CollegeComparison />
 
         {/* <HandbookSection onOpenModal={() => setIsModalOpen(true)} /> */}
 

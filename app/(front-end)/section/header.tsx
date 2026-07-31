@@ -57,6 +57,17 @@ export default function Header({
             />
           </a>
 
+          {/* 1.6. Compare Colleges */}
+          <a
+            href="/compare-mbbs-colleges"
+            className="relative py-2 text-sm font-bold text-slate-800 hover:text-[#0095ff] transition-colors group whitespace-nowrap"
+          >
+            <span>Compare Colleges</span>
+            <span
+              className="absolute bottom-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-[#0095ff] to-[#00e5bf] rounded-full transition-transform duration-300 scale-x-0 group-hover:scale-x-100 origin-left"
+            />
+          </a>
+
           {/* 2. FAQs with Dropdown Menu */}
           <div
             className="relative"
@@ -167,6 +178,14 @@ export default function Header({
               className="px-3 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors"
             >
               College Predictor
+            </a>
+
+            <a
+              href="/compare-mbbs-colleges"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-3 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+            >
+              Compare Colleges
             </a>
 
             {/* Mobile FAQ accordion */}
