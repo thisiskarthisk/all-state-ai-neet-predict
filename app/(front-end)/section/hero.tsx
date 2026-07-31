@@ -1340,11 +1340,18 @@ export default function HeroSection({
                   }
                 />
               ) : noResultYet ? (
-                <div className="w-full h-full min-h-[300px] sm:min-h-[380px] lg:min-h-[440px] rounded-3xl overflow-hidden flex items-center justify-center bg-slate-100">
+                // <div className="w-full h-full min-h-[300px] sm:min-h-[380px] lg:min-h-[440px] rounded-3xl overflow-hidden flex items-center justify-center bg-slate-100">
+                //   <img
+                //     src="/assets/image/hero-banner-bg-image.jpeg"
+                //     alt="NEET Rank Predictor Banner"
+                //     className="w-full h-full object-cover rounded-3xl"
+                //   />
+                // </div>
+                 <div className="w-full rounded-[32px] overflow-hidden shadow-xl border-2 border-white/15 aspect-[1717/916]">
                   <img
                     src="/assets/image/hero-banner-bg-image.jpeg"
-                    alt="NEET Rank Predictor Banner"
-                    className="w-full h-full object-cover rounded-3xl"
+                    alt="Compare colleges side by side — fees, seats, cutoffs, hostel, accreditation and more, all in one place"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               ) : isRankTab ? (

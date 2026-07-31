@@ -3,7 +3,24 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Reveal from './reveal';
-import { Plus, X, Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, MessageSquare, ShieldCheck } from 'lucide-react';
+import MultiSelect from '@/components/Multiselect';
+import MASTER_UG_COLLEGE_LIST from '@/lib/data/allstate/UgMasterCollegeList.json';
+
+const ALL_COLLEGE_OPTIONS: { code: string; name: string }[] = (() => {
+  const masterUg = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
+  const set = new Set<string>();
+  for (const c of masterUg) {
+    const rawName = (c as any)['College Name'] || (c as any).name;
+    if (rawName && typeof rawName === 'string' && rawName.trim()) {
+      const cleanName = rawName.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanName) set.add(cleanName);
+    }
+  }
+  return Array.from(set)
+    .sort()
+    .map((name) => ({ code: name, name }));
+})();
 
 export default function WhySection() {
   const router = useRouter();
@@ -13,8 +30,7 @@ export default function WhySection() {
   const [course, setCourse] = useState('MBBS');
   const [score, setScore] = useState('');
   
-  // Multiple colleges dynamic list state
-  const [collegeInput, setCollegeInput] = useState('');
+  // Multiple colleges selected via MultiSelect dropdown
   const [collegesList, setCollegesList] = useState<string[]>([]);
   
   const [consent, setConsent] = useState(true);
@@ -22,21 +38,27 @@ export default function WhySection() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const addCollege = () => {
-    if (collegeInput.trim() && !collegesList.includes(collegeInput.trim())) {
-      setCollegesList((prev) => [...prev, collegeInput.trim()]);
-      setCollegeInput('');
-    }
-  };
-
-  const removeCollege = (indexToRemove: number) => {
-    setCollegesList((prev) => prev.filter((_, index) => index !== indexToRemove));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    const cleanPhone = mobile.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setError('Please enter a valid 10-digit WhatsApp phone number.');
+      return;
+    }
+
+    if (!name.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    setLoading(true);
 
     let storedRank = typeof window !== 'undefined' ? localStorage.getItem('predict_rank') : null;
     if (storedRank) {
@@ -64,29 +86,44 @@ export default function WhySection() {
       }
     } catch {}
 
-    let collegesToRender: any[] = collegesList.map((c) => ({ college_name: c, name: c }));
-    if (collegesToRender.length === 0 && typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem('selectCollege') || localStorage.getItem('selectedColleges') || localStorage.getItem('collegeList') || localStorage.getItem('college_prediction_results');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            collegesToRender = parsed;
-          }
-        }
-      } catch {}
-    }
+    const selectedCollegeObjects = collegesList.map((c) => ({ college_name: c, name: c }));
 
     try {
-      // 1. Send Email payload to student and admin via /api/counselling/send-email
-      if (email) {
+      // 1. Insert lead into Zoho CRM
+      try {
+        await fetch('/api/zoho-crm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+            mobileNo: cleanPhone,
+            homeState: preferredStates,
+            selectedColleges: selectedCollegeObjects,
+            studentProfile: {
+              preferredColleges: collegesList.join(', '),
+              rank: storedRank,
+              course: course || 'MBBS',
+              exam: examType,
+              category: category,
+              states: preferredStates,
+            },
+            leadSource: 'Personalized Counselling Update',
+          }),
+        });
+      } catch (crmErr) {
+        console.warn('[CRM Push Warning]:', crmErr);
+      }
+
+      // 2. Send email payload to student and admin via /api/counselling/send-email
+      try {
         await fetch('/api/counselling/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: name || 'Student',
-            email: email,
-            mobileNo: mobile,
+            name: name.trim(),
+            email: email.trim(),
+            mobileNo: cleanPhone,
             studentProfile: {
               rank: storedRank,
               course: course || 'MBBS',
@@ -94,31 +131,16 @@ export default function WhySection() {
               category: category,
               states: preferredStates,
             },
-            selectedColleges: collegesToRender,
+            selectedColleges: selectedCollegeObjects,
+            preferredCollegesList: collegesList,
             type: 'counselling',
           }),
         });
+      } catch (emailErr) {
+        console.warn('[Email Push Warning]:', emailErr);
       }
 
-      // 2. Submit lead to expert-help backend
-      await fetch('/api/expert-help', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name || 'Student',
-          phone: mobile,
-          email,
-          course: course || 'MBBS',
-          score,
-          exam: examType,
-          category,
-          states: preferredStates,
-          colleges: collegesList.length > 0 ? collegesList : ['Karnataka Medical & Dental Colleges'],
-          message: `Personalized Counselling Report requested via Email by ${name || 'Student'}`
-        }),
-      });
-
-      router.push('/thank-you');
+      setSuccess(true);
     } catch (err) {
       console.error('[WhySection] Submission error:', err);
       setError('Something went wrong. Please try again.');
@@ -196,6 +218,7 @@ export default function WhySection() {
                     onClick={() => {
                       setSuccess(false);
                       setCollegesList([]);
+                      
                     }}
                     className="mt-4 px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors"
                   >
@@ -203,7 +226,7 @@ export default function WhySection() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 text-left">
                   {/* Full Name */}
                   <div>
                     <label className="block text-xs font-bold text-slate-300 mb-1.5">
@@ -228,10 +251,11 @@ export default function WhySection() {
                       <input
                         type="tel"
                         required
+                        maxLength={10}
                         value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
+                        onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                         placeholder="9876543210"
-                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-indigo-500 transition-colors font-bold"
                       />
                     </div>
                     <div>
@@ -287,7 +311,7 @@ export default function WhySection() {
                     </div>
                   </div>
 
-                  {/* Favourite Medical College(s) Input + Plus Button */}
+                  {/* Favourite Medical College(s) Multiple Select Dropdown */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-bold text-slate-300">
@@ -296,50 +320,13 @@ export default function WhySection() {
                       <span className="text-[10px] text-slate-500 font-semibold">Optional</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={collegeInput}
-                        onChange={(e) => setCollegeInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addCollege();
-                          }
-                        }}
-                        placeholder="Type a college name and press +"
-                        className="flex-1 rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-indigo-500 transition-colors"
-                      />
-                      <button
-                        type="button"
-                        onClick={addCollege}
-                        className="w-12 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all shrink-0 shadow-md shadow-indigo-600/30"
-                        title="Add College"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {/* Added Colleges Badges List */}
-                    {collegesList.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2.5 max-h-28 overflow-y-auto pr-1">
-                        {collegesList.map((colName, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-950/60 border border-indigo-700/50 text-indigo-300 text-xs font-bold"
-                          >
-                            <span>{idx + 1}. {colName}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeCollege(idx)}
-                              className="text-indigo-400 hover:text-white"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <MultiSelect
+                      options={ALL_COLLEGE_OPTIONS}
+                      selectedValues={collegesList}
+                      onChange={setCollegesList}
+                      placeholder="Search & select favourite colleges..."
+                      isDark={true}
+                    />
                   </div>
 
                   {/* Agreement Checkbox */}
@@ -358,14 +345,14 @@ export default function WhySection() {
                     </label>
                   </div>
 
-                  {error && <p className="text-xs text-rose-400 font-bold">{error}</p>}
+                  {error && <p className="text-xs text-rose-400 font-bold text-center">{error}</p>}
 
                   {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={loading}
                     id="personalized-form-submit-btn"
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all active:scale-[0.99] mt-2 flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all active:scale-[0.99] mt-2 flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                   >
                     {loading ? (
                       <>
@@ -379,8 +366,9 @@ export default function WhySection() {
                   </button>
 
                   {/* Bottom Disclaimer */}
-                  <p className="text-[11px] text-center text-slate-500 pt-1">
-                    No spam. Sent directly to your Email.
+                  <p className="text-[11px] text-center text-slate-500 pt-1 flex items-center justify-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>No spam. Sent directly to your Email &amp; CRM.</span>
                   </p>
                 </form>
               )}
