@@ -1,0 +1,470 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X, ArrowRight, Loader2, ShieldCheck, CheckCircle2, RefreshCw, Sparkles } from 'lucide-react';
+import { INDIAN_STATES } from '@/constants';
+import MultiSelect from '@/components/Multiselect';
+import MASTER_UG_COLLEGE_LIST from '@/lib/data/allstate/UgMasterCollegeList.json';
+
+const ALL_COLLEGE_OPTIONS: { code: string; name: string }[] = (() => {
+  const masterUg = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
+  const set = new Set<string>();
+  for (const c of masterUg) {
+    const rawName = (c as any)['College Name'] || (c as any).name;
+    if (rawName && typeof rawName === 'string' && rawName.trim()) {
+      const cleanName = rawName.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanName) set.add(cleanName);
+    }
+  }
+  return Array.from(set)
+    .sort()
+    .map((name) => ({ code: name, name }));
+})();
+
+export interface CounsellingInfoModelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (leadData: {
+    name: string;
+    email: string;
+    phone: string;
+    homeState: string;
+    preferredColleges: string[];
+  }) => void;
+  title?: string;
+  subtitle?: string;
+}
+
+export default function CounsellingInfoModel({
+  isOpen,
+  onClose,
+  onSuccess,
+  title = 'Get your favourite college counselling info',
+  subtitle = 'Enter your contact info to view matching medical colleges & cutoffs.',
+}: CounsellingInfoModelProps) {
+  const [mounted, setMounted] = useState(false);
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+
+  // Form Fields
+  const [predictLeadName, setPredictLeadName] = useState('');
+  const [predictLeadEmail, setPredictLeadEmail] = useState('');
+  const [predictLeadMobile, setPredictLeadMobile] = useState('');
+  const [predictLeadHomeState, setPredictLeadHomeState] = useState('Karnataka');
+  const [predictPreferredColleges, setPredictPreferredColleges] = useState<string[]>([]);
+
+  // OTP Fields
+  const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (step === 'otp' && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setIsResendDisabled(false);
+    }
+    return () => clearInterval(interval);
+  }, [step, resendTimer]);
+
+  if (!isOpen || !mounted) return null;
+
+  // Step 1: Form Submission -> 1. CRM Insert, 2. Email Send, 3. Send WhatsApp OTP via Wati template neet_predict_otp_verification
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    setSuccessMsg('');
+
+    const cleanPhone = predictLeadMobile.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setFormError('Please enter a valid 10-digit WhatsApp phone number.');
+      return;
+    }
+
+    if (!predictLeadName.trim()) {
+      setFormError('Please enter your full name.');
+      return;
+    }
+
+    if (!predictLeadEmail.trim()) {
+      setFormError('Please enter your email address.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 1. Push lead to Zoho CRM
+      try {
+        await fetch('/api/zoho-crm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: predictLeadName.trim(),
+            email: predictLeadEmail.trim(),
+            mobileNo: cleanPhone,
+            homeState: predictLeadHomeState,
+            selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
+            studentProfile: {
+              preferredColleges: predictPreferredColleges.join(', '),
+              homeState: predictLeadHomeState,
+            },
+            leadSource: title || 'Counselling Info OTP Modal',
+          }),
+        });
+      } catch (crmErr) {
+        console.warn('[CRM Push Warning]:', crmErr);
+      }
+
+      // // 2. Send email notification
+      try {
+        await fetch('/api/counselling/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: predictLeadName.trim(),
+            email: predictLeadEmail.trim(),
+            mobileNo: cleanPhone,
+            homeState: predictLeadHomeState,
+            selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
+            preferredCollegesList: predictPreferredColleges,
+            type: 'counselling',
+          }),
+        });
+      } catch (emailErr) {
+        console.warn('[Email Push Warning]:', emailErr);
+      }
+
+      // alert("Whatsapp OTP Entering");
+
+      // 3. Send WhatsApp OTP via Wati
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          name: predictLeadName.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setStep('otp');
+        setSuccessMsg(data.message || 'OTP code sent to your WhatsApp number!');
+        setResendTimer(30);
+        setIsResendDisabled(true);
+      } else {
+        setFormError(data.error || 'Failed to send OTP to WhatsApp. Please check your number.');
+      }
+    } catch (err) {
+      console.error('Error sending OTP:', err);
+      setFormError('Network error while sending OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 2: Verify 4-Digit WhatsApp OTP & Display Results
+  const handleOtpVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    setSuccessMsg('');
+
+    const cleanOtp = otp.trim();
+    if (!cleanOtp || cleanOtp.length < 4) {
+      setFormError('Please enter the 4-digit verification code received on WhatsApp.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const cleanPhone = predictLeadMobile.replace(/\D/g, '');
+      const res = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone, otp: cleanOtp }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('is_whatsapp_verified', 'true');
+          sessionStorage.setItem('verified_phone', cleanPhone);
+          sessionStorage.setItem('verified_name', predictLeadName);
+        }
+
+        setSuccessMsg('WhatsApp verified successfully!');
+        setTimeout(() => {
+          onSuccess({
+            name: predictLeadName,
+            email: predictLeadEmail,
+            phone: cleanPhone,
+            homeState: predictLeadHomeState,
+            preferredColleges: predictPreferredColleges,
+          });
+        }, 300);
+      } else {
+        setFormError(data.error || 'Invalid OTP code. Please check your WhatsApp.');
+      }
+    } catch (err) {
+      console.error('Error verifying OTP:', err);
+      setFormError('Network error while verifying OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setFormError('');
+    setSuccessMsg('');
+    setIsLoading(true);
+
+    try {
+      const cleanPhone = predictLeadMobile.replace(/\D/g, '');
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone, name: predictLeadName.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setSuccessMsg('A new 4-digit OTP has been sent to your WhatsApp.');
+        setResendTimer(30);
+        setIsResendDisabled(true);
+      } else {
+        setFormError(data.error || 'Failed to resend OTP.');
+      }
+    } catch (err) {
+      setFormError('Failed to resend OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-[#090d16] text-white rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200 my-auto">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition-colors shrink-0 z-10"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* Modal Header */}
+        <div className="text-center mb-6 pr-6">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase mb-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            {step === 'form' ? 'Unlock College Prediction & Comparison' : 'WhatsApp Verification'}
+          </span>
+          <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            {step === 'form' ? title : 'Enter WhatsApp 4-Digit OTP'}
+          </h3>
+          <p className="text-xs text-slate-400 mt-1 font-medium leading-relaxed">
+            {step === 'form'
+              ? subtitle
+              : `We sent a 4-digit verification code to +91 ${predictLeadMobile.replace(/\D/g, '')} via WhatsApp.`}
+          </p>
+        </div>
+
+        {/* STEP 1: FORM */}
+        {step === 'form' && (
+          <form onSubmit={handleLeadSubmit} className="space-y-4 text-left">
+            {/* Row 1: Full Name + Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Full Name <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={predictLeadName}
+                  onChange={(e) => setPredictLeadName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Email Address <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={predictLeadEmail}
+                  onChange={(e) => setPredictLeadEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Phone + Home State */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  WhatsApp / Phone <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  maxLength={10}
+                  value={predictLeadMobile}
+                  onChange={(e) => setPredictLeadMobile(e.target.value.replace(/\D/g, ''))}
+                  placeholder="e.g. 9876543210"
+                  className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Which state you belong to? <span className="text-amber-500">*</span>
+                </label>
+                <select
+                  value={predictLeadHomeState}
+                  onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                  className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                >
+                  {INDIAN_STATES.map((st) => (
+                    <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                      {st.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Row 3: Preferred College */}
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                Do you have any preferred college?
+              </label>
+              <MultiSelect
+                options={ALL_COLLEGE_OPTIONS}
+                selectedValues={predictPreferredColleges}
+                onChange={setPredictPreferredColleges}
+                placeholder="Search & select preferred colleges..."
+                isDark={true}
+              />
+            </div>
+
+            {formError && (
+              <p className="text-xs text-rose-400 font-bold break-words text-center">{formError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Sending WhatsApp OTP...
+                </>
+              ) : (
+                <>
+                  Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* STEP 2: OTP VERIFICATION */}
+        {step === 'otp' && (
+          <form onSubmit={handleOtpVerify} className="space-y-4 text-left">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-2 text-center">
+                Enter 4-Digit OTP Code
+              </label>
+              <input
+                type="text"
+                maxLength={4}
+                autoFocus
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                placeholder="• • • •"
+                className="w-full rounded-2xl bg-[#0b0f19] border border-slate-700 px-4 py-3.5 text-center text-2xl font-black tracking-[0.5em] text-white placeholder:tracking-normal outline-none focus:border-emerald-500 transition-colors"
+              />
+            </div>
+
+            {successMsg && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {formError && (
+              <p className="text-xs text-rose-400 font-bold text-center">{formError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading || otp.trim().length !== 4}
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying OTP &amp; Saving...
+                </>
+              ) : (
+                <>
+                  Verify OTP &amp; Continue <CheckCircle2 className="w-4 h-4" />
+                </>
+              )}
+            </button>
+
+            {/* Resend OTP & Change Details */}
+            <div className="flex items-center justify-between text-xs font-bold pt-2">
+              <button
+                type="button"
+                onClick={() => setStep('form')}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                Change Phone / Details
+              </button>
+
+              <button
+                type="button"
+                disabled={isResendDisabled || isLoading}
+                onClick={handleResendOtp}
+                className="text-emerald-400 hover:text-emerald-300 disabled:text-slate-600 transition-colors flex items-center gap-1"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                <span>{isResendDisabled ? `Resend in ${resendTimer}s` : 'Resend OTP'}</span>
+              </button>
+            </div>
+          </form>
+        )}
+
+        <p className="text-[11px] text-slate-500 font-medium text-center flex items-center justify-center gap-1 mt-5 shrink-0">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+          <span>Verified WhatsApp OTP Delivery via Whatsapp</span>
+        </p>
+      </div>
+    </div>,
+    document.body
+  );
+}

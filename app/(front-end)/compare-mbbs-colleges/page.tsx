@@ -1053,6 +1053,7 @@ import { Download, CheckCircle2, ChevronDown } from 'lucide-react';
 import Header from '../section/header';
 import Footer from '../section/footer';
 import MedicalPulseLoader from '@/components/MedicalPulseLoader';
+import CounsellingInfoModel from '@/components/CounsellingInfoModel';
 import MASTER_UG_COLLEGE_LIST from '@/lib/data/allstate/UgMasterCollegeList.json';
 
 export interface Criterion {
@@ -1108,6 +1109,12 @@ export default function CollegeComparisonPage() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('is_whatsapp_verified');
+    }
   }, []);
 
   const masterList: any[] = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
@@ -1166,16 +1173,36 @@ export default function CollegeComparisonPage() {
     setExpandedCells(updated);
   };
 
+  // WhatsApp OTP Verification Modal State
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+
   const isCompareDisabled = selectedRawColleges.length < 2 || checkedCriteria.size < 1;
   const LONG_TEXT_KEYS = new Set(['hostel', 'accreditation', 'address']);
 
-  // Trigger Perplexity AI Comparison request with selected category
-  const handleCompareNow = async () => {
+  const handleCompareNow = () => {
     if (isCompareDisabled) {
       setFormError('Please select at least 2 colleges and 1 criterion to compare.');
       return;
     }
 
+    setFormError('');
+
+    // Check if user is already verified via WhatsApp OTP in this session
+    if (typeof window !== 'undefined' && sessionStorage.getItem('is_whatsapp_verified') === 'true') {
+      executeComparison();
+      return;
+    }
+
+    setIsOtpModalOpen(true);
+  };
+
+  const handleOtpSuccess = (_leadData: any) => {
+    setIsOtpModalOpen(false);
+    executeComparison();
+  };
+
+  // Trigger Perplexity AI Comparison request with selected category
+  const executeComparison = async () => {
     setFormError('');
     setIsComparing(true);
     setShowResults(false);
@@ -1199,7 +1226,6 @@ export default function CollegeComparisonPage() {
       });
 
       const resData = await response.json();
-      // console.log("resData", resData);
 
       if (response.ok && resData.success && Array.isArray(resData.colleges)) {
         setComparedColleges(resData.colleges);
@@ -1939,12 +1965,14 @@ export default function CollegeComparisonPage() {
         }
       `}</style>
 
-      {/* FOOTER */}
-      {/* <Footer
-        switchTab={() => router.push('/')}
-        openCounselling={() => router.push('/#why')}
-        counsellingKitURL="/assets/counselling-kit/The Counselling Atlas.pdf"
-      /> */}
+      {/* WhatsApp OTP Verification Modal */}
+      <CounsellingInfoModel
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={handleOtpSuccess}
+        title="Compare Medical Colleges Side by Side"
+        subtitle="Enter your contact info & verify your WhatsApp number to view side-by-side college comparison."
+      />
     </div>
   );
 }
