@@ -75,47 +75,78 @@ export const NEET_UG_COURSES: Course[] = [
 
 export const NEET_PG_COURSES: Course[] = [
   {
+    code: 'ALL',
+    name: 'All Courses',
+    examCode: 'NEET_PG',
+    duration: '2-3 Years',
+    description: 'All Postgraduate Medical Courses.'
+  },
+  {
     code: 'MD',
     name: 'MD',
     examCode: 'NEET_PG',
     duration: '3 Years',
     description: 'Postgraduate specialization focused on internal medicine and clinical specialties.'
   },
-  // {
-  //   code: 'MD_GEN_MED',
-  //   name: 'MD General Medicine',
-  //   examCode: 'NEET_PG',
-  //   duration: '3 Years',
-  //   description: 'Postgraduate specialization focused on the diagnosis and non-surgical treatment of internal diseases.'
-  // },
-  // {
-  //   code: 'MD_PAED',
-  //   name: 'MD Paediatrics',
-  //   examCode: 'NEET_PG',
-  //   duration: '3 Years',
-  //   description: 'Specialization focusing on medical care of infants, children, and adolescents.'
-  // },
-  // {
-  //   code: 'MD_RADIO',
-  //   name: 'MD Radiodiagnosis',
-  //   examCode: 'NEET_PG',
-  //   duration: '3 Years',
-  //   description: 'Postgraduate specialization using imaging techniques to diagnose and monitor medical conditions.'
-  // },
-  // {
-  //   code: 'MD_DERM',
-  //   name: 'MD Dermatology, Venereology and Leprosy',
-  //   examCode: 'NEET_PG',
-  //   duration: '3 Years',
-  //   description: 'Specialized clinical program focused on treatment of skin diseases and venereal infections.'
-  // },
-  // {
-  //   code: 'MD_ANAES',
-  //   name: 'MD Anaesthesiology',
-  //   examCode: 'NEET_PG',
-  //   duration: '3 Years',
-  //   description: 'Postgraduate medical program in anesthesia and critical care operations.'
-  // }
+  {
+    code: 'MS',
+    name: 'MS',
+    examCode: 'NEET_PG',
+    duration: '3 Years',
+    description: 'Postgraduate surgical specializations.'
+  },
+  {
+    code: 'DNB',
+    name: 'DNB',
+    examCode: 'NEET_PG',
+    duration: '3 Years',
+    description: 'National Board of Examinations PG programs.'
+  },
+  {
+    code: 'Diploma',
+    name: 'Diploma',
+    examCode: 'NEET_PG',
+    duration: '2 Years',
+    description: 'Postgraduate diploma courses.'
+  },
+];
+
+export interface Speciality {
+  code: string;
+  name: string;
+}
+
+export const NEET_PG_SPECIALITIES: Speciality[] = [
+  { code: 'ALL', name: 'All Specialities' },
+  { code: 'Anaesthesiology', name: 'Anaesthesiology' },
+  { code: 'Anatomy', name: 'Anatomy' },
+  { code: 'Biochemistry', name: 'Biochemistry' },
+  { code: 'Cardiology', name: 'Cardiology' },
+  { code: 'Community Medicine', name: 'Community Medicine / SPM' },
+  { code: 'Dermatology', name: 'Dermatology (DVL)' },
+  { code: 'Emergency Medicine', name: 'Emergency Medicine' },
+  { code: 'ENT', name: 'ENT (Otorhinolaryngology)' },
+  { code: 'Forensic Medicine', name: 'Forensic Medicine' },
+  { code: 'General Medicine', name: 'General Medicine' },
+  { code: 'General Surgery', name: 'General Surgery' },
+  { code: 'Microbiology', name: 'Microbiology' },
+  { code: 'Obstetrics & Gynaecology', name: 'OBG (Obstetrics & Gynaecology)' },
+  { code: 'Ophthalmology', name: 'Ophthalmology' },
+  { code: 'Orthopaedics', name: 'Orthopaedics' },
+  { code: 'Paediatrics', name: 'Paediatrics / Pediatrics' },
+  { code: 'Pathology', name: 'Pathology' },
+  { code: 'Pharmacology', name: 'Pharmacology' },
+  { code: 'Physiology', name: 'Physiology' },
+  { code: 'Psychiatry', name: 'Psychiatry' },
+  { code: 'Radio Diagnosis', name: 'Radio Diagnosis / Radiology' },
+  { code: 'Radiation Oncology', name: 'Radiation Oncology / Radiotherapy' },
+  { code: 'Respiratory Medicine', name: 'Respiratory Medicine / Pulmonary' },
+  { code: 'Transfusion Medicine', name: 'Transfusion Medicine / Immuno-Haematology' },
+  { code: 'Critical Care Medicine', name: 'Critical Care Medicine' },
+  { code: 'Hospital Administration', name: 'Hospital Administration' },
+  { code: 'Geriatrics', name: 'Geriatrics' },
+  { code: 'Nuclear Medicine', name: 'Nuclear Medicine' },
+  { code: 'Sports Medicine', name: 'Sports Medicine' },
 ];
 
 export const NEET_MDS_COURSES: Course[] = [

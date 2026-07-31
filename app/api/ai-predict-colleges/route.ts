@@ -15,7 +15,7 @@ import { KARNATAKA_PG_COLLEGES } from '@/lib/data/KarnatakaState/pgCollegeList';
 import { KARNATAKA_UG_COLLEGES } from '@/lib/data/KarnatakaState/ugCollegeList';
 import { ALLSTATE_PG_COLLEGES } from '@/lib/data/allstate/pgCollegeList';
 import { ALLSTATE_UG_COLLEGES } from '@/lib/data/allstate/ugCollegeList';
-import { predictCollegesFromMasterData } from '@/lib/data/collegeMatcher';
+import { predictCollegesFromMasterData, predictPgCollegesFromMasterData } from '@/lib/data/collegeMatcher';
 import { MASTER_UG_COLLEGE_LIST } from '@/lib/data/allstate/UgMasterCollegeList';
 
 function parseCleanJson(text: string): any {
@@ -594,7 +594,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(aiData);
     }
 
-    const { rank, states, category, courses, course, examType, round } = body;
+    const { rank, states, category, courses, course, speciality, specialty, examType, round, type } = body;
 
     const rankNum = typeof rank === 'number' && rank > 0 ? rank : null;
     if (rankNum === null) {
@@ -602,6 +602,7 @@ export async function POST(req: NextRequest) {
     }
 
     const selectedExamCode = examType || 'NEET_UG';
+    const selectedSpeciality = speciality || specialty || 'ALL';
     const examMetadata = SUPPORTED_EXAMS.find(e => e.code === selectedExamCode) || SUPPORTED_EXAMS[0];
     const examName = examMetadata.name;
 
@@ -636,75 +637,20 @@ export async function POST(req: NextRequest) {
       ? (NEET_CATEGORIES.find(c => c.code === category)?.name || category)
       : 'General (UR)';
 
-    // Direct static PG College Dataset matching for NEET PG (using General UR cutoffs dataset)
-    const isKarnatakaOnly = selectedStateCodes.length === 1 && (selectedStateCodes[0] === 'KA' || selectedStateCodes[0] === 'Karnataka');
-    const targetUgDataset = isKarnatakaOnly ? KARNATAKA_UG_COLLEGES : ALLSTATE_UG_COLLEGES;
-    const targetPgDataset = isKarnatakaOnly ? KARNATAKA_PG_COLLEGES : ALLSTATE_PG_COLLEGES;
-
+    // Direct static PG College Dataset matching for NEET PG using PgMasterCollegeList.json
     if (selectedExamCode === 'NEET_PG') {
-      const isGeneralOrAllCategory = !category || category === 'ALL' || category === 'UR';
+      const masterPgMatches = predictPgCollegesFromMasterData(
+        undefined,
+        rankNum,
+        category || 'ALL',
+        typeof course === 'string' ? course : 'ALL',
+        selectedSpeciality,
+        preferredStatesList,
+        round || 'ALL',
+        type || 'ALL'
+      );
 
-      let pgMatches = (targetPgDataset as any[]).filter((col: any) => {
-        if (
-          selectedCourseCodes.length > 0 &&
-          !selectedCourseCodes.includes('ALL') &&
-          !selectedCourseCodes.includes('MD')
-        ) {
-          const matchSpecialty = selectedCourseCodes.some(
-            (code) =>
-              (col.specialtyCode && col.specialtyCode === code) ||
-              (col.specialty && col.specialty.toLowerCase().includes(code.toLowerCase()))
-          );
-          if (!matchSpecialty) return false;
-        }
-
-        const closingRankNum = col.closingRank || col.closing_rank || 50000;
-        if (rankNum <= 10) return true;
-        return rankNum <= closingRankNum + 1500;
-      });
-
-      if (pgMatches.length > 0 && isGeneralOrAllCategory) {
-        const formattedColleges = pgMatches.map((col: any) => {
-          const closingRankNum = col.closingRank || col.closing_rank || 50000;
-          const openingRankNum = col.openingRank || col.opening_rank || 1;
-          const chance = rankNum <= 10 ? 'High' : computeChance(rankNum, closingRankNum);
-
-          const auth = getAuthorityForState(col.state_name || col.state || 'Karnataka');
-
-          return {
-            college_id: col.college_id || col.id,
-            name: col.college_name || col.collegeName,
-            state: col.state_name || col.state || 'Karnataka',
-            city: col.city_name || col.city || '',
-            collegeType: col.college_type || col.collegeType || 'Government',
-            officialWebsite: auth?.officialWebsite || 'https://kea.kar.nic.in/',
-            best_chance: chance,
-            closest_cutoff: closingRankNum,
-            opening_cutoff: openingRankNum,
-            cutoffs: [
-              {
-                course: col.specialty || 'MD / MS',
-                category: targetCategory,
-                openingRank: openingRankNum,
-                closingRank: closingRankNum,
-                chanceOfAdmission: chance
-              }
-            ],
-            authorityInfo: auth ? {
-              authority: auth.authority,
-              organization: auth.organization,
-              ugPortal: auth.ugPortal,
-              pgPortal: auth.pgPortal,
-              officialWebsite: auth.officialWebsite,
-              registrationPortal: auth.registrationPortal,
-              quotaType: auth.quotaType,
-              notes: auth.notes
-            } : null
-          };
-        });
-
-        return NextResponse.json({ colleges: formattedColleges });
-      }
+      return NextResponse.json({ colleges: masterPgMatches });
     }
 
     // Direct deterministic Master UG College Dataset matching for NEET UG

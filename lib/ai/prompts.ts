@@ -401,6 +401,67 @@ State: ${row.state}
   `;
 }
 
+// export function collegeComparisonPrompt(collegesData: any[], targetCategory: string = 'Gen', examType: string = 'UG') {
+//   const categoryName = targetCategory === 'Gen' ? 'General' : targetCategory;
+//   const isPg = examType === 'PG';
+
+//   const collegeListSummary = collegesData.map((c: any) => ({
+//     name: c['College Name'] || c.name || '',
+//     course: c['Course Name'] || (isPg ? 'MD/MS' : 'MBBS'),
+//     city: c['City'] || c.city || '',
+//     state: c['State'] || c.state || '',
+//     type: c['Type'] || c.type || 'Government/Private',
+//     board: c['Board'] || c.board || '',
+//     seats: c['2026 Total Seats'] || c.seats || (isPg ? 3 : 150),
+//     r1Cutoff: c[`Round 1 ${targetCategory}`] || c['Round 1 Gen'] || null,
+//     r2Cutoff: c[`Round 2 ${targetCategory}`] || c['Round 2 Gen'] || null,
+//     r3Cutoff: c[`Round 3 ${targetCategory}`] || c['Round 3 Gen'] || null,
+//     strayCutoff: c[`Stray ${targetCategory}`] || c['Stray Gen'] || null,
+//     rankRange: c['Overall Rank Range (All Rounds)'] || c['Overall Rank Range'] || '',
+//   }));
+
+//   return `
+// You are an expert Indian Medical Education & NEET ${examType} Counselling advisor.
+// The user wants to compare the following selected ${examType} medical colleges for Category: "${categoryName}":
+// ${JSON.stringify(collegeListSummary, null, 2)}
+
+// For EACH college in the list, provide accurate or realistic estimated data for NEET ${examType} under Category "${categoryName}":
+// 1. "name": College Name
+// 2. "loc": "City, State"
+// 3. "address": Full physical street address with pincode (e.g. "EVR Periyar Salai, Park Town, Chennai, Tamil Nadu - 600003")
+// 4. "fees": Total Annual Fees in INR as a pure number (e.g. 15000 for Govt, 1144000 for Pvt, 2500000 for Deemed)
+// 5. "feesLabel": Human readable formatted fee string (e.g. "₹15,000 / yr" or "₹11.44L / yr")
+// 6. "seats": Total MBBS Seats as pure number (e.g. 250)
+// 7. "seatsLabel": Human readable formatted seats string (e.g. "250 seats")
+// 8. "cutoff": Expected AIR ${categoryName} Cutoff rank as pure number (e.g. 5200 for Gen, 45000 for SC, 80000 for ST)
+// 9. "cutoffLabel": Formatted cutoff string specifying Category (e.g. "AIR 5,200 (${categoryName})")
+// 10. "hostel": Hostel Availability string ("Available", "Available (Boys & Girls)", etc.)
+// 11. "hostelLabel": Detailed hostel description string
+// 12. "accreditation": NAAC Accreditation & NIRF ranking string (e.g. "A+ Grade (NIRF #11)")
+
+// Respond in JSON ONLY with format:
+// {
+//   "colleges": [
+//     {
+//       "name": "...",
+//       "loc": "...",
+//       "address": "...",
+//       "fees": 15000,
+//       "feesLabel": "...",
+//       "seats": 250,
+//       "seatsLabel": "...",
+//       "cutoff": 5200,
+//       "cutoffLabel": "AIR 5,200 (${categoryName})",
+//       "hostel": "Available",
+//       "hostelLabel": "...",
+//       "accreditation": "..."
+//     }
+//   ]
+// }
+// `;
+// }
+
+
 export function collegeComparisonPrompt(collegesData: any[], targetCategory: string = 'Gen') {
   const categoryName = targetCategory === 'Gen' ? 'General' : targetCategory;
 

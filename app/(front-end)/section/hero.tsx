@@ -1936,6 +1936,7 @@ import {
   getCoursesByExam,
   INDIAN_STATES,
   NEET_CATEGORIES,
+  NEET_PG_SPECIALITIES,
   ALL_COURSES,
   getRankConfidenceLevel,
 } from '@/constants';
@@ -2068,6 +2069,7 @@ export default function HeroSection({
   const [collegeRank, setCollegeRank] = useState('');
   const [collegeExamType, setCollegeExamType] = useState('NEET_UG');
   const [selectedCourse, setSelectedCourse] = useState('MBBS');
+  const [selectedSpeciality, setSelectedSpeciality] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('UR');
   const [selectedStates, setSelectedStates] = useState<string[]>(mode === 'allstate' ? ['AI'] : ['KA']);
   const [selectedRound, setSelectedRound] = useState<string>('Round 1');
@@ -2108,6 +2110,7 @@ export default function HeroSection({
     rank: string;
     examType: string;
     course: string;
+    speciality: string;
     category: string;
     states: string[];
     round: string;
@@ -2160,13 +2163,14 @@ export default function HeroSection({
       if (collegeRank) localStorage.setItem('predict_rank', collegeRank);
       if (collegeExamType) localStorage.setItem('predict_examType', collegeExamType);
       if (selectedCourse) localStorage.setItem('predict_course', selectedCourse);
+      if (selectedSpeciality) localStorage.setItem('predict_speciality', selectedSpeciality);
       if (selectedCategory) localStorage.setItem('predict_category', selectedCategory);
       if (selectedRound) localStorage.setItem('predict_round', selectedRound);
       if (selectedStates && selectedStates.length > 0) {
         localStorage.setItem('predict_states', JSON.stringify(selectedStates));
       }
     }
-  }, [collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound]);
+  }, [collegeRank, collegeExamType, selectedCourse, selectedSpeciality, selectedCategory, selectedStates, selectedRound]);
 
   // Restore states from localStorage on client mount if navigating back, OR clear if reloaded
   useEffect(() => {
@@ -2179,6 +2183,7 @@ export default function HeroSection({
         localStorage.removeItem('predict_rank');
         localStorage.removeItem('predict_examType');
         localStorage.removeItem('predict_course');
+        localStorage.removeItem('predict_speciality');
         localStorage.removeItem('predict_category');
         localStorage.removeItem('predict_states');
         localStorage.removeItem('predict_round');
@@ -2197,6 +2202,7 @@ export default function HeroSection({
       const storedRank = localStorage.getItem('predict_rank');
       const storedExamType = localStorage.getItem('predict_examType');
       const storedCourse = localStorage.getItem('predict_course');
+      const storedSpeciality = localStorage.getItem('predict_speciality');
       const storedCategory = localStorage.getItem('predict_category');
       const storedStates = localStorage.getItem('predict_states');
       const storedRound = localStorage.getItem('predict_round');
@@ -2207,6 +2213,7 @@ export default function HeroSection({
         if (storedRank) setCollegeRank(storedRank);
         if (storedExamType) setCollegeExamType(storedExamType);
         if (storedCourse) setSelectedCourse(storedCourse);
+        if (storedSpeciality) setSelectedSpeciality(storedSpeciality);
         if (storedCategory) setSelectedCategory(storedCategory);
         if (storedRound) setSelectedRound(storedRound);
         if (storedStates) {
@@ -2223,6 +2230,7 @@ export default function HeroSection({
               rank: storedRank || '',
               examType: storedExamType || 'NEET_UG',
               course: storedCourse || 'MBBS',
+              speciality: storedSpeciality || 'ALL',
               category: storedCategory || 'ALL',
               round: storedRound || 'Round 1',
               states: (() => {
@@ -2262,6 +2270,7 @@ export default function HeroSection({
       const courses = getCoursesByExam(rankExamType as any);
       const defaultCourse = courses && courses.length > 0 ? courses[0].code : 'MBBS';
       setSelectedCourse(defaultCourse);
+      setSelectedSpeciality('ALL');
       setSelectedCategory('UR');
       const statesToUse = selectedStates && selectedStates.length > 0 ? selectedStates : (mode === 'allstate' ? ['AI'] : ['KA']);
       setSelectedStates(statesToUse);
@@ -2277,12 +2286,13 @@ export default function HeroSection({
         localStorage.removeItem('selectedColleges');
         localStorage.removeItem('predict_states');
         localStorage.removeItem('predict_course');
+        localStorage.removeItem('predict_speciality');
         localStorage.removeItem('predict_category');
         localStorage.removeItem('predict_round');
         localStorage.setItem('predict_rank', rStr);
         localStorage.setItem('predict_examType', rankExamType);
       }
-      executeCollegeSearch(rStr, rankExamType, defaultCourse, 'UR', statesToUse, 'Round 1');
+      executeCollegeSearch(rStr, rankExamType, defaultCourse, 'UR', statesToUse, 'Round 1', 'ALL');
       scrollToResults();
     }
   };
@@ -2293,7 +2303,8 @@ export default function HeroSection({
     cStr: string,
     catStr: string,
     sArr: string[],
-    rRoundStr: string = 'Round 1'
+    rRoundStr: string = 'Round 1',
+    specStr: string = selectedSpeciality
   ) => {
     const rankNum = parseInt(rStr, 10);
     if (isNaN(rankNum) || rankNum <= 0) {
@@ -2316,6 +2327,7 @@ export default function HeroSection({
           examType: eStr,
           course: cStr,
           courses: coursesToUse,
+          speciality: specStr,
           category: catStr,
           states: sArr,
           round: rRoundStr,
@@ -2327,12 +2339,13 @@ export default function HeroSection({
         setCollegeError(data.error || 'Failed to predict colleges.');
       } else {
         setCollegeResult(data);
-        setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, category: catStr, states: sArr, round: rRoundStr });
+        setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, speciality: specStr, category: catStr, states: sArr, round: rRoundStr });
         scrollToResults();
         if (typeof window !== 'undefined') {
           localStorage.setItem('predict_rank', rStr);
           localStorage.setItem('predict_examType', eStr);
           localStorage.setItem('predict_course', cStr);
+          localStorage.setItem('predict_speciality', specStr);
           localStorage.setItem('predict_category', catStr);
           localStorage.setItem('predict_round', rRoundStr);
           localStorage.setItem('predict_states', JSON.stringify(sArr));
@@ -2582,6 +2595,7 @@ export default function HeroSection({
         map.set(key, {
           college_id: key,
           college_name: name,
+          course_name: c.course_name || c.specialty || '',
           state_name: state,
           city_name: c.city_name || c.city || '',
           college_type: type,
@@ -2633,6 +2647,7 @@ export default function HeroSection({
     (collegeRank !== lastSearchParams.rank ||
       collegeExamType !== lastSearchParams.examType ||
       selectedCourse !== lastSearchParams.course ||
+      (collegeExamType === 'NEET_PG' && selectedSpeciality !== lastSearchParams.speciality) ||
       selectedCategory !== lastSearchParams.category ||
       !statesMatch(selectedStates, lastSearchParams.states));
 
@@ -3386,7 +3401,32 @@ export default function HeroSection({
                     </div>
 
                     {/* Direct Filter Fields Grid */}
-                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className={`p-3 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 ${collegeExamType === 'NEET_PG' ? 'lg:grid-cols-4 xl:grid-cols-5' : 'lg:grid-cols-4'} gap-3`}>
+                      {collegeExamType === 'NEET_PG' && (
+                        <div>
+                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                            Speciality
+                          </label>
+                          <select
+                            value={selectedSpeciality}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setSelectedSpeciality(val);
+                              if (collegeRank) {
+                                executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound, val);
+                              }
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
+                          >
+                            {NEET_PG_SPECIALITIES.map((sp) => (
+                              <option key={sp.code} value={sp.code}>
+                                {sp.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
                       <div>
                         <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
                           Admission Chance
@@ -3396,7 +3436,7 @@ export default function HeroSection({
                           onChange={(e) => setChanceFilter(e.target.value as any)}
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none focus:border-indigo-600 cursor-pointer"
                         >
-                          <option value="all">All Admission Chances</option>
+                          <option value="all">All Chances</option>
                           <option value="High">High Chance</option>
                           <option value="Medium">Medium Chance</option>
                           <option value="Reach">Low / Reach Chance</option>
@@ -3545,7 +3585,7 @@ export default function HeroSection({
                               No Medical Colleges Found
                             </h5>
                             <p className="text-xs text-slate-500 font-semibold max-w-sm mt-1.5 leading-relaxed">
-                              No colleges match your current state/course filter criteria. Try selecting "All Courses", picking additional preferred states, or clearing your search query.
+                              No colleges match your current state/course filter criteria. Try selecting &quot;All Courses&quot;, picking additional preferred states, or clearing your search query.
                             </p>
                           </div>
                         );
@@ -3658,7 +3698,7 @@ export default function HeroSection({
                                     return (
                                       <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-150">
-                                          <span>MBBS:</span>
+                                          <span>{c.course_name || 'MBBS'}:</span>
                                           <span className="font-mono text-indigo-600">AIR ~{fmtInt(c.closest_cutoff)}</span>
                                         </span>
                                       </div>
