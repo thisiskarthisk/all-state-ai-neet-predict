@@ -64,8 +64,9 @@ function getPgSpecialties(courseFilter: string = 'ALL'): string[] {
 }
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
   try {
-    const { searchParams } = new URL(request.url);
     const exam = (searchParams.get('exam') || 'UG').toUpperCase();
     const query = (searchParams.get('q') || '').trim().toLowerCase();
     const courseType = (searchParams.get('course') || 'ALL').trim().toUpperCase();
