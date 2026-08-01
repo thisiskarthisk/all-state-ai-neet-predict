@@ -1030,7 +1030,11 @@ export default function HeroSection({
         <Reveal>
           <div className="section-head center mb-12 hero-heading-wrap">
             <h2 className="hero-title-cc font-extrabold text-white tracking-tight leading-tight">
-              {mode === 'allstate' ? (
+              {collegeExamType === 'NEET_PG' ? (
+                <>
+                  Find Your Best <span className="bg-gradient-to-r from-[#0095ff] via-[#00e5bf] to-[#2dd4bf] bg-clip-text text-transparent">MD/MS Colleges</span> Based on Your NEET PG Rank
+                </>
+              ) : mode === 'allstate' ? (
                 <>
                   <span className="bg-gradient-to-r from-[#0095ff] via-[#00e5bf] to-[#2dd4bf] bg-clip-text text-transparent">NEET College</span> Predictor 2026 — Find Your MBBS College
                 </>
@@ -1041,7 +1045,9 @@ export default function HeroSection({
               )}
             </h2>
             <p className="hero-subtitle-cc" style={{ color: '#fff' }}>
-              {mode === 'allstate'
+              {collegeExamType === 'NEET_PG'
+                ? 'Explore AIQ, State, Deemed, and DNB colleges, compare your options, and stay updated with counselling schedules—all in one place'
+                : mode === 'allstate'
                 ? 'See which Government, Private and Deemed medical colleges you can get with your NEET rank or marks — real cutoff data, trusted since 2006..'
                 : 'Predict eligible Karnataka medical colleges using your NEET rank and category. Get personalized college recommendations and counselling schedules'}
             </p>

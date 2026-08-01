@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import ugList from '@/lib/data/allstate/UgMasterCollegeList.json';
 
+export const dynamic = 'force-dynamic';
+
 let cachedPgData: any[] | null = null;
 let cachedPgSpecialties: string[] | null = null;
 

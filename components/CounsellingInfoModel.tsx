@@ -52,6 +52,7 @@ export default function CounsellingInfoModel({
   const [predictLeadMobile, setPredictLeadMobile] = useState('');
   const [predictLeadHomeState, setPredictLeadHomeState] = useState('Karnataka');
   const [predictPreferredColleges, setPredictPreferredColleges] = useState<string[]>([]);
+  const [consent, setConsent] = useState(true);
 
   // OTP Fields
   const [otp, setOtp] = useState('');
@@ -368,13 +369,29 @@ export default function CounsellingInfoModel({
               />
             </div>
 
+            {/* Agreement Checkbox */}
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 rounded border-slate-800 bg-[#0b0f19] text-emerald-500 focus:ring-0 accent-emerald-500 shrink-0"
+                />
+                <span className="text-xs text-slate-400 leading-relaxed">
+                  I agree to receive the college information via email and whatsapp
+                </span>
+              </label>
+            </div>
+
             {formError && (
               <p className="text-xs text-rose-400 font-bold break-words text-center">{formError}</p>
             )}
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !consent}
               className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
             >
               {isLoading ? (
