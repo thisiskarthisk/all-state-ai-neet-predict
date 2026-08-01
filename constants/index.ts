@@ -351,3 +351,4 @@ type AI_API_TYPE = 'gemini' | 'perplexity';
 export const AI_API_TO_USE: AI_API_TYPE|undefined|null = process.env.AI_API_TO_USE as AI_API_TYPE;
 
 export const GTM_ID = process.env.GTM_ID;
+export const MS_CLARITY_ID = process.env.MS_CLARITY_ID;
