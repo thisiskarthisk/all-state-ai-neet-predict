@@ -1,3 +1,317 @@
+// import { LOGGER } from '@/lib/logger';
+// import { readFromFirebase, writeToFirebase } from './firebaseRealtimeDb';
+
+// /**
+//  * Server-side Zoho CRM OAuth 2.0 helper.
+//  */
+
+// const rawAccountsUrl = (
+//   process.env.ZOHO_CRM_ACCOUNTS_URL ||
+//   process.env.ZOHO_ACCOUNTS_URL ||
+//   process.env.ZOHO_ACCOUNTS_DOMAIN ||
+//   'https://accounts.zoho.com'
+// ).trim().replace(/\/$/, '');
+
+// const ZOHO_AUTH_API_URL = rawAccountsUrl.endsWith('/oauth/v2/token')
+//   ? rawAccountsUrl
+//   : `${rawAccountsUrl}/oauth/v2/token`;
+
+// const rawApiUrl = (
+//   process.env.ZOHO_CRM_API_BASE_URL ||
+//   process.env.ZOHO_API_BASE_URL ||
+//   process.env.ZOHO_API_URL ||
+//   process.env.ZOHO_API_DOMAIN ||
+//   'https://www.zohoapis.com/crm/v8'
+// ).trim().replace(/\/$/, '');
+
+// const ZOHO_CRM_API_BASE_URL = rawApiUrl.includes('/crm/')
+//   ? rawApiUrl
+//   : `${rawApiUrl}/crm/v8`;
+
+// const CLIENT_ID = (process.env.ZOHO_CRM_CLIENT_ID || process.env.ZOHO_CLIENT_ID || '').trim();
+// const CLIENT_SECRET = (process.env.ZOHO_CRM_CLIENT_SECRET || process.env.ZOHO_CLIENT_SECRET || '').trim();
+// const REFRESH_TOKEN = (process.env.ZOHO_CRM_REFRESH_TOKEN || process.env.ZOHO_REFRESH_TOKEN || '').trim();
+// const GRANT_TOKEN = (process.env.ZOHO_CRM_GRANT_TOKEN || process.env.ZOHO_GRANT_TOKEN || '').trim();
+// const LEAD_SOURCE = (process.env.ZOHO_CRM_LEAD_SOURCE || process.env.ZOHO_LEAD_SOURCE || 'Karnataka AI NEET Predictor').trim();
+
+// const FIREBASE_TOKEN_PATH = (process.env.FIREBASE_ZOHO_TOKEN_PATH || 'api_tokens/zoho-crm').trim().replace(/^\/|\/$/g, '');
+
+// const EXPIRY_SKEW_SECONDS = 60;
+
+// export interface ZohoTokenRecord {
+//   access_token: string;
+//   refresh_token?: string;
+//   expires_at: number;
+//   updated_at?: string;
+// }
+
+// export interface ZohoLeadInput {
+//   name?: string | null;
+//   email?: string | null;
+//   mobile?: string | null;
+//   homeState?: string | null;
+//   zohoCrmLeadId?: string | null;
+//   extraFields?: Record<string, unknown>;
+// }
+
+// const LEAD_API_NAMES = new Set([
+//   'Last_Name',
+//   'Name1',
+//   'Email',
+//   'Phone',
+//   'Company',
+//   'Neet_Rank',
+//   'College_Name',
+//   'Have_any_preferred_college',
+//   'Platform',
+//   'Form_Name',
+//   'Campaign_Name',
+//   'Registration_date',
+//   'leadchain0__Social_Lead_ID',
+// ]);
+
+// const LEAD_FIELD_ALIASES: Record<string, string> = {
+//   Name: 'Name1',
+//   'Home State': 'Last_Name',
+//   'NEET Rank': 'Neet_Rank',
+//   'College Name': 'College_Name',
+//   'Have any preferred college?': 'Have_any_preferred_college',
+//   'Registration date': 'Registration_date',
+//   'Social Lead ID': 'leadchain0__Social_Lead_ID',
+//   'Campaign Name': 'Campaign_Name',
+//   'Form Name': 'Form_Name',
+// };
+
+// function mapLeadFields(extraFields: Record<string, unknown>): Record<string, unknown> {
+//   const mapped: Record<string, unknown> = {};
+
+//   for (const [key, value] of Object.entries(extraFields)) {
+//     const apiName = LEAD_API_NAMES.has(key) ? key : LEAD_FIELD_ALIASES[key];
+
+//     if (!apiName) {
+//       LOGGER.error(`[Zoho CRM] Unknown lead field ${JSON.stringify(key)} — dropping.`);
+//       continue;
+//     }
+
+//     mapped[apiName] = value;
+//   }
+
+//   return mapped;
+// }
+
+// let cachedToken: ZohoTokenRecord | null = null;
+
+// export function isZohoCRMEnabled(): boolean {
+//   const flag = (process.env.ZOHO_CRM_ENABLED || 'true').trim().toLowerCase();
+//   const enabled = flag !== 'false' && flag !== '0' && flag !== '';
+//   return enabled && Boolean(CLIENT_ID && CLIENT_SECRET);
+// }
+
+// function isTokenValid(token: ZohoTokenRecord | null): boolean {
+//   return Boolean(token?.access_token && token.expires_at > Date.now());
+// }
+
+// async function generateAccessToken(refreshTokenInput?: string | null): Promise<ZohoTokenRecord | null> {
+//   const tokenToUse = refreshTokenInput || REFRESH_TOKEN;
+
+//   if (!CLIENT_ID || !CLIENT_SECRET) {
+//     LOGGER.warn('[Zoho CRM] Missing CLIENT_ID or CLIENT_SECRET in environment variables.');
+//     return null;
+//   }
+
+//   const params = new URLSearchParams({
+//     client_id: CLIENT_ID,
+//     client_secret: CLIENT_SECRET,
+//   });
+
+//   if (tokenToUse) {
+//     params.set('grant_type', 'refresh_token');
+//     params.set('refresh_token', tokenToUse);
+//   } else if (GRANT_TOKEN) {
+//     params.set('grant_type', 'authorization_code');
+//     params.set('code', GRANT_TOKEN);
+//   } else {
+//     LOGGER.warn('[Zoho CRM] Missing refresh_token and grant_token in environment variables.');
+//     return null;
+//   }
+
+//   try {
+//     const response = await fetch(ZOHO_AUTH_API_URL, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+//       body: params.toString(),
+//       cache: 'no-store',
+//     });
+
+//     const payload = await response.json().catch(() => null);
+
+//     if (!response.ok || !payload?.access_token) {
+//       LOGGER.error(
+//         `[Zoho CRM] Access token request failed (${ZOHO_AUTH_API_URL}):`,
+//         response.status,
+//         payload?.error_description || payload?.error || payload
+//       );
+//       return null;
+//     }
+
+//     const record: ZohoTokenRecord = {
+//       access_token: payload.access_token,
+//       expires_at: Date.now() + (Number(payload.expires_in || 3600) - EXPIRY_SKEW_SECONDS) * 1000,
+//       updated_at: new Date().toISOString(),
+//     };
+
+//     if (payload.refresh_token) {
+//       record.refresh_token = payload.refresh_token;
+//     } else if (tokenToUse) {
+//       record.refresh_token = tokenToUse;
+//     }
+
+//     try {
+//       await writeToFirebase(FIREBASE_TOKEN_PATH, record);
+//     } catch (fbErr) {
+//       LOGGER.warn('[Zoho CRM] Firebase token write skipped:', fbErr);
+//     }
+
+//     cachedToken = record;
+//     return record;
+//   } catch (err: any) {
+//     LOGGER.error('[Zoho CRM] OAuth Token Generation Error:', err?.message || String(err));
+//     return null;
+//   }
+// }
+
+// async function getAccessToken(): Promise<string | null> {
+//   if (cachedToken && isTokenValid(cachedToken)) {
+//     return cachedToken.access_token;
+//   }
+
+//   let stored: ZohoTokenRecord | null = null;
+//   try {
+//     const record = (await readFromFirebase(FIREBASE_TOKEN_PATH)) as ZohoTokenRecord | null;
+//     if (record?.access_token) {
+//       stored = record;
+//     }
+//   } catch (fbErr) {
+//     LOGGER.warn('[Zoho CRM] Firebase token read skipped:', fbErr);
+//   }
+
+//   if (stored && isTokenValid(stored)) {
+//     cachedToken = stored;
+//     return stored.access_token;
+//   }
+
+//   let tokenRecord = await generateAccessToken(stored?.refresh_token || REFRESH_TOKEN);
+
+//   if (!tokenRecord?.access_token && stored?.refresh_token && REFRESH_TOKEN && stored.refresh_token !== REFRESH_TOKEN) {
+//     LOGGER.warn('[Zoho CRM] Stored Firebase refresh_token failed/invalid. Retrying with env ZOHO_REFRESH_TOKEN...');
+//     tokenRecord = await generateAccessToken(REFRESH_TOKEN);
+//   }
+
+//   if (!tokenRecord?.access_token) {
+//     LOGGER.warn('[Zoho CRM] Unable to obtain access token.');
+//     return null;
+//   }
+
+//   return tokenRecord.access_token;
+// }
+
+// async function requestZohoCRM(path: string, data: any, method: string = 'POST'): Promise<any | null> {
+//   const token = await getAccessToken();
+//   if (!token) return null;
+
+//   const body = {
+//     data: Array.isArray(data) ? data : [data],
+//     trigger: ['workflow'],
+//   };
+
+//   try {
+//     const response = await fetch(`${ZOHO_CRM_API_BASE_URL}/${path.replace(/^\//, '')}`, {
+//       method: method.toUpperCase(),
+//       headers: {
+//         Authorization: `Zoho-oauthtoken ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(body),
+//       cache: 'no-store',
+//     });
+
+//     const payload = await response.json().catch(() => null);
+
+//     if (!response.ok) {
+//       LOGGER.error('[Zoho CRM] Request failed:', method, path, response.status, payload);
+//       return null;
+//     }
+
+//     return payload;
+//   } catch (err: any) {
+//     LOGGER.error('[Zoho CRM] API Request Error:', err?.message || String(err));
+//     return null;
+//   }
+// }
+
+// export async function addProductToLead(productIds: string | number | Array<string | number>, leadId: string): Promise<boolean> {
+//   if (!isZohoCRMEnabled()) return false;
+
+//   const products = (Array.isArray(productIds) ? productIds : [productIds]).map((id) => ({ id: String(id) }));
+
+//   try {
+//     const response = await requestZohoCRM(`Leads/${leadId}/Products`, products, 'PUT');
+//     return String(response?.data?.[0]?.status || '').toLowerCase() === 'success';
+//   } catch (error: any) {
+//     LOGGER.error('[Zoho CRM] addProductToLead error:', error?.message || String(error));
+//     return false;
+//   }
+// }
+
+// export async function createLead(
+//   student: ZohoLeadInput,
+//   productId?: string | number | Array<string | number> | null
+// ): Promise<string | null> {
+//   if (!isZohoCRMEnabled()) {
+//     LOGGER.log('[Zoho CRM] Disabled or unconfigured — skipping lead creation');
+//     return null;
+//   }
+
+//   try {
+//     let leadId = student.zohoCrmLeadId || null;
+
+//     if (!leadId) {
+//       const upsertData: Record<string, unknown> = {
+//         Last_Name: student.homeState || 'Unknown',
+//         Lead_Source: LEAD_SOURCE,
+//       };
+
+//       if (student.name) upsertData.Name1 = student.name;
+//       if (student.email) upsertData.Email = student.email;
+//       if (student.mobile) upsertData.Phone = student.mobile;
+
+//       Object.assign(upsertData, mapLeadFields(student.extraFields || {}));
+
+//       const response = await requestZohoCRM('Leads/upsert', upsertData);
+//       const upsertedId = response?.data?.[0]?.details?.id;
+
+//       if (upsertedId) {
+//         leadId = String(upsertedId);
+//       } else if (response?.data?.[0]?.status === 'error') {
+//         const crmMsg = response.data[0].message || JSON.stringify(response.data[0]);
+//         LOGGER.error('[Zoho CRM] Upsert Error:', crmMsg);
+//       }
+//     }
+
+//     if (leadId && productId) {
+//       await addProductToLead(productId, leadId);
+//     }
+
+//     return leadId;
+//   } catch (error: any) {
+//     LOGGER.error('[Zoho CRM] createLead error:', error?.message || String(error));
+//     return null;
+//   }
+// }
+
+
+
+
 import { LOGGER } from '@/lib/logger';
 import { readFromFirebase, writeToFirebase } from './firebaseRealtimeDb';
 
@@ -19,7 +333,7 @@ const ZOHO_CRM_API_BASE_URL = (process.env.ZOHO_CRM_API_BASE_URL || 'https://www
 const CLIENT_ID = (process.env.ZOHO_CRM_CLIENT_ID || '').trim();
 const CLIENT_SECRET = (process.env.ZOHO_CRM_CLIENT_SECRET || '').trim();
 const GRANT_TOKEN = (process.env.ZOHO_CRM_GRANT_TOKEN || '').trim();
-const LEAD_SOURCE = (process.env.ZOHO_CRM_LEAD_SOURCE || 'Karnataka AI NEET Predictor').trim();
+const LEAD_SOURCE = (process.env.ZOHO_CRM_LEAD_SOURCE || 'NEET Predictor').trim();
 
 const FIREBASE_TOKEN_PATH = (process.env.FIREBASE_ZOHO_TOKEN_PATH || 'api_tokens/zoho-crm').trim().replace(/^\/|\/$/g, '');
 
