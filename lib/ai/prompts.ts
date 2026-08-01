@@ -1,8 +1,7 @@
 import { getAuthorityForState } from './counsellingAuthorities';
 import { KARNATAKA_UG_COLLEGES } from '../data/KarnatakaState/ugCollegeList';
-import { KARNATAKA_PG_COLLEGES } from '../data/KarnatakaState/pgCollegeList';
 import { ALLSTATE_UG_COLLEGES } from '../data/allstate/ugCollegeList';
-import { ALLSTATE_PG_COLLEGES } from '../data/allstate/pgCollegeList';
+import { getPgMasterCollegeList } from '../data/allstate/PgMasterCollegeList';
 
 export function rankPrompt(marksNum: number, maxMarks: number, examName: string, currentYear: number) {
   return `
@@ -59,10 +58,12 @@ export function collegePrompt(
   const isKarnatakaOnly = preferredStateStr.toLowerCase().includes('karnataka') || preferredStateStr === 'KA';
   
   const ugDataset = isKarnatakaOnly ? KARNATAKA_UG_COLLEGES : ALLSTATE_UG_COLLEGES;
-  const pgDataset = isKarnatakaOnly ? KARNATAKA_PG_COLLEGES : ALLSTATE_PG_COLLEGES;
 
   const datasetSummary = isPg
-    ? pgDataset.map((c: any) => `• ${c.collegeName || c.college_name} (${c.city || c.city_name}, ${c.collegeType || c.college_type}): ${c.specialty || 'MD/MS'} — General Opening AIR ${c.openingRank || 1}, Closing AIR ${c.closingRank || 50000}`).join('\n')
+    ? getPgMasterCollegeList()
+        .slice(0, 100)
+        .map((c: any) => `• ${c['College Name']} (${c.State || 'India'}, ${c.Type || 'Govt'}): ${c['Course Name']} — Round 1 Gen Closing AIR ${c['Round 1 Gen'] || 'N/A'}`)
+        .join('\n')
     : ugDataset.map((c: any) => `• ${c.collegeName || c.college_name} (${c.city || c.city_name}, ${c.collegeType || c.college_type}): ${c.course || c.courses?.[0]?.course_name || 'MBBS'} — Closing AIR ${c.closingRank || c.courses?.[0]?.categories?.[0]?.closing_rank || 150000}`).join('\n');
 
   return `
@@ -493,9 +494,15 @@ For EACH college in the list, provide accurate or realistic estimated data for N
 7. "seatsLabel": Human readable formatted seats string (e.g. "250 seats")
 8. "cutoff": Expected AIR ${categoryName} Cutoff rank as pure number (e.g. 5200 for Gen, 45000 for SC, 80000 for ST)
 9. "cutoffLabel": Formatted cutoff string specifying Category (e.g. "AIR 5,200 (${categoryName})")
-10. "hostel": Hostel Availability string ("Available", "Available (Boys & Girls)", etc.)
-11. "hostelLabel": Detailed hostel description string
-12. "accreditation": NAAC Accreditation & NIRF ranking string (e.g. "A+ Grade (NIRF #11)")
+10. "aiq_cutoff": All India Quota rank number
+11. "aiq_cutoffLabel": Formatted AIQ cutoff (e.g. "AIR 5,200 (15% All India Quota)")
+12. "state_cutoff": State Domicile Quota rank number
+13. "state_cutoffLabel": Formatted State Quota cutoff (e.g. "AIR 12,000 (85% State Quota)")
+14. "management_cutoff": Institutional / Management Quota rank number
+15. "management_cutoffLabel": Formatted Management Quota cutoff (e.g. "AIR 85,000 (Management Quota)" or "N/A (Govt Seats)")
+16. "hostel": Hostel Availability string ("Available", "Available (Boys & Girls)", etc.)
+17. "hostelLabel": Detailed hostel description string
+18. "accreditation": NAAC Accreditation & NIRF ranking string (e.g. "A+ Grade (NIRF #11)")
 
 Respond in JSON ONLY with format:
 {
@@ -510,6 +517,12 @@ Respond in JSON ONLY with format:
       "seatsLabel": "...",
       "cutoff": 5200,
       "cutoffLabel": "AIR 5,200 (${categoryName})",
+      "aiq_cutoff": 5200,
+      "aiq_cutoffLabel": "AIR 5,200 (15% All India Quota)",
+      "state_cutoff": 12000,
+      "state_cutoffLabel": "AIR 12,000 (85% State Domicile Quota)",
+      "management_cutoff": 999999,
+      "management_cutoffLabel": "N/A (100% Government Seats)",
       "hostel": "Available",
       "hostelLabel": "...",
       "accreditation": "..."

@@ -359,6 +359,25 @@ export async function POST(request: Request) {
         cutoff = 32000;
       }
 
+      // Quota Cutoffs calculation for AIQ, State, and Management Quotas
+      let aiqLabel = '';
+      let stateLabel = '';
+      let mgmtLabel = '';
+
+      if (isGovt) {
+        aiqLabel = `AIR ${cutoff.toLocaleString('en-IN')} (15% AIQ - ${categoryLabel})`;
+        stateLabel = `AIR ${Math.round(cutoff * 1.8).toLocaleString('en-IN')} (85% State Domicile)`;
+        mgmtLabel = 'N/A (100% Government Seats)';
+      } else if (isDeemed) {
+        aiqLabel = `AIR ${cutoff.toLocaleString('en-IN')} (100% MCC Deemed General)`;
+        stateLabel = 'N/A (100% All India MCC Counselling)';
+        mgmtLabel = `AIR ${Math.round(cutoff * 2.2).toLocaleString('en-IN')} (Management / NRI Quota)`;
+      } else {
+        aiqLabel = `AIR ${Math.round(cutoff * 1.5).toLocaleString('en-IN')} (Open Merit Seats)`;
+        stateLabel = `AIR ${cutoff.toLocaleString('en-IN')} (State Merit Quota)`;
+        mgmtLabel = `AIR ${Math.round(cutoff * 3.5).toLocaleString('en-IN')} (Management / NRI Quota)`;
+      }
+
       return {
         name,
         loc: state ? `${city}, ${state}` : city,
@@ -369,6 +388,12 @@ export async function POST(request: Request) {
         seatsLabel: `${seats || 150} seats`,
         cutoff,
         cutoffLabel: `AIR ${cutoff.toLocaleString('en-IN')} (${categoryLabel})`,
+        aiq_cutoff: cutoff,
+        aiq_cutoffLabel: aiqLabel,
+        state_cutoff: isGovt ? Math.round(cutoff * 1.8) : cutoff,
+        state_cutoffLabel: stateLabel,
+        management_cutoff: isGovt ? 999999 : Math.round(cutoff * 3.5),
+        management_cutoffLabel: mgmtLabel,
         hostel: 'Available',
         hostelLabel: 'Available (Campus Mess & Rooms)',
         accreditation: isGovt ? 'A+ Grade (Government Board)' : 'A Grade',

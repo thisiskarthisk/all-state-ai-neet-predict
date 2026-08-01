@@ -1824,6 +1824,40 @@ export default function HeroSection({
                                       }
                                     }
 
+                                    if (c.pg_courses && c.pg_courses.length > 0) {
+                                      return (
+                                        <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                                          <p className="text-[11px] font-black text-slate-500 uppercase tracking-wider">
+                                            Eligible MD/MS Courses ({c.pg_courses.length}):
+                                          </p>
+                                          <div className="flex flex-wrap gap-2">
+                                            {c.pg_courses.map((crs: any) => (
+                                              <div
+                                                key={crs.course_name}
+                                                className="flex flex-wrap items-center gap-1.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-xl"
+                                              >
+                                                <span className="text-xs font-black text-slate-800">{crs.course_name}</span>
+                                                <span className="text-[11px] font-extrabold text-indigo-700 font-mono bg-white px-2 py-0.5 rounded border border-indigo-100">
+                                                  Cutoff: {fmtInt(crs.closest_cutoff)}
+                                                </span>
+                                                <span
+                                                  className={`px-2 py-0.5 rounded text-[10px] font-black border ${
+                                                    crs.best_chance === 'High'
+                                                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                                      : crs.best_chance === 'Medium'
+                                                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                                      : 'bg-rose-100 text-rose-800 border-rose-300'
+                                                  }`}
+                                                >
+                                                  {crs.best_chance}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+
                                     if (c.overallRangeStr) {
                                       return (
                                         <div className="flex flex-wrap items-center gap-1.5 mt-2.5">

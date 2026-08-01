@@ -1,827 +1,828 @@
-export type PGCollegeType = 'Government' | 'Private' | 'Deemed' | 'Government-Aided' | 'Autonomous / Institute of National Importance';
 
-export interface KarnatakaPGCollegeCutoff {
-  id: string;
-  collegeName: string;
-  specialty: string;
-  specialtyCode: string;
-  city: string;
-  state: 'Karnataka';
-  collegeType: PGCollegeType;
-  openingRank: number;
-  closingRank: number;
-  category: 'General (UR)' | string;
-}
+// export type PGCollegeType = 'Government' | 'Private' | 'Deemed' | 'Government-Aided' | 'Autonomous / Institute of National Importance';
 
-export const KARNATAKA_PG_COLLEGES: KarnatakaPGCollegeCutoff[] = [
-  // Government / Autonomous / Institutes of National Importance
-  {
-    id: 'pg-kar-101',
-    collegeName: 'Bangalore Medical College and Research Institute (BMCRI)',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 550,
-    closingRank: 4800,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-102',
-    collegeName: 'Bangalore Medical College and Research Institute (BMCRI)',
-    specialty: 'M.D. Radio-Diagnosis',
-    specialtyCode: 'MD_RADIO',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 95,
-    closingRank: 120,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-103',
-    collegeName: 'ESI Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 4200,
-    closingRank: 18800,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-104',
-    collegeName: 'Kidwai Memorial Institute of Oncology',
-    specialty: 'M.D. Radiotherapy',
-    specialtyCode: 'MD_RADIO_THERAPY',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 1200,
-    closingRank: 9500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-105',
-    collegeName: 'Indira Gandhi Institute of Child Health',
-    specialty: 'M.D. Paediatrics',
-    specialtyCode: 'MD_PAEDS',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 800,
-    closingRank: 6200,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-106',
-    collegeName: 'SDS Tuberculosis Research Centre & Rajiv Gandhi Institute of Chest Diseases',
-    specialty: 'M.D. Respiratory Medicine',
-    specialtyCode: 'MD_RESP_MED',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 1500,
-    closingRank: 7800,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-107',
-    collegeName: 'Sanjay Gandhi Institute of Trauma and Orthopaedics',
-    specialty: 'M.S. Orthopaedics',
-    specialtyCode: 'MS_ORTHO',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 900,
-    closingRank: 5100,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-108',
-    collegeName: 'Shri Atal Bihari Vajpayee Medical College & Research Institute',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 1800,
-    closingRank: 9200,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-109',
-    collegeName: 'Belagavi Institute of Medical Sciences (BIMS)',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Belagavi',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 5300,
-    closingRank: 20500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-110',
-    collegeName: 'Jawaharlal Nehru Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Belagavi',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 4200,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-111',
-    collegeName: 'Vijayanagar Institute of Medical Sciences (VIMS)',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bellary',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 4200,
-    closingRank: 18500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-112',
-    collegeName: 'Bidar Institute of Medical Sciences (BRIMS)',
-    specialty: 'M.D. Pathology',
-    specialtyCode: 'MD_PATH',
-    city: 'Bidar',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 8300,
-    closingRank: 24600,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-113',
-    collegeName: 'Chamarajanagar Institute of Medical Sciences (CIMS)',
-    specialty: 'M.D. Physiology',
-    specialtyCode: 'MD_PHYSIO',
-    city: 'Chamarajanagar',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 12500,
-    closingRank: 28300,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-114',
-    collegeName: 'Dharwad Institute of Mental Health and Neuro Sciences (DIMHANS)',
-    specialty: 'M.D. Psychiatry',
-    specialtyCode: 'MD_PSYCH',
-    city: 'Dharwad',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 1100,
-    closingRank: 8900,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-115',
-    collegeName: 'Gadag Institute of Medical Sciences (GIMS)',
-    specialty: 'M.D. Pharmacology',
-    specialtyCode: 'MD_PHARMA',
-    city: 'Gadag',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 10400,
-    closingRank: 26700,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-116',
-    collegeName: 'Gulbarga Institute of Medical Sciences (GIMS)',
-    specialty: 'M.D. Microbiology',
-    specialtyCode: 'MD_MICRO',
-    city: 'Gulbarga',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 8300,
-    closingRank: 23600,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-117',
-    collegeName: 'Hassan Institute of Medical Sciences (HIMS)',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Hassan',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 6200,
-    closingRank: 21600,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-118',
-    collegeName: 'Karnataka Institute of Medical Sciences (KIMS)',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Hubli',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 3200,
-    closingRank: 15500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-119',
-    collegeName: 'Karwar Institute of Medical Sciences (KRIMS)',
-    specialty: 'M.D. Community Medicine',
-    specialtyCode: 'MD_COMM_MED',
-    city: 'Karwar',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 11500,
-    closingRank: 27300,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-120',
-    collegeName: 'Kodagu Institute of Medical Sciences (KoIMS)',
-    specialty: 'M.D. Anatomy',
-    specialtyCode: 'MD_ANATOMY',
-    city: 'Madikeri',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 11400,
-    closingRank: 26800,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-121',
-    collegeName: 'Koppal Institute of Medical Sciences (KIMS)',
-    specialty: 'M.D. Biochemistry',
-    specialtyCode: 'MD_BIOCHEM',
-    city: 'Koppal',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 12400,
-    closingRank: 27800,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-122',
-    collegeName: 'Mandya Institute of Medical Sciences (MIMS)',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Mandya',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 5200,
-    closingRank: 20000,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-123',
-    collegeName: 'Mysore Medical College and Research Institute (MMC&RI)',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mysore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 1100,
-    closingRank: 9900,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-124',
-    collegeName: 'Raichur Institute of Medical Sciences (RIMS)',
-    specialty: 'M.D. Pathology',
-    specialtyCode: 'MD_PATH',
-    city: 'Raichur',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 9300,
-    closingRank: 25600,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-125',
-    collegeName: 'Shimoga Institute of Medical Sciences (ShIMS)',
-    specialty: 'M.D. Community Medicine',
-    specialtyCode: 'MD_COMM_MED',
-    city: 'Shimoga',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 7300,
-    closingRank: 22600,
-    category: 'General (UR)'
-  },
+// export interface KarnatakaPGCollegeCutoff {
+//   id: string;
+//   collegeName: string;
+//   specialty: string;
+//   specialtyCode: string;
+//   city: string;
+//   state: 'Karnataka';
+//   collegeType: PGCollegeType;
+//   openingRank: number;
+//   closingRank: number;
+//   category: 'General (UR)' | string;
+// }
 
-  // Private & Trust Medical Colleges
-  {
-    id: 'pg-kar-126',
-    collegeName: 'A.J. Institute of Medical Sciences & Research Centre',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 10500,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-127',
-    collegeName: 'Adichunchanagiri Institute of Medical Sciences',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Bellur',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-128',
-    collegeName: 'Akash Institute of Medical Sciences & Research Centre',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-129',
-    collegeName: 'Al-Ameen Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bijapur',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-130',
-    collegeName: 'Basaveswara Medical College and Hospital',
-    specialty: 'M.D. Pathology',
-    specialtyCode: 'MD_PATH',
-    city: 'Chitradurga',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 18900,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-131',
-    collegeName: 'BGS Global Institute of Medical Sciences',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 12600,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-132',
-    collegeName: 'Dr. B.R. Ambedkar Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-133',
-    collegeName: 'Dr. Chandramma Dayananda Sagar Institute of Medical Education & Research',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Ramanagara',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-134',
-    collegeName: 'East Point College of Medical Sciences & Research Centre',
-    specialty: 'M.D. Community Medicine',
-    specialtyCode: 'MD_COMM_MED',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 18900,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-135',
-    collegeName: 'Father Muller Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 5300,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-136',
-    collegeName: 'JJM Medical College',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Davanagere',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-137',
-    collegeName: 'JSS Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mysore',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 3200,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-138',
-    collegeName: 'K.V.G. Medical College',
-    specialty: 'M.S. Orthopaedics',
-    specialtyCode: 'MS_ORTHO',
-    city: 'Sullia',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 18900,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-139',
-    collegeName: 'Kanachur Institute of Medical Sciences',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-140',
-    collegeName: 'Kempegowda Institute of Medical Sciences',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 12600,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-141',
-    collegeName: 'Khaja Bandanawaz University – Faculty of Medical Sciences',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Gulbarga',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-142',
-    collegeName: 'M.S. Ramaiah Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 2100,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-143',
-    collegeName: 'Mahadevappa Rampure Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Kalaburagi',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-144',
-    collegeName: 'MVJ Medical College and Research Hospital',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Hoskote',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-145',
-    collegeName: 'Navodaya Medical College',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Raichur',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-146',
-    collegeName: 'Rajarajeswari Medical College & Hospital',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 10500,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-147',
-    collegeName: 'S. Nijalingappa Medical College & HSK Hospital & Research Centre',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bagalkot',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-148',
-    collegeName: 'S.S. Institute of Medical Sciences & Research Centre',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Davanagere',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-149',
-    collegeName: 'Sapthagiri Institute of Medical Sciences & Research Centre',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 12600,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-150',
-    collegeName: 'SDM College of Medical Sciences & Hospital',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Dharwad',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 8400,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-151',
-    collegeName: 'Shri B.M. Patil Medical College, Hospital & Research Centre',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Vijayapura',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 10500,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-152',
-    collegeName: 'Shridevi Institute of Medical Sciences & Research Hospital',
-    specialty: 'M.D. Pathology',
-    specialtyCode: 'MD_PATH',
-    city: 'Tumkur',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 18900,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-153',
-    collegeName: 'Sri Devaraj Urs Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Kolar',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 10500,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-154',
-    collegeName: 'Sri Siddhartha Institute of Medical Sciences & Research Centre',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-155',
-    collegeName: 'Sri Siddhartha Medical College',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Tumkur',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-156',
-    collegeName: 'Srinivas Institute of Medical Sciences & Research Centre',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-157',
-    collegeName: "St. John's Medical College",
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 1100,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-158',
-    collegeName: 'Subbaiah Institute of Medical Sciences',
-    specialty: 'M.D. Pathology',
-    specialtyCode: 'MD_PATH',
-    city: 'Shimoga',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 18900,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-159',
-    collegeName: 'The Oxford Medical College, Hospital & Research Centre',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 15800,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-160',
-    collegeName: 'Vydehi Institute of Medical Sciences & Research Centre',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Private',
-    openingRank: 8400,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-161',
-    collegeName: 'Yenepoya Medical College',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 8400,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-162',
-    collegeName: 'K.S. Hegde Medical Academy',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Mangalore',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 6300,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-163',
-    collegeName: 'Kasturba Medical College (KMC)',
-    specialty: 'M.D. General Medicine',
-    specialtyCode: 'MD_MEDICINE',
-    city: 'Manipal',
-    state: 'Karnataka',
-    collegeType: 'Deemed',
-    openingRank: 1600,
-    closingRank: 36500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-164',
-    collegeName: 'Command Hospital Air Force',
-    specialty: 'M.S. General Surgery',
-    specialtyCode: 'MS_SURGERY',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 800,
-    closingRank: 4500,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-165',
-    collegeName: 'Institute of Aerospace Medicine, Indian Air Force',
-    specialty: 'M.D. Aviation Medicine',
-    specialtyCode: 'MD_AVIATION',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Government',
-    openingRank: 2000,
-    closingRank: 15000,
-    category: 'General (UR)'
-  },
-  {
-    id: 'pg-kar-166',
-    collegeName: 'NIMHANS (Institute of National Importance / Deemed University)',
-    specialty: 'M.D. Psychiatry',
-    specialtyCode: 'MD_PSYCH',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    collegeType: 'Autonomous / Institute of National Importance',
-    openingRank: 10,
-    closingRank: 800,
-    category: 'General (UR)'
-  }
-];
+// export const KARNATAKA_PG_COLLEGES: KarnatakaPGCollegeCutoff[] = [
+//   // Government / Autonomous / Institutes of National Importance
+//   {
+//     id: 'pg-kar-101',
+//     collegeName: 'Bangalore Medical College and Research Institute (BMCRI)',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 550,
+//     closingRank: 4800,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-102',
+//     collegeName: 'Bangalore Medical College and Research Institute (BMCRI)',
+//     specialty: 'M.D. Radio-Diagnosis',
+//     specialtyCode: 'MD_RADIO',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 95,
+//     closingRank: 120,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-103',
+//     collegeName: 'ESI Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 4200,
+//     closingRank: 18800,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-104',
+//     collegeName: 'Kidwai Memorial Institute of Oncology',
+//     specialty: 'M.D. Radiotherapy',
+//     specialtyCode: 'MD_RADIO_THERAPY',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 1200,
+//     closingRank: 9500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-105',
+//     collegeName: 'Indira Gandhi Institute of Child Health',
+//     specialty: 'M.D. Paediatrics',
+//     specialtyCode: 'MD_PAEDS',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 800,
+//     closingRank: 6200,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-106',
+//     collegeName: 'SDS Tuberculosis Research Centre & Rajiv Gandhi Institute of Chest Diseases',
+//     specialty: 'M.D. Respiratory Medicine',
+//     specialtyCode: 'MD_RESP_MED',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 1500,
+//     closingRank: 7800,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-107',
+//     collegeName: 'Sanjay Gandhi Institute of Trauma and Orthopaedics',
+//     specialty: 'M.S. Orthopaedics',
+//     specialtyCode: 'MS_ORTHO',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 900,
+//     closingRank: 5100,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-108',
+//     collegeName: 'Shri Atal Bihari Vajpayee Medical College & Research Institute',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 1800,
+//     closingRank: 9200,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-109',
+//     collegeName: 'Belagavi Institute of Medical Sciences (BIMS)',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Belagavi',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 5300,
+//     closingRank: 20500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-110',
+//     collegeName: 'Jawaharlal Nehru Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Belagavi',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 4200,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-111',
+//     collegeName: 'Vijayanagar Institute of Medical Sciences (VIMS)',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bellary',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 4200,
+//     closingRank: 18500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-112',
+//     collegeName: 'Bidar Institute of Medical Sciences (BRIMS)',
+//     specialty: 'M.D. Pathology',
+//     specialtyCode: 'MD_PATH',
+//     city: 'Bidar',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 8300,
+//     closingRank: 24600,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-113',
+//     collegeName: 'Chamarajanagar Institute of Medical Sciences (CIMS)',
+//     specialty: 'M.D. Physiology',
+//     specialtyCode: 'MD_PHYSIO',
+//     city: 'Chamarajanagar',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 12500,
+//     closingRank: 28300,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-114',
+//     collegeName: 'Dharwad Institute of Mental Health and Neuro Sciences (DIMHANS)',
+//     specialty: 'M.D. Psychiatry',
+//     specialtyCode: 'MD_PSYCH',
+//     city: 'Dharwad',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 1100,
+//     closingRank: 8900,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-115',
+//     collegeName: 'Gadag Institute of Medical Sciences (GIMS)',
+//     specialty: 'M.D. Pharmacology',
+//     specialtyCode: 'MD_PHARMA',
+//     city: 'Gadag',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 10400,
+//     closingRank: 26700,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-116',
+//     collegeName: 'Gulbarga Institute of Medical Sciences (GIMS)',
+//     specialty: 'M.D. Microbiology',
+//     specialtyCode: 'MD_MICRO',
+//     city: 'Gulbarga',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 8300,
+//     closingRank: 23600,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-117',
+//     collegeName: 'Hassan Institute of Medical Sciences (HIMS)',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Hassan',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 6200,
+//     closingRank: 21600,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-118',
+//     collegeName: 'Karnataka Institute of Medical Sciences (KIMS)',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Hubli',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 3200,
+//     closingRank: 15500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-119',
+//     collegeName: 'Karwar Institute of Medical Sciences (KRIMS)',
+//     specialty: 'M.D. Community Medicine',
+//     specialtyCode: 'MD_COMM_MED',
+//     city: 'Karwar',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 11500,
+//     closingRank: 27300,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-120',
+//     collegeName: 'Kodagu Institute of Medical Sciences (KoIMS)',
+//     specialty: 'M.D. Anatomy',
+//     specialtyCode: 'MD_ANATOMY',
+//     city: 'Madikeri',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 11400,
+//     closingRank: 26800,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-121',
+//     collegeName: 'Koppal Institute of Medical Sciences (KIMS)',
+//     specialty: 'M.D. Biochemistry',
+//     specialtyCode: 'MD_BIOCHEM',
+//     city: 'Koppal',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 12400,
+//     closingRank: 27800,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-122',
+//     collegeName: 'Mandya Institute of Medical Sciences (MIMS)',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Mandya',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 5200,
+//     closingRank: 20000,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-123',
+//     collegeName: 'Mysore Medical College and Research Institute (MMC&RI)',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mysore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 1100,
+//     closingRank: 9900,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-124',
+//     collegeName: 'Raichur Institute of Medical Sciences (RIMS)',
+//     specialty: 'M.D. Pathology',
+//     specialtyCode: 'MD_PATH',
+//     city: 'Raichur',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 9300,
+//     closingRank: 25600,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-125',
+//     collegeName: 'Shimoga Institute of Medical Sciences (ShIMS)',
+//     specialty: 'M.D. Community Medicine',
+//     specialtyCode: 'MD_COMM_MED',
+//     city: 'Shimoga',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 7300,
+//     closingRank: 22600,
+//     category: 'General (UR)'
+//   },
 
-/**
- * Searches static Karnataka PG colleges by rank and optional specialty filter using predictive cutoffs.
- */
-export function getMatchingKarnatakaPGColleges(
-  rank: number,
-  specialtyCode?: string
-): KarnatakaPGCollegeCutoff[] {
-  return KARNATAKA_PG_COLLEGES.filter((college) => {
-    if (specialtyCode && specialtyCode !== 'ALL' && specialtyCode !== 'MD') {
-      if (college.specialtyCode !== specialtyCode) return false;
-    }
-    return rank <= college.closingRank + 1500;
-  });
-}
+//   // Private & Trust Medical Colleges
+//   {
+//     id: 'pg-kar-126',
+//     collegeName: 'A.J. Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 10500,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-127',
+//     collegeName: 'Adichunchanagiri Institute of Medical Sciences',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Bellur',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-128',
+//     collegeName: 'Akash Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-129',
+//     collegeName: 'Al-Ameen Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bijapur',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-130',
+//     collegeName: 'Basaveswara Medical College and Hospital',
+//     specialty: 'M.D. Pathology',
+//     specialtyCode: 'MD_PATH',
+//     city: 'Chitradurga',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 18900,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-131',
+//     collegeName: 'BGS Global Institute of Medical Sciences',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 12600,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-132',
+//     collegeName: 'Dr. B.R. Ambedkar Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-133',
+//     collegeName: 'Dr. Chandramma Dayananda Sagar Institute of Medical Education & Research',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Ramanagara',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-134',
+//     collegeName: 'East Point College of Medical Sciences & Research Centre',
+//     specialty: 'M.D. Community Medicine',
+//     specialtyCode: 'MD_COMM_MED',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 18900,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-135',
+//     collegeName: 'Father Muller Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 5300,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-136',
+//     collegeName: 'JJM Medical College',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Davanagere',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-137',
+//     collegeName: 'JSS Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mysore',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 3200,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-138',
+//     collegeName: 'K.V.G. Medical College',
+//     specialty: 'M.S. Orthopaedics',
+//     specialtyCode: 'MS_ORTHO',
+//     city: 'Sullia',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 18900,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-139',
+//     collegeName: 'Kanachur Institute of Medical Sciences',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-140',
+//     collegeName: 'Kempegowda Institute of Medical Sciences',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 12600,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-141',
+//     collegeName: 'Khaja Bandanawaz University – Faculty of Medical Sciences',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Gulbarga',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-142',
+//     collegeName: 'M.S. Ramaiah Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 2100,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-143',
+//     collegeName: 'Mahadevappa Rampure Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Kalaburagi',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-144',
+//     collegeName: 'MVJ Medical College and Research Hospital',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Hoskote',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-145',
+//     collegeName: 'Navodaya Medical College',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Raichur',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-146',
+//     collegeName: 'Rajarajeswari Medical College & Hospital',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 10500,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-147',
+//     collegeName: 'S. Nijalingappa Medical College & HSK Hospital & Research Centre',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bagalkot',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-148',
+//     collegeName: 'S.S. Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Davanagere',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-149',
+//     collegeName: 'Sapthagiri Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 12600,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-150',
+//     collegeName: 'SDM College of Medical Sciences & Hospital',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Dharwad',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 8400,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-151',
+//     collegeName: 'Shri B.M. Patil Medical College, Hospital & Research Centre',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Vijayapura',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 10500,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-152',
+//     collegeName: 'Shridevi Institute of Medical Sciences & Research Hospital',
+//     specialty: 'M.D. Pathology',
+//     specialtyCode: 'MD_PATH',
+//     city: 'Tumkur',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 18900,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-153',
+//     collegeName: 'Sri Devaraj Urs Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Kolar',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 10500,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-154',
+//     collegeName: 'Sri Siddhartha Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-155',
+//     collegeName: 'Sri Siddhartha Medical College',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Tumkur',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-156',
+//     collegeName: 'Srinivas Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-157',
+//     collegeName: "St. John's Medical College",
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 1100,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-158',
+//     collegeName: 'Subbaiah Institute of Medical Sciences',
+//     specialty: 'M.D. Pathology',
+//     specialtyCode: 'MD_PATH',
+//     city: 'Shimoga',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 18900,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-159',
+//     collegeName: 'The Oxford Medical College, Hospital & Research Centre',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 15800,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-160',
+//     collegeName: 'Vydehi Institute of Medical Sciences & Research Centre',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Private',
+//     openingRank: 8400,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-161',
+//     collegeName: 'Yenepoya Medical College',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 8400,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-162',
+//     collegeName: 'K.S. Hegde Medical Academy',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Mangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 6300,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-163',
+//     collegeName: 'Kasturba Medical College (KMC)',
+//     specialty: 'M.D. General Medicine',
+//     specialtyCode: 'MD_MEDICINE',
+//     city: 'Manipal',
+//     state: 'Karnataka',
+//     collegeType: 'Deemed',
+//     openingRank: 1600,
+//     closingRank: 36500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-164',
+//     collegeName: 'Command Hospital Air Force',
+//     specialty: 'M.S. General Surgery',
+//     specialtyCode: 'MS_SURGERY',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 800,
+//     closingRank: 4500,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-165',
+//     collegeName: 'Institute of Aerospace Medicine, Indian Air Force',
+//     specialty: 'M.D. Aviation Medicine',
+//     specialtyCode: 'MD_AVIATION',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Government',
+//     openingRank: 2000,
+//     closingRank: 15000,
+//     category: 'General (UR)'
+//   },
+//   {
+//     id: 'pg-kar-166',
+//     collegeName: 'NIMHANS (Institute of National Importance / Deemed University)',
+//     specialty: 'M.D. Psychiatry',
+//     specialtyCode: 'MD_PSYCH',
+//     city: 'Bangalore',
+//     state: 'Karnataka',
+//     collegeType: 'Autonomous / Institute of National Importance',
+//     openingRank: 10,
+//     closingRank: 800,
+//     category: 'General (UR)'
+//   }
+// ];
+
+// /**
+//  * Searches static Karnataka PG colleges by rank and optional specialty filter using predictive cutoffs.
+//  */
+// export function getMatchingKarnatakaPGColleges(
+//   rank: number,
+//   specialtyCode?: string
+// ): KarnatakaPGCollegeCutoff[] {
+//   return KARNATAKA_PG_COLLEGES.filter((college) => {
+//     if (specialtyCode && specialtyCode !== 'ALL' && specialtyCode !== 'MD') {
+//       if (college.specialtyCode !== specialtyCode) return false;
+//     }
+//     return rank <= college.closingRank + 1500;
+//   });
+// }

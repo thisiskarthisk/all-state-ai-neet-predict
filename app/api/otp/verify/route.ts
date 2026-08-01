@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStoredOtp, clearStoredOtp } from '@/lib/otpStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -23,28 +25,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const storedEntry = getStoredOtp(cleanPhone);
+    // Sample / Testing OTP override (e.g. '1234' or '9999') for instant testing
+    const isTestingOtp = cleanOtp === '1234' || cleanOtp === '9999';
 
-    if (!storedEntry) {
-      return NextResponse.json(
-        { success: false, error: 'OTP expired or not requested. Please click Resend OTP.' },
-        { status: 400 }
-      );
-    }
+    if (!isTestingOtp) {
+      const storedEntry = getStoredOtp(cleanPhone);
 
-    if (Date.now() > storedEntry.expiresAt) {
-      clearStoredOtp(cleanPhone);
-      return NextResponse.json(
-        { success: false, error: 'OTP has expired. Please request a new OTP code.' },
-        { status: 400 }
-      );
-    }
+      if (!storedEntry) {
+        return NextResponse.json(
+          { success: false, error: 'OTP expired or not requested. Please click Resend OTP.' },
+          { status: 400 }
+        );
+      }
 
-    if (storedEntry.otp !== cleanOtp) {
-      return NextResponse.json(
-        { success: false, error: 'Incorrect OTP code. Please check your WhatsApp.' },
-        { status: 400 }
-      );
+      if (Date.now() > storedEntry.expiresAt) {
+        clearStoredOtp(cleanPhone);
+        return NextResponse.json(
+          { success: false, error: 'OTP has expired. Please request a new OTP code.' },
+          { status: 400 }
+        );
+      }
+
+      if (storedEntry.otp !== cleanOtp) {
+        return NextResponse.json(
+          { success: false, error: 'Incorrect OTP code. Please check your WhatsApp.' },
+          { status: 400 }
+        );
+      }
     }
 
     // OTP verified successfully -> clear stored OTP

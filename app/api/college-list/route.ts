@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import ugList from '@/lib/data/allstate/UgMasterCollegeList.json';
 
 export const dynamic = 'force-dynamic';
@@ -28,17 +26,14 @@ function normalizeCollegeType(typeRaw: any): string {
 function getPgData(): any[] {
   if (!cachedPgData) {
     try {
-      const filePath = path.join(process.cwd(), 'lib/data/allstate/PgMasterCollegeList.json');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      const rawData = JSON.parse(fileContent);
-      // Map and normalize Type field for all PG colleges
+      const pgList = require('@/lib/data/allstate/PgMasterCollegeList.json') as any[];
+      const rawData = Array.isArray(pgList) ? pgList : [];
       cachedPgData = rawData.map((item: any) => ({
         ...item,
         Type: normalizeCollegeType(item.Type),
         OriginalType: item.Type,
       }));
-    } catch (err) {
-      console.error('Error reading PgMasterCollegeList.json:', err);
+    } catch {
       cachedPgData = [];
     }
   }

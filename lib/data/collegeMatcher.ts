@@ -43,6 +43,17 @@ export interface CutoffDetail {
   chanceOfAdmission: 'High' | 'Medium' | 'Low';
 }
 
+export interface PgCourseDetail {
+  course_name: string;
+  best_chance: 'High' | 'Medium' | 'Low';
+  closest_cutoff: number;
+  opening_cutoff: number;
+  totalSeats: number;
+  overallRangeStr?: string;
+  cutoffs: CutoffDetail[];
+  allRoundCutoffs?: Record<string, Record<string, number | null>>;
+}
+
 export interface MatchedCollegeResult {
   college_id: string;
   name: string;
@@ -61,6 +72,7 @@ export interface MatchedCollegeResult {
   cutoffs: CutoffDetail[];
   allRoundCutoffs?: Record<string, Record<string, number | null>>;
   authorityInfo?: any;
+  pg_courses?: PgCourseDetail[];
 }
 
 export function isStateMatched(collegeStateRaw: string, filterStateRaw: string): boolean {
@@ -368,11 +380,19 @@ export function predictPgCollegesFromMasterData(
 
     const cName = item['Course Name'] || '';
     if (selectedCourse && selectedCourse !== 'ALL') {
-      const cUpper = selectedCourse.toUpperCase();
-      if (cUpper === 'MD' && !cName.toUpperCase().includes('MD') && !cName.toUpperCase().includes('M.D.')) continue;
-      if (cUpper === 'MS' && !cName.toUpperCase().includes('MS') && !cName.toUpperCase().includes('M.S.')) continue;
-      if (cUpper === 'DNB' && !cName.toUpperCase().includes('DNB')) continue;
-      if (cUpper === 'DIPLOMA' && !cName.toUpperCase().includes('DIPLOMA')) continue;
+      const cUpper = selectedCourse.toUpperCase().trim();
+      const cNameUpper = cName.toUpperCase().trim();
+      if (cUpper === 'MD/MS' || cUpper === 'MD_MS' || cUpper === 'MD-MS' || cUpper === 'MD MS') {
+        if (!cNameUpper.includes('MD') && !cNameUpper.includes('M.D.') && !cNameUpper.includes('MS') && !cNameUpper.includes('M.S.')) continue;
+      } else if (cUpper === 'MD') {
+        if (!cNameUpper.includes('MD') && !cNameUpper.includes('M.D.')) continue;
+      } else if (cUpper === 'MS') {
+        if (!cNameUpper.includes('MS') && !cNameUpper.includes('M.S.')) continue;
+      } else if (cUpper === 'DNB') {
+        if (!cNameUpper.includes('DNB')) continue;
+      } else if (cUpper === 'DIPLOMA') {
+        if (!cNameUpper.includes('DIPLOMA')) continue;
+      }
     }
 
     if (selectedSpeciality && selectedSpeciality !== 'ALL') {
@@ -400,43 +420,64 @@ export function predictPgCollegesFromMasterData(
       if (!matched) continue;
     }
 
-    const allNumericCutoffs: number[] = [];
     const matchingCutoffEntries: CutoffDetail[] = [];
+    const eligibleCutoffs: number[] = [];
+    const eligibleChances: ('High' | 'Medium' | 'Low')[] = [];
 
     for (const r of rounds) {
       for (const c of catKeys) {
         const val = item[`${r} ${c}`];
         if (typeof val === 'number' && val > 0) {
-          allNumericCutoffs.push(val);
-          matchingCutoffEntries.push({
-            course: cName,
-            category: categoryCodeToName(c),
-            round: r,
-            openingRank: Math.round(val * 0.8),
-            closingRank: val,
-            chanceOfAdmission: studentRank <= val ? 'High' : studentRank <= val * 1.08 ? 'Medium' : 'Low',
-          });
+          const cutNum = val;
+
+          let itemChance: 'High' | 'Medium' | 'Low' | null = null;
+          if (studentRank <= cutNum) {
+            itemChance = 'High';
+          } else if (studentRank <= cutNum + Math.max(1000, Math.round(cutNum * 0.08))) {
+            itemChance = 'Medium';
+          } else if (studentRank <= cutNum + Math.max(2500, Math.round(cutNum * 0.15))) {
+            itemChance = 'Low';
+          }
+
+          if (itemChance !== null) {
+            eligibleCutoffs.push(cutNum);
+            eligibleChances.push(itemChance);
+            matchingCutoffEntries.push({
+              course: cName,
+              category: categoryCodeToName(c),
+              round: r,
+              openingRank: Math.round(cutNum * 0.8),
+              closingRank: cutNum,
+              chanceOfAdmission: itemChance,
+            });
+          }
         }
       }
     }
 
-    if (allNumericCutoffs.length === 0) continue;
+    if (eligibleCutoffs.length === 0) continue;
 
-    const minCutoff = Math.min(...allNumericCutoffs);
-    const maxCutoff = Math.max(...allNumericCutoffs);
+    const chanceRank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+    const bestChance = eligibleChances.reduce(
+      (best, cur) => (chanceRank[cur] > chanceRank[best] ? cur : best),
+      eligibleChances[0]
+    );
 
-    let chance: 'High' | 'Medium' | 'Low' | null = null;
-    if (studentRank <= maxCutoff) {
-      chance = 'High';
-    } else if (studentRank <= maxCutoff + Math.max(8000, Math.round(maxCutoff * 0.10))) {
-      chance = 'Medium';
-    } else if (studentRank <= maxCutoff + Math.max(20000, Math.round(maxCutoff * 0.20))) {
-      chance = 'Low';
+    // Prioritize cutoffs where student clears with High chance (cutNum >= studentRank)
+    const highCutoffs = eligibleCutoffs.filter((c) => c >= studentRank);
+    let bestCutoff: number;
+
+    if (highCutoffs.length > 0) {
+      // Pick the smallest closing cutoff that student qualifies for
+      bestCutoff = Math.min(...highCutoffs);
+    } else {
+      // If student rank is higher than all cutoffs (Medium/Low reach), pick the highest cutoff
+      bestCutoff = Math.max(...eligibleCutoffs);
     }
 
-    if (!chance) continue;
-
-    const rankDiff = Math.abs(studentRank - maxCutoff);
+    const minCutoff = Math.min(...eligibleCutoffs);
+    const maxCutoff = Math.max(...eligibleCutoffs);
+    const rankDiff = Math.abs(studentRank - bestCutoff);
     const auth = getAuthorityForState(state);
     const officialWebsite = auth?.officialWebsite || 'https://mcc.nic.in/';
 
@@ -450,8 +491,8 @@ export function predictPgCollegesFromMasterData(
       collegeType: item.Type || 'Govt',
       board: item.Board || 'NBE / NMC',
       officialWebsite,
-      best_chance: chance,
-      closest_cutoff: maxCutoff,
+      best_chance: bestChance,
+      closest_cutoff: bestCutoff,
       opening_cutoff: minCutoff,
       totalSeats: item['2026 Total Seats'] || 0,
       overallRangeStr: item['Overall Rank Range (All Rounds)'] || item['Overall Rank Range'] || undefined,
@@ -504,12 +545,76 @@ export function predictPgCollegesFromMasterData(
 
   const chanceWeight = { High: 1, Medium: 2, Low: 3 };
 
-  results.sort((a, b) => {
+  // Group PG course matches by College Name (1 Single Card per College)
+  const collegeGroupMap = new Map<string, MatchedCollegeResult & { rankDiff: number }>();
+
+  for (const col of results) {
+    const colKey = (col.name || '').toLowerCase().trim();
+
+    if (!collegeGroupMap.has(colKey)) {
+      collegeGroupMap.set(colKey, {
+        ...col,
+        pg_courses: [{
+          course_name: col.course_name || '',
+          best_chance: col.best_chance,
+          closest_cutoff: col.closest_cutoff,
+          opening_cutoff: col.opening_cutoff,
+          totalSeats: col.totalSeats,
+          overallRangeStr: col.overallRangeStr,
+          cutoffs: col.cutoffs,
+          allRoundCutoffs: col.allRoundCutoffs,
+        }]
+      });
+    } else {
+      const existing = collegeGroupMap.get(colKey)!;
+      if (!existing.pg_courses) {
+        existing.pg_courses = [];
+      }
+
+      const courseExists = existing.pg_courses.some(
+        (crs) => (crs.course_name || '').toLowerCase().trim() === (col.course_name || '').toLowerCase().trim()
+      );
+
+      if (!courseExists) {
+        existing.pg_courses.push({
+          course_name: col.course_name || '',
+          best_chance: col.best_chance,
+          closest_cutoff: col.closest_cutoff,
+          opening_cutoff: col.opening_cutoff,
+          totalSeats: col.totalSeats,
+          overallRangeStr: col.overallRangeStr,
+          cutoffs: col.cutoffs,
+          allRoundCutoffs: col.allRoundCutoffs,
+        });
+        existing.totalSeats += col.totalSeats;
+      }
+
+      if (chanceWeight[col.best_chance] < chanceWeight[existing.best_chance]) {
+        existing.best_chance = col.best_chance;
+      }
+      // Update college-level closest_cutoff to the best (smallest) cutoff >= studentRank
+      const curCut = existing.closest_cutoff;
+      const newCut = col.closest_cutoff;
+
+      if (newCut >= studentRank) {
+        if (curCut < studentRank || newCut < curCut) {
+          existing.closest_cutoff = newCut;
+        }
+      } else if (curCut < studentRank) {
+        if (newCut > curCut) {
+          existing.closest_cutoff = newCut;
+        }
+      }
+    }
+  }
+
+  const deduplicated = Array.from(collegeGroupMap.values());
+  deduplicated.sort((a, b) => {
     if (chanceWeight[a.best_chance] !== chanceWeight[b.best_chance]) {
       return chanceWeight[a.best_chance] - chanceWeight[b.best_chance];
     }
-    return a.rankDiff - b.rankDiff;
+    return a.closest_cutoff - b.closest_cutoff;
   });
 
-  return results.map(({ rankDiff, ...col }) => col);
+  return deduplicated.map(({ rankDiff, ...col }) => col);
 }

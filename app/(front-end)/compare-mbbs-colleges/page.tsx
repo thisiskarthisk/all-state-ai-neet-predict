@@ -1054,6 +1054,7 @@ import Header from '../section/header';
 import Footer from '../section/footer';
 import MedicalPulseLoader from '@/components/MedicalPulseLoader';
 import CounsellingInfoModel from '@/components/CounsellingInfoModel';
+import MBBS_COMPARE_DATA from '@/lib/data/allstate/MBBSCompareCollegeList.json';
 import MASTER_UG_COLLEGE_LIST from '@/lib/data/allstate/UgMasterCollegeList.json';
 
 export interface Criterion {
@@ -1066,12 +1067,23 @@ const CRITERIA: Criterion[] = [
   { key: 'fees', label: 'Total Fees', better: 'lower' },
   { key: 'seats', label: 'Total MBBS Seats', better: 'higher' },
   { key: 'cutoff', label: 'Category Cutoff (AIR)', better: 'lower' },
+  { key: 'aiq_cutoff', label: 'All India Quota (AIQ) Rank', better: 'lower' },
+  { key: 'state_cutoff', label: 'State Domicile Quota Rank', better: 'lower' },
+  { key: 'management_cutoff', label: 'Institutional / Management Quota Rank', better: 'lower' },
   { key: 'address', label: 'College Address', better: null },
   { key: 'hostel', label: 'Hostel & Mess', better: null },
   { key: 'accreditation', label: 'Accreditation', better: null },
 ];
 
 const MAX_COLLEGES = 3;
+
+const getCollegeName = (c: any): string => {
+  if (!c) return '';
+  // console.log('getCollegeName called with:', c);
+  // college list count check
+  // console.log('College list count:', Object.keys(c).length);
+  return c.college_name || c['College Name'] || c.name || '';
+};
 
 export default function CollegeComparisonPage() {
   const router = useRouter();
@@ -1081,7 +1093,7 @@ export default function CollegeComparisonPage() {
   const [selectedRawColleges, setSelectedRawColleges] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('Gen');
   const [checkedCriteria, setCheckedCriteria] = useState<Set<string>>(
-    new Set(['fees', 'seats', 'cutoff', 'address'])
+    new Set(['fees', 'seats', 'cutoff', 'aiq_cutoff', 'state_cutoff', 'management_cutoff', 'address'])
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -1117,22 +1129,53 @@ export default function CollegeComparisonPage() {
     }
   }, []);
 
-  const masterList: any[] = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
+  const mbbsCompareList: any[] = Array.isArray(MBBS_COMPARE_DATA?.colleges) ? MBBS_COMPARE_DATA.colleges : [];
+  const masterUg: any[] = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
 
-  // Filter master JSON list by user query (All Colleges from UgMasterCollegeList.json)
+  // Combine MBBSCompareCollegeList.json (823 colleges) with UgMasterCollegeList.json (Cutoffs & Fees)
+  const masterList: any[] = React.useMemo(() => {
+    return mbbsCompareList.map((c: any) => {
+      const name = getCollegeName(c);
+      const nameLower = name.toLowerCase().trim();
+      const code = c.college_code || c.ID || '';
+      const codeLower = code.toLowerCase().trim();
+
+      const matched = masterUg.find((u: any) => {
+        const uId = (u.ID || u.college_code || '').toLowerCase().trim();
+        const uName = getCollegeName(u).toLowerCase().trim();
+        return (codeLower && uId === codeLower) || (nameLower && uName === nameLower) || uName.includes(nameLower) || nameLower.includes(uName);
+      });
+
+      return {
+        ...matched,
+        ...c,
+        college_name: name,
+        'College Name': name,
+        name,
+        State: c.state || matched?.State || 'India',
+        state: c.state || matched?.State || 'India',
+        Type: c.management || matched?.Type || 'Government',
+        type: c.management || matched?.Type || 'Government',
+        management: c.management || matched?.Type || 'Government',
+        '2026 Total Seats': c.total_seats || matched?.['2026 Total Seats'] || 150,
+        total_seats: c.total_seats || matched?.['2026 Total Seats'] || 150,
+      };
+    });
+  }, [mbbsCompareList, masterUg]);
+
+  // Filter master JSON list by user query (All 823 Colleges from MBBSCompareCollegeList.json)
   const filteredColleges = masterList
     .filter((c: any) => {
       const q = searchQuery.trim().toLowerCase();
       if (!q) return true;
-      const name = (c['College Name'] || c.name || '').toLowerCase();
-      const city = (c['City'] || c.city || '').toLowerCase();
-      const state = (c['State'] || c.state || '').toLowerCase();
-      const id = (c['ID'] || c.id || '').toLowerCase();
-      const board = (c['Board'] || c.board || '').toLowerCase();
-      const type = (c['Type'] || c.type || '').toLowerCase();
-      return name.includes(q) || city.includes(q) || state.includes(q) || id.includes(q) || board.includes(q) || type.includes(q);
+      const name = getCollegeName(c).toLowerCase();
+      const city = (c.city || c['City'] || '').toLowerCase();
+      const state = (c.state || c['State'] || '').toLowerCase();
+      const id = (c.college_code || c['ID'] || '').toLowerCase();
+      const type = (c.management || c['Type'] || c.type || '').toLowerCase();
+      return name.includes(q) || city.includes(q) || state.includes(q) || id.includes(q) || type.includes(q);
     })
-    .filter((c: any) => !selectedRawColleges.some((s: any) => (s['College Name'] || s.name) === (c['College Name'] || c.name)));
+    .filter((c: any) => !selectedRawColleges.some((s: any) => getCollegeName(s).toLowerCase() === getCollegeName(c).toLowerCase()));
 
   const handleSelectCollege = (college: any) => {
     if (selectedRawColleges.length < MAX_COLLEGES) {
@@ -1264,6 +1307,9 @@ export default function CollegeComparisonPage() {
     if (criterion.key === 'fees') return college.feesLabel || `₹${(college.fees || 0).toLocaleString('en-IN')}`;
     if (criterion.key === 'seats') return college.seatsLabel || `${college.seats || 150} seats`;
     if (criterion.key === 'cutoff') return college.cutoffLabel || `AIR ${(college.cutoff || 0).toLocaleString('en-IN')} (${categoryDisplayLabel})`;
+    if (criterion.key === 'aiq_cutoff') return college.aiq_cutoffLabel || `AIR ${(college.aiq_cutoff || college.cutoff || 0).toLocaleString('en-IN')} (15% AIQ)`;
+    if (criterion.key === 'state_cutoff') return college.state_cutoffLabel || `AIR ${(college.state_cutoff || Math.round((college.cutoff || 15000) * 1.8)).toLocaleString('en-IN')} (85% State Domicile)`;
+    if (criterion.key === 'management_cutoff') return college.management_cutoffLabel || (college.type?.toLowerCase().includes('govt') ? 'N/A (100% Government Seats)' : `AIR ${(college.management_cutoff || Math.round((college.cutoff || 15000) * 3.5)).toLocaleString('en-IN')} (Management Quota)`);
     if (criterion.key === 'address') return college.address || 'Location Details Available';
     if (criterion.key === 'hostel') return college.hostelLabel || college.hostel || 'Available';
     if (criterion.key === 'accreditation') return college.accreditation || 'Recognized Medical College';
@@ -1433,25 +1479,28 @@ export default function CollegeComparisonPage() {
                         {filteredColleges.length === 0 ? (
                           <div className="p-4 text-xs font-semibold text-slate-400 text-center">No matching colleges found</div>
                         ) : (
-                          filteredColleges.map((college: any, idx: number) => (
-                            <div
-                              key={college['College Name'] || college.name || idx}
-                              className="p-3 text-sm cursor-pointer hover:bg-sky-50 transition-colors flex items-center justify-between gap-3"
-                              onClick={() => handleSelectCollege(college)}
-                            >
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-bold text-slate-800 text-xs sm:text-sm truncate">
-                                  {college['College Name'] || college.name}
-                                </span>
-                                <span className="text-[11px] text-slate-400 font-medium truncate">
-                                  {college.Type || 'Medical College'} • {college.Board || ''}
+                          filteredColleges.map((college: any, idx: number) => {
+                            const cName = getCollegeName(college);
+                            return (
+                              <div
+                                key={cName || idx}
+                                className="p-3 text-sm cursor-pointer hover:bg-sky-50 transition-colors flex items-center justify-between gap-3"
+                                onClick={() => handleSelectCollege(college)}
+                              >
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-bold text-slate-800 text-xs sm:text-sm truncate">
+                                    {cName}
+                                  </span>
+                                  <span className="text-[11px] text-slate-400 font-medium truncate">
+                                    {college.management || college.Type || 'Medical College'} • Total Seats: {college.total_seats || college['2026 Total Seats'] || 150}
+                                  </span>
+                                </div>
+                                <span className="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full shrink-0">
+                                  {college.state || college.State}
                                 </span>
                               </div>
-                              <span className="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full shrink-0">
-                                {college.City ? `${college.City}, ${college.State}` : college.State}
-                              </span>
-                            </div>
-                          ))
+                            );
+                          })
                         )}
                       </div>
                     )}
@@ -1459,22 +1508,25 @@ export default function CollegeComparisonPage() {
 
                   {/* Selected Chips */}
                   <div className="mt-3 max-h-28 overflow-y-auto pr-1 space-y-2">
-                    {selectedRawColleges.map((college: any, idx: number) => (
-                      <div
-                        key={college['College Name'] || college.name || idx}
-                        className="flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 text-slate-800 text-xs font-bold pl-3 pr-2 py-2 rounded-xl"
-                      >
-                        <span className="truncate">{college['College Name'] || college.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCollege(idx)}
-                          className="w-5 h-5 shrink-0 rounded-full bg-slate-200 hover:bg-rose-500 hover:text-white text-slate-600 flex items-center justify-center text-xs transition-colors"
-                          aria-label={`Remove ${college['College Name'] || college.name}`}
+                    {selectedRawColleges.map((college: any, idx: number) => {
+                      const cName = getCollegeName(college);
+                      return (
+                        <div
+                          key={cName || idx}
+                          className="flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 text-slate-800 text-xs font-bold pl-3 pr-2 py-2 rounded-xl"
                         >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
+                          <span className="truncate">{cName}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCollege(idx)}
+                            className="w-5 h-5 shrink-0 rounded-full bg-slate-200 hover:bg-rose-500 hover:text-white text-slate-600 flex items-center justify-center text-xs transition-colors"
+                            aria-label={`Remove ${cName}`}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {selectedRawColleges.length === 0 && (

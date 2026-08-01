@@ -11,9 +11,7 @@ import { predictCollegesWithGemini } from '@/lib/ai/gemini';
 import { predictCollegesWithPerplexity } from '@/lib/ai/perplexity';
 import { counsellingPrompt } from '@/lib/ai/prompts';
 import { getAuthorityForState } from '@/lib/ai/counsellingAuthorities';
-import { KARNATAKA_PG_COLLEGES } from '@/lib/data/KarnatakaState/pgCollegeList';
 import { KARNATAKA_UG_COLLEGES } from '@/lib/data/KarnatakaState/ugCollegeList';
-import { ALLSTATE_PG_COLLEGES } from '@/lib/data/allstate/pgCollegeList';
 import { ALLSTATE_UG_COLLEGES } from '@/lib/data/allstate/ugCollegeList';
 import { predictCollegesFromMasterData, predictPgCollegesFromMasterData } from '@/lib/data/collegeMatcher';
 import { MASTER_UG_COLLEGE_LIST } from '@/lib/data/allstate/UgMasterCollegeList';
@@ -650,7 +648,9 @@ export async function POST(req: NextRequest) {
         type || 'ALL'
       );
 
-      return NextResponse.json({ colleges: masterPgMatches });
+      if (masterPgMatches && masterPgMatches.length > 0) {
+        return NextResponse.json({ colleges: masterPgMatches });
+      }
     }
 
     // Direct deterministic Master UG College Dataset matching for NEET UG
