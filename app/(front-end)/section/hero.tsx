@@ -2122,7 +2122,15 @@ export default function HeroSection({
         onClose={() => setIsOtpModalOpen(false)}
         onSuccess={handleOtpSuccess}
         title="Get your favourite college counselling info"
-        subtitle="Enter your contact info to view matching medical colleges & cutoffs."
+        subtitle="Enter your profile & contact info to view matching medical colleges & cutoffs."
+        isCollegePredictor={true}
+        initialStudentProfile={{
+          rank: collegeRank,
+          exam: collegeExamType,
+          course: selectedCourse,
+          category: selectedCategory,
+          states: selectedStates,
+        }}
       />
     </section>
   );

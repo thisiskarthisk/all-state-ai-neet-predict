@@ -1607,7 +1607,7 @@ export default function CollegeComparisonPage() {
               {!isComparing && !showResults && (
                 <div className="w-full rounded-[32px] overflow-hidden shadow-xl border-2 border-white/15 aspect-[1717/916]">
                   <img
-                    src="/assets/image/college-compare-banner.png"
+                    src="/assets/image/college-compare-banner-1.png"
                     alt="Compare colleges side by side — fees, seats, cutoffs, hostel, accreditation and more, all in one place"
                     className="w-full h-full object-cover"
                   />
@@ -2024,6 +2024,7 @@ export default function CollegeComparisonPage() {
         onSuccess={handleOtpSuccess}
         title="Compare Medical Colleges Side by Side"
         subtitle="Enter your contact info & verify your WhatsApp number to view side-by-side college comparison."
+        isCollegePredictor={false}
       />
     </div>
   );
