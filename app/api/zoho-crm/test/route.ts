@@ -1,7 +1,7 @@
 import { createLead } from '@/lib/zoho-crm';
 import { NextResponse } from 'next/server';
 
-/* export async function GET(req: Request) {
+export async function GET(req: Request) {
   const leadId = await createLead({
     name: 'Karthick',
     email: 'karthick@proflujo.com',
@@ -29,4 +29,4 @@ import { NextResponse } from 'next/server';
     message: 'Success',
     data: { leadId },
   });
-} */
+}

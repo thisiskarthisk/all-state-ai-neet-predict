@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import {
@@ -756,6 +756,93 @@ export default function HeroSection({
   };
 
   const groupedColleges = getGroupedColleges();
+
+  const filteredColleges = useMemo(() => {
+    return groupedColleges.filter((c: any) => {
+      if (chanceFilter !== 'all') {
+        const cChance = c.best_chance || 'High';
+        if (cChance.toLowerCase() !== chanceFilter.toLowerCase()) return false;
+      }
+
+      if (roundFilter !== 'all') {
+        let targetCat: string | null = null;
+        if (selectedCategory !== 'ALL') {
+          targetCat = selectedCategory === 'UR' ? 'Gen' : selectedCategory;
+        } else if (roundCategoryFilter !== 'all') {
+          targetCat = roundCategoryFilter;
+        }
+
+        const roundData = c.allRoundCutoffs?.[roundFilter];
+
+        if (!roundData) return false;
+
+        const userRankNum = parseInt(collegeRank, 10) || 0;
+
+        if (targetCat) {
+          const roundVal = roundData[targetCat];
+          if (typeof roundVal !== 'number' || roundVal <= 0) {
+            return false;
+          }
+          if (userRankNum > 0 && userRankNum > Math.round(roundVal * 1.15)) {
+            return false;
+          }
+        } else {
+          const eligibleCutoffs = Object.values(roundData).filter(
+            (v) => typeof v === 'number' && (v as number) > 0 && (userRankNum <= 0 || userRankNum <= Math.round((v as number) * 1.15))
+          );
+
+          if (eligibleCutoffs.length === 0) return false;
+        }
+      }
+
+      if (typeFilter !== 'all') {
+        const cType = c.college_type || c.collegeType || c.type || 'Government';
+        if (!cType.toLowerCase().includes(typeFilter.toLowerCase())) return false;
+      }
+
+      const searchLower = collegeSearch.toLowerCase().trim();
+      const matchesSearch =
+        !searchLower ||
+        c.college_name.toLowerCase().includes(searchLower) ||
+        c.state_name.toLowerCase().includes(searchLower) ||
+        (c.cutoffs || []).some(
+          (cut: any) =>
+            cut.course_name?.toLowerCase().includes(searchLower) ||
+            cut.category_name?.toLowerCase().includes(searchLower)
+        );
+
+      const matchesCourse =
+        selectedCourse === 'ALL' ||
+        (c.cutoffs || []).length === 0 ||
+        (c.cutoffs || []).some((cut: any) =>
+          matchCourseName(selectedCourse, cut.course_name || cut.course || '')
+        );
+
+      const hasSpecificStates = selectedStates.filter(code => code !== 'AI' && code !== 'ALL').length > 0;
+      const matchesState =
+        !hasSpecificStates ||
+        selectedStates.some((code) => {
+          if (code === 'AI' || code === 'ALL') return false;
+          const stateName = (
+            INDIAN_STATES.find((s) => s.code === code)?.name || code
+          );
+          return isStateMatched(c.state_name, stateName);
+        });
+
+      return matchesSearch && matchesCourse && matchesState;
+    });
+  }, [
+    groupedColleges,
+    chanceFilter,
+    roundFilter,
+    selectedCategory,
+    roundCategoryFilter,
+    collegeRank,
+    typeFilter,
+    collegeSearch,
+    selectedCourse,
+    selectedStates,
+  ]);
 
   // True when the person has changed rank/exam/course/category/states in the
   // form since the results currently on screen were fetched. We deliberately
@@ -1521,7 +1608,7 @@ export default function HeroSection({
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
                         <h4 className="font-black text-slate-900 text-base">
-                          Matching Colleges ({groupedColleges.length})
+                          Matching Colleges ({filteredColleges.length})
                         </h4>
                         <p className="text-xs text-slate-500 font-semibold mt-0.5">
                           Sorted by cutoff competitiveness · Click any card to select for counselling
@@ -1641,80 +1728,6 @@ export default function HeroSection({
                   {/* Scrollable College List Body */}
                   <div className="grow overflow-y-auto py-3 space-y-3 sm:space-y-4 pr-1 max-h-[420px] sm:max-h-[460px]">
                     {(() => {
-                      const filteredColleges = groupedColleges.filter((c: any) => {
-                        if (chanceFilter !== 'all') {
-                          const cChance = c.best_chance || 'High';
-                          if (cChance.toLowerCase() !== chanceFilter.toLowerCase()) return false;
-                        }
-
-                        if (roundFilter !== 'all') {
-                          let targetCat: string | null = null;
-                          if (selectedCategory !== 'ALL') {
-                            targetCat = selectedCategory === 'UR' ? 'Gen' : selectedCategory;
-                          } else if (roundCategoryFilter !== 'all') {
-                            targetCat = roundCategoryFilter;
-                          }
-
-                          const roundData = c.allRoundCutoffs?.[roundFilter];
-
-                          if (!roundData) return false;
-
-                          const userRankNum = parseInt(collegeRank, 10) || 0;
-
-                          if (targetCat) {
-                            const roundVal = roundData[targetCat];
-                            if (typeof roundVal !== 'number' || roundVal <= 0) {
-                              return false;
-                            }
-                            if (userRankNum > 0 && userRankNum > Math.round(roundVal * 1.15)) {
-                              return false;
-                            }
-                          } else {
-                            const eligibleCutoffs = Object.values(roundData).filter(
-                              (v) => typeof v === 'number' && (v as number) > 0 && (userRankNum <= 0 || userRankNum <= Math.round((v as number) * 1.15))
-                            );
-
-                            if (eligibleCutoffs.length === 0) return false;
-                          }
-                        }
-
-                        if (typeFilter !== 'all') {
-                          const cType = c.college_type || c.collegeType || c.type || 'Government';
-                          if (!cType.toLowerCase().includes(typeFilter.toLowerCase())) return false;
-                        }
-
-                        const searchLower = collegeSearch.toLowerCase().trim();
-                        const matchesSearch =
-                          !searchLower ||
-                          c.college_name.toLowerCase().includes(searchLower) ||
-                          c.state_name.toLowerCase().includes(searchLower) ||
-                          (c.cutoffs || []).some(
-                            (cut: any) =>
-                              cut.course_name?.toLowerCase().includes(searchLower) ||
-                              cut.category_name?.toLowerCase().includes(searchLower)
-                          );
-
-                        const matchesCourse =
-                          selectedCourse === 'ALL' ||
-                          (c.cutoffs || []).length === 0 ||
-                          (c.cutoffs || []).some((cut: any) =>
-                            matchCourseName(selectedCourse, cut.course_name || cut.course || '')
-                          );
-
-                        const hasSpecificStates = selectedStates.filter(code => code !== 'AI' && code !== 'ALL').length > 0;
-                        const matchesState =
-                          !hasSpecificStates ||
-                          selectedStates.some((code) => {
-                            if (code === 'AI' || code === 'ALL') return false;
-                            const stateName = (
-                              INDIAN_STATES.find((s) => s.code === code)?.name || code
-                            );
-                            return isStateMatched(c.state_name, stateName);
-                          });
-
-                        return matchesSearch && matchesCourse && matchesState;
-                      });
-
                       if (filteredColleges.length === 0) {
                         return (
                           <div className="h-full min-h-[280px] sm:min-h-[340px] flex flex-col items-center justify-center text-center p-6 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 my-auto">
