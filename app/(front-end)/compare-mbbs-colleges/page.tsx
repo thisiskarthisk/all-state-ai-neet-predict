@@ -1064,7 +1064,10 @@ export interface Criterion {
 }
 
 const CRITERIA: Criterion[] = [
-  { key: 'fees', label: 'Total Fees', better: 'lower' },
+  { key: 'govt_fees', label: 'Government Quota Fees (Per Year)', better: 'lower' },
+  { key: 'management_fees', label: 'Private / Management Quota Fees (Per Year)', better: 'lower' },
+  { key: 'nri_fees', label: 'NRI Quota Fees (Per Year)', better: 'lower' },
+  { key: 'fees', label: 'Government / Base Fees', better: 'lower' },
   { key: 'seats', label: 'Total MBBS Seats', better: 'higher' },
   { key: 'cutoff', label: 'Category Cutoff (AIR)', better: 'lower' },
   { key: 'aiq_cutoff', label: 'All India Quota (AIQ) Rank', better: 'lower' },
@@ -1093,7 +1096,7 @@ export default function CollegeComparisonPage() {
   const [selectedRawColleges, setSelectedRawColleges] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('Gen');
   const [checkedCriteria, setCheckedCriteria] = useState<Set<string>>(
-    new Set(['fees', 'seats', 'cutoff', 'aiq_cutoff', 'state_cutoff', 'management_cutoff', 'address'])
+    new Set(['govt_fees', 'management_fees', 'nri_fees', 'seats', 'cutoff', 'aiq_cutoff', 'state_cutoff', 'management_cutoff', 'address'])
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -1304,7 +1307,35 @@ export default function CollegeComparisonPage() {
   const categoryDisplayLabel = selectedCategory === 'Gen' ? 'General' : selectedCategory;
 
   const getDisplayValue = (college: any, criterion: Criterion): string => {
-    if (criterion.key === 'fees') return college.feesLabel || `₹${(college.fees || 0).toLocaleString('en-IN')}`;
+    if (criterion.key === 'govt_fees') {
+      if (college.govt_feesLabel) return college.govt_feesLabel;
+      if (typeof college.govt_fees === 'number' && college.govt_fees > 0) return `₹${college.govt_fees.toLocaleString('en-IN')}/year`;
+      const isDeemed = college.type?.toLowerCase().includes('deem') || college.management?.toLowerCase().includes('deem');
+      if (isDeemed) return 'N/A (100% All India Deemed Quota)';
+      const isPrivate = college.type?.toLowerCase().includes('pvt') || college.type?.toLowerCase().includes('private') || college.management?.toLowerCase().includes('private');
+      const fallbackGovt = isPrivate ? 141446 : (college.fees || 15000);
+      return `₹${fallbackGovt.toLocaleString('en-IN')}/year`;
+    }
+    if (criterion.key === 'management_fees') {
+      if (college.management_feesLabel) return college.management_feesLabel;
+      if (typeof college.management_fees === 'number' && college.management_fees > 0) return `₹${college.management_fees.toLocaleString('en-IN')}/year`;
+      const isGovt = college.type?.toLowerCase().includes('govt') || college.type?.toLowerCase().includes('government') || college.management?.toLowerCase().includes('government');
+      if (isGovt) return 'N/A (100% Government Seats)';
+      const isDeemed = college.type?.toLowerCase().includes('deem') || college.management?.toLowerCase().includes('deem');
+      const fallbackMgmt = isDeemed ? (college.fees || 2200000) : (college.fees || 1092602);
+      return `₹${fallbackMgmt.toLocaleString('en-IN')}/year`;
+    }
+    if (criterion.key === 'nri_fees') {
+      if (college.nri_feesLabel) return college.nri_feesLabel;
+      if (typeof college.nri_fees === 'number' && college.nri_fees > 0) return `₹${college.nri_fees.toLocaleString('en-IN')}/year`;
+      const isGovt = college.type?.toLowerCase().includes('govt') || college.type?.toLowerCase().includes('government') || college.management?.toLowerCase().includes('government');
+      if (isGovt) return 'N/A (100% Government Seats)';
+      const isDeemed = college.type?.toLowerCase().includes('deem') || college.management?.toLowerCase().includes('deem');
+      const baseFee = college.fees || (isDeemed ? 2200000 : 1092602);
+      const fallbackNri = Math.round(baseFee * 2.2);
+      return `₹${fallbackNri.toLocaleString('en-IN')}/year ($${Math.round(fallbackNri / 83).toLocaleString()})`;
+    }
+    if (criterion.key === 'fees') return college.feesLabel || `₹${(college.fees || 0).toLocaleString('en-IN')}/year`;
     if (criterion.key === 'seats') return college.seatsLabel || `${college.seats || 150} seats`;
     if (criterion.key === 'cutoff') return college.cutoffLabel || `AIR ${(college.cutoff || 0).toLocaleString('en-IN')} (${categoryDisplayLabel})`;
     if (criterion.key === 'aiq_cutoff') return college.aiq_cutoffLabel || `AIR ${(college.aiq_cutoff || college.cutoff || 0).toLocaleString('en-IN')} (15% AIQ)`;
@@ -1422,7 +1453,7 @@ export default function CollegeComparisonPage() {
         <section className="relative w-full min-h-[calc(100vh-70px)] flex flex-col justify-center items-center py-8 lg:py-12 px-4 sm:px-6 overflow-hidden section-dark">
           {/* Centered hero heading */}
           <div className="w-full max-w-6xl mx-auto text-center mb-8 sm:mb-10">
-            <h2 className="hero-title-cc font-extrabold text-white tracking-tight leading-tight whitespace-nowrap">
+            <h2 className="hero-title-cc font-extrabold text-white tracking-tight leading-tight">
               Compare{" "}
               <span className="bg-gradient-to-r from-[#0095ff] via-[#00e5bf] to-[#2dd4bf] bg-clip-text text-transparent">
                 MBBS Colleges
@@ -1848,27 +1879,33 @@ export default function CollegeComparisonPage() {
         }
 
         .hero-title-cc {
-          font-size: clamp(2rem, 4vw, 3.2rem);
-          white-space: nowrap;
+          font-size: clamp(1.75rem, 4vw, 3.2rem);
+          white-space: normal;
+        }
+        @media (min-width: 768px) {
+          .hero-title-cc {
+            white-space: nowrap;
+          }
         }
 
         .hero-subtitle-cc {
-          font-size: clamp(1rem, 2vw, 1.4rem);
+          font-size: clamp(0.875rem, 2vw, 1.25rem);
         }
         @media (max-width: 1024px) {
           .hero-title-cc {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
           }
           .hero-subtitle-cc {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
           }
         }
         @media (max-width: 640px) {
           .hero-title-cc {
-            font-size: 1.75rem;
+            font-size: 1.65rem;
+            line-height: 1.25;
           }
           .hero-subtitle-cc {
-            font-size: 1rem;
+            font-size: 0.925rem;
           }
         }
 

@@ -306,7 +306,7 @@ export default function CounsellingInfoModel({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#090d16] text-white rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200 my-auto">
+      <div className="relative w-full max-w-lg bg-[#090d16] text-white rounded-3xl border border-slate-800 p-5 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200 my-auto flex flex-col max-h-[90vh]">
         {/* Close Button */}
         <button
           type="button"
@@ -317,13 +317,13 @@ export default function CounsellingInfoModel({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Modal Header */}
-        <div className="text-center mb-6 pr-6">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase mb-2">
+        {/* FIXED Modal Header */}
+        <div className="text-center pb-3 pr-6 shrink-0 border-b border-slate-800/60 mb-3">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase mb-1.5">
             <Sparkles className="w-3.5 h-3.5" />
             {step === 'form' ? 'Unlock College Prediction & Comparison' : 'WhatsApp Verification'}
           </span>
-          <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
             {step === 'form' ? title : 'Enter WhatsApp 4-Digit OTP'}
           </h3>
           <p className="text-xs text-slate-400 mt-1 font-medium leading-relaxed">
@@ -333,173 +333,228 @@ export default function CounsellingInfoModel({
           </p>
         </div>
 
-        {/* STEP 1: FORM */}
-        {step === 'form' && (
-          <form onSubmit={handleLeadSubmit} className="space-y-4 text-left">
-            {/* Contact Details Section */}
-            <div className="space-y-4">
-              {/* Row 1: Full Name + Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Full Name <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={predictLeadName}
-                    onChange={(e) => setPredictLeadName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
+        {/* Main Form Wrapping Content + Fixed Footer */}
+        <form onSubmit={step === 'form' ? handleLeadSubmit : handleOtpVerify} className="flex flex-col grow min-h-0 overflow-hidden">
+          {/* SCROLLABLE Inner Content Container */}
+          <div className="overflow-y-auto grow pr-1 space-y-4 custom-scrollbar">
+            {step === 'form' ? (
+              <div className="space-y-4 text-left">
+                {/* Contact Details Section */}
+                <div className="space-y-4">
+                  {/* Row 1: Full Name + Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        Full Name <span className="text-amber-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={predictLeadName}
+                        onChange={(e) => setPredictLeadName(e.target.value)}
+                        placeholder="Enter your full name"
+                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Email Address <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={predictLeadEmail}
-                    onChange={(e) => setPredictLeadEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Phone + Home State */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    WhatsApp / Phone <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={predictLeadMobile}
-                    onChange={(e) => setPredictLeadMobile(e.target.value.replace(/\D/g, ''))}
-                    placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Which state you belong to? <span className="text-amber-500">*</span>
-                  </label>
-                  <select
-                    value={predictLeadHomeState}
-                    onChange={(e) => setPredictLeadHomeState(e.target.value)}
-                    className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-                  >
-                    {INDIAN_STATES.map((st) => (
-                      <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
-                        {st.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Row 3: Preferred College */}
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  Do you have any preferred college?
-                </label>
-                <MultiSelect
-                  options={ALL_COLLEGE_OPTIONS}
-                  selectedValues={predictPreferredColleges}
-                  onChange={setPredictPreferredColleges}
-                  placeholder="Search & select preferred colleges..."
-                  isDark={true}
-                />
-              </div>
-            </div>
-
-            {/* Extra Academic Profile Fields (Only rendered when isCollegePredictor is true) */}
-            {isCollegePredictor && (
-              <div className="mt-4 pt-4 border-t border-slate-800 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-400">
-                  <GraduationCap className="w-4 h-4 text-emerald-400" />
-                  <span>Academic Profile Details (Pre-filled)</span>
-                </div>
-
-                {/* Academic Row 1: Rank + Exam */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                      NEET Rank
-                    </label>
-                    <input
-                      type="text"
-                      disabled
-                      readOnly
-                      value={profileRank || 'N/A'}
-                      className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-4 py-2.5 text-sm font-bold text-emerald-400 cursor-not-allowed opacity-80"
-                    />
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        Email Address <span className="text-amber-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={predictLeadEmail}
+                        onChange={(e) => setPredictLeadEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                      Exam Type
-                    </label>
-                    <input
-                      type="text"
-                      disabled
-                      readOnly
-                      value={profileExam || 'NEET-UG'}
-                      className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
-                    />
-                  </div>
-                </div>
+                  {/* Row 2: Phone + Home State */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        WhatsApp / Phone <span className="text-amber-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        value={predictLeadMobile}
+                        onChange={(e) => setPredictLeadMobile(e.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 9876543210"
+                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-colors font-bold"
+                      />
+                    </div>
 
-                {/* Academic Row 2: Target Course + Category */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                      Target Course
-                    </label>
-                    <input
-                      type="text"
-                      disabled
-                      readOnly
-                      value={profileCourse || 'MBBS'}
-                      className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
-                    />
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        Which state you belong to? <span className="text-amber-500">*</span>
+                      </label>
+                      <select
+                        value={predictLeadHomeState}
+                        onChange={(e) => setPredictLeadHomeState(e.target.value)}
+                        className="w-full rounded-xl bg-[#0b0f19] border border-slate-800 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                      >
+                        {INDIAN_STATES.map((st) => (
+                          <option key={st.code} value={st.name} className="bg-[#0b0f19] text-white">
+                            {st.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
+                  {/* Row 3: Preferred College */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                      Category
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Do you have any preferred college?
                     </label>
-                    <input
-                      type="text"
-                      disabled
-                      readOnly
-                      value={profileCategory || 'General'}
-                      className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
-                    />
-                  </div>
-                </div>
-
-                {/* Academic Row 3: Preferred State(s) */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                    Preferred State(s)
-                  </label>
-                  <div className="pointer-events-none opacity-80">
                     <MultiSelect
-                      options={STATE_OPTIONS}
-                      selectedValues={profileStates}
-                      onChange={() => {}}
-                      placeholder="Selected States..."
+                      options={ALL_COLLEGE_OPTIONS}
+                      selectedValues={predictPreferredColleges}
+                      onChange={setPredictPreferredColleges}
+                      placeholder="Search & select preferred colleges..."
                       isDark={true}
                     />
                   </div>
                 </div>
+
+                {/* Extra Academic Profile Fields (Only rendered when isCollegePredictor is true) */}
+                {isCollegePredictor && (
+                  <div className="mt-3 pt-3 border-t border-slate-800 space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-400">
+                      <GraduationCap className="w-4 h-4 text-emerald-400" />
+                      <span>Academic Profile Details (Pre-filled)</span>
+                    </div>
+
+                    {/* Academic Row 1: Rank + Exam */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">
+                          NEET Rank
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          readOnly
+                          value={profileRank || 'N/A'}
+                          className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-3.5 py-2 text-sm font-bold text-emerald-400 cursor-not-allowed opacity-80"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">
+                          Exam Type
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          readOnly
+                          value={profileExam || 'NEET-UG'}
+                          className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-3.5 py-2 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Academic Row 2: Target Course + Category */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">
+                          Target Course
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          readOnly
+                          value={profileCourse || 'MBBS'}
+                          className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-3.5 py-2 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">
+                          Category
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          readOnly
+                          value={profileCategory || 'General'}
+                          className="w-full rounded-xl bg-slate-900 border border-slate-800/80 px-3.5 py-2 text-sm font-semibold text-slate-300 cursor-not-allowed opacity-80"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Academic Row 3: Preferred State(s) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">
+                        Preferred State(s)
+                      </label>
+                      <div className="pointer-events-none opacity-80">
+                        <MultiSelect
+                          options={STATE_OPTIONS}
+                          selectedValues={profileStates}
+                          onChange={() => {}}
+                          placeholder="Selected States..."
+                          isDark={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* STEP 2: OTP Input Body */
+              <div className="space-y-4 text-left">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-2 text-center">
+                    Enter 4-Digit OTP Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    autoFocus
+                    required
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    placeholder="• • • •"
+                    className="w-full rounded-2xl bg-[#0b0f19] border border-slate-700 px-4 py-3.5 text-center text-2xl font-black tracking-[0.5em] text-white placeholder:tracking-normal outline-none focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                {/* Resend OTP & Change Details Links */}
+                <div className="flex items-center justify-between text-xs font-bold pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep('form')}
+                    className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Change Phone / Details
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isResendDisabled || isLoading}
+                    onClick={handleResendOtp}
+                    className="text-emerald-400 hover:text-emerald-300 disabled:text-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                    <span>{isResendDisabled ? `Resend in ${resendTimer}s` : 'Resend OTP'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* FIXED FOOTER (Submit Button + Alerts + WhatsApp Notice) */}
+          <div className="shrink-0 pt-3 mt-3 border-t border-slate-800/60 space-y-2">
+            {successMsg && (
+              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{successMsg}</span>
               </div>
             )}
 
@@ -507,97 +562,46 @@ export default function CounsellingInfoModel({
               <p className="text-xs text-rose-400 font-bold break-words text-center">{formError}</p>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Sending WhatsApp OTP...
-                </>
-              ) : (
-                <>
-                  Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* STEP 2: OTP VERIFICATION */}
-        {step === 'otp' && (
-          <form onSubmit={handleOtpVerify} className="space-y-4 text-left">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-2 text-center">
-                Enter 4-Digit OTP Code
-              </label>
-              <input
-                type="text"
-                maxLength={4}
-                autoFocus
-                required
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                placeholder="• • • •"
-                className="w-full rounded-2xl bg-[#0b0f19] border border-slate-700 px-4 py-3.5 text-center text-2xl font-black tracking-[0.5em] text-white placeholder:tracking-normal outline-none focus:border-emerald-500 transition-colors"
-              />
-            </div>
-
-            {successMsg && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{successMsg}</span>
-              </div>
+            {step === 'form' ? (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Sending WhatsApp OTP...
+                  </>
+                ) : (
+                  <>
+                    Submit &amp; View Eligible Colleges <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading || otp.trim().length !== 4}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Verifying OTP &amp; Saving...
+                  </>
+                ) : (
+                  <>
+                    Verify OTP &amp; Continue <CheckCircle2 className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             )}
 
-            {formError && (
-              <p className="text-xs text-rose-400 font-bold text-center">{formError}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading || otp.trim().length !== 4}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying OTP &amp; Saving...
-                </>
-              ) : (
-                <>
-                  Verify OTP &amp; Continue <CheckCircle2 className="w-4 h-4" />
-                </>
-              )}
-            </button>
-
-            {/* Resend OTP & Change Details */}
-            <div className="flex items-center justify-between text-xs font-bold pt-2">
-              <button
-                type="button"
-                onClick={() => setStep('form')}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                Change Phone / Details
-              </button>
-
-              <button
-                type="button"
-                disabled={isResendDisabled || isLoading}
-                onClick={handleResendOtp}
-                className="text-emerald-400 hover:text-emerald-300 disabled:text-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                <span>{isResendDisabled ? `Resend in ${resendTimer}s` : 'Resend OTP'}</span>
-              </button>
-            </div>
-          </form>
-        )}
-
-        <p className="text-[11px] text-slate-500 font-medium text-center flex items-center justify-center gap-1 mt-5 shrink-0">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Verified WhatsApp OTP Delivery via Whatsapp</span>
-        </p>
+            <p className="text-[11px] text-slate-500 font-medium text-center flex items-center justify-center gap-1 pt-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Verified WhatsApp OTP Delivery via Whatsapp</span>
+            </p>
+          </div>
+        </form>
       </div>
     </div>,
     document.body

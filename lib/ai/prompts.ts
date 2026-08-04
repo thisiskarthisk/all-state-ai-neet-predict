@@ -488,21 +488,27 @@ For EACH college in the list, provide accurate or realistic estimated data for N
 1. "name": College Name
 2. "loc": "City, State"
 3. "address": Full physical street address with pincode (e.g. "EVR Periyar Salai, Park Town, Chennai, Tamil Nadu - 600003")
-4. "fees": Total Annual Fees in INR as a pure number (e.g. 15000 for Govt, 1144000 for Pvt, 2500000 for Deemed)
+4. "fees": Base Annual Fees in INR as a pure number (e.g. 15000 for Govt, 1144000 for Pvt, 2500000 for Deemed)
 5. "feesLabel": Human readable formatted fee string (e.g. "₹15,000 / yr" or "₹11.44L / yr")
-6. "seats": Total MBBS Seats as pure number (e.g. 250)
-7. "seatsLabel": Human readable formatted seats string (e.g. "250 seats")
-8. "cutoff": Expected AIR ${categoryName} Cutoff rank as pure number (e.g. 5200 for Gen, 45000 for SC, 80000 for ST)
-9. "cutoffLabel": Formatted cutoff string specifying Category (e.g. "AIR 5,200 (${categoryName})")
-10. "aiq_cutoff": All India Quota rank number
-11. "aiq_cutoffLabel": Formatted AIQ cutoff (e.g. "AIR 5,200 (15% All India Quota)")
-12. "state_cutoff": State Domicile Quota rank number
-13. "state_cutoffLabel": Formatted State Quota cutoff (e.g. "AIR 12,000 (85% State Quota)")
-14. "management_cutoff": Institutional / Management Quota rank number
-15. "management_cutoffLabel": Formatted Management Quota cutoff (e.g. "AIR 85,000 (Management Quota)" or "N/A (Govt Seats)")
-16. "hostel": Hostel Availability string ("Available", "Available (Boys & Girls)", etc.)
-17. "hostelLabel": Detailed hostel description string
-18. "accreditation": NAAC Accreditation & NIRF ranking string (e.g. "A+ Grade (NIRF #11)")
+6. "govt_fees": Annual Government Quota tuition fee in INR as pure number (e.g. 15000 for Govt, 141446 for State Pvt Govt-quota, 0 for 100% Deemed)
+7. "govt_feesLabel": Formatted Govt Quota fee string (e.g. "₹15,000 / yr" or "₹1,41,446 / yr" or "N/A (100% Deemed)")
+8. "management_fees": Annual Private / Management Quota tuition fee in INR as pure number (e.g. 1092602 for Pvt Mgmt, 2500000 for Deemed Mgmt, 0 for Govt)
+9. "management_feesLabel": Formatted Management Quota fee string (e.g. "₹10.92L / yr" or "₹25.00L / yr" or "N/A (100% Govt)")
+10. "nri_fees": Annual NRI Quota tuition fee in INR as pure number (e.g. 4000000 for Pvt NRI, 4500000 for Deemed NRI, 0 for Govt)
+11. "nri_feesLabel": Formatted NRI Quota fee string (e.g. "₹40.00L / yr ($48,000)" or "N/A (100% Govt)")
+12. "seats": Total MBBS Seats as pure number (e.g. 250)
+13. "seatsLabel": Human readable formatted seats string (e.g. "250 seats")
+14. "cutoff": Expected AIR ${categoryName} Cutoff rank as pure number (e.g. 5200 for Gen, 45000 for SC, 80000 for ST)
+15. "cutoffLabel": Formatted cutoff string specifying Category (e.g. "AIR 5,200 (${categoryName})")
+16. "aiq_cutoff": All India Quota rank number
+17. "aiq_cutoffLabel": Formatted AIQ cutoff (e.g. "AIR 5,200 (15% All India Quota)")
+18. "state_cutoff": State Domicile Quota rank number
+19. "state_cutoffLabel": Formatted State Quota cutoff (e.g. "AIR 12,000 (85% State Quota)")
+20. "management_cutoff": Institutional / Management Quota rank number
+21. "management_cutoffLabel": Formatted Management Quota cutoff (e.g. "AIR 85,000 (Management Quota)" or "N/A (Govt Seats)")
+22. "hostel": Hostel Availability string ("Available", "Available (Boys & Girls)", etc.)
+23. "hostelLabel": Detailed hostel description string
+24. "accreditation": NAAC Accreditation & NIRF ranking string (e.g. "A+ Grade (NIRF #11)")
 
 Respond in JSON ONLY with format:
 {
@@ -513,6 +519,12 @@ Respond in JSON ONLY with format:
       "address": "...",
       "fees": 15000,
       "feesLabel": "...",
+      "govt_fees": 15000,
+      "govt_feesLabel": "₹15,000 / yr",
+      "management_fees": 1092602,
+      "management_feesLabel": "₹10.92L / yr",
+      "nri_fees": 4000000,
+      "nri_feesLabel": "₹40.00L / yr ($48,000)",
       "seats": 250,
       "seatsLabel": "...",
       "cutoff": 5200,

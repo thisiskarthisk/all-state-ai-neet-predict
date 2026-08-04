@@ -45,17 +45,51 @@ export async function POST(req: Request) {
 
     const homeStateVal = cleanState(homeState || 'Karnataka');
 
+    const courseVal = studentProfile?.course || 'MBBS';
+
+    const extraFields: Record<string, any> = {
+      Created_At: new Date().toISOString().split('T')[0],
+      Mode: 'Web',
+      Neet_Rank: intRank !== null ? intRank : (rawRank || ''),
+      Course: courseVal,
+      Neet_Couses: courseVal,
+      Target_Course: courseVal,
+      College_Name: collegeNamesStr,
+      Platform: 'Web',
+      Form_Name: 'College Predictor',
+    };
+
+    if (studentProfile?.exam) {
+      extraFields.Exam_Type = studentProfile.exam;
+    }
+    if (studentProfile?.category) {
+      extraFields.Category = studentProfile.category;
+    }
+    if (studentProfile?.states) {
+      extraFields.Target_State = Array.isArray(studentProfile.states)
+        ? studentProfile.states.join(', ')
+        : studentProfile.states;
+    }
+
+    const descParts = [
+      `Form Source: ${leadSource}`,
+      `Registration Date: ${cleanDateTimeStr}`,
+      `Home State: ${homeStateVal}`,
+      `NEET Rank: ${rawRank || 'N/A'}`,
+      `Exam Type: ${studentProfile?.exam || 'N/A'}`,
+      `Target Course: ${courseVal}`,
+      `Category: ${studentProfile?.category || 'N/A'}`,
+      `Preferred State(s): ${Array.isArray(studentProfile?.states) ? studentProfile.states.join(', ') : (studentProfile?.states || 'N/A')}`,
+      `Selected/Preferred Colleges: ${collegeNamesStr}`,
+    ];
+    extraFields.Description = descParts.join('\n');
+
     const crmLeadId = await createLead({
       name: name,
       email: email,
       mobile: mobileNo,
       homeState: homeStateVal,
-      extraFields: {
-        College_Name: collegeNamesStr,
-        Neet_Rank: intRank || '',
-        Platform: 'Web',
-        Form_Name: 'College Predictor',
-      },
+      extraFields,
     });
 
     if (!crmLeadId) {

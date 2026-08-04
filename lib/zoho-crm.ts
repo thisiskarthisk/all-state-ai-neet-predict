@@ -75,6 +75,15 @@ const LEAD_API_NAMES = new Set([
   'Campaign_Name',
   'Registration_date',
   'leadchain0__Social_Lead_ID',
+  'Created_At',
+  'Mode',
+  'Course',
+  'Neet_Couses',
+  'Target_Course',
+  'Exam_Type',
+  'Category',
+  'Target_State',
+  'Description',
 ]);
 
 /**
@@ -92,6 +101,12 @@ const LEAD_FIELD_ALIASES: Record<string, string> = {
   'Social Lead ID': 'leadchain0__Social_Lead_ID',
   'Campaign Name': 'Campaign_Name',
   'Form Name': 'Form_Name',
+  'Created At': 'Created_At',
+    Mode: 'Mode',
+    Course: 'Course',
+    'Target Course': 'Target_Course',
+    'Exam Type': 'Exam_Type',
+    'Target State': 'Target_State',
 };
 
 /** Resolves caller-supplied keys to real API names, complaining about the ones Zoho would drop. */

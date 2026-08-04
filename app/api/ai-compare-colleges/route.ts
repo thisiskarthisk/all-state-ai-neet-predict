@@ -364,18 +364,50 @@ export async function POST(request: Request) {
       let stateLabel = '';
       let mgmtLabel = '';
 
+      // Quota Fees calculation
+      let govt_fees = 0;
+      let govt_feesLabel = '';
+      let management_fees = 0;
+      let management_feesLabel = '';
+      let nri_fees = 0;
+      let nri_feesLabel = '';
+
       if (isGovt) {
         aiqLabel = `AIR ${cutoff.toLocaleString('en-IN')} (15% AIQ - ${categoryLabel})`;
         stateLabel = `AIR ${Math.round(cutoff * 1.8).toLocaleString('en-IN')} (85% State Domicile)`;
         mgmtLabel = 'N/A (100% Government Seats)';
+
+        govt_fees = c['Govt Fees'] || c.govt_fees || 15000;
+        govt_feesLabel = c['Govt Fees Label'] || c.govt_feesLabel || `₹${govt_fees.toLocaleString('en-IN')} / yr`;
+        management_fees = 0;
+        management_feesLabel = 'N/A (100% Govt Seats)';
+        nri_fees = 0;
+        nri_feesLabel = 'N/A (100% Govt Seats)';
       } else if (isDeemed) {
         aiqLabel = `AIR ${cutoff.toLocaleString('en-IN')} (100% MCC Deemed General)`;
         stateLabel = 'N/A (100% All India MCC Counselling)';
         mgmtLabel = `AIR ${Math.round(cutoff * 2.2).toLocaleString('en-IN')} (Management / NRI Quota)`;
+
+        govt_fees = 0;
+        govt_feesLabel = 'N/A (100% Deemed University)';
+        management_fees = c['Management Fees'] || c.management_fees || (fees > 15000 ? fees : 2200000);
+        management_feesLabel = c['Management Fees Label'] || c.management_feesLabel || `₹${(management_fees / 100000).toFixed(2)}L / yr`;
+        nri_fees = c['NRI Fees'] || c.nri_fees || Math.round(management_fees * 1.8);
+        nri_feesLabel = c['NRI Fees Label'] || c.nri_feesLabel || `₹${(nri_fees / 100000).toFixed(2)}L / yr ($${Math.round(nri_fees / 83).toLocaleString()})`;
       } else {
         aiqLabel = `AIR ${Math.round(cutoff * 1.5).toLocaleString('en-IN')} (Open Merit Seats)`;
         stateLabel = `AIR ${cutoff.toLocaleString('en-IN')} (State Merit Quota)`;
         mgmtLabel = `AIR ${Math.round(cutoff * 3.5).toLocaleString('en-IN')} (Management / NRI Quota)`;
+
+        const isKarnataka = state.toLowerCase().includes('karnataka');
+        govt_fees = c['Govt Fees'] || c.govt_fees || (isKarnataka ? 141446 : 150000);
+        govt_feesLabel = c['Govt Fees Label'] || c.govt_feesLabel || (isKarnataka ? '₹1,41,446 / yr (Govt Quota)' : `₹${(govt_fees / 100000).toFixed(2)}L / yr`);
+
+        management_fees = c['Management Fees'] || c.management_fees || (fees > 100000 ? fees : 1092602);
+        management_feesLabel = c['Management Fees Label'] || c.management_feesLabel || `₹${(management_fees / 100000).toFixed(2)}L / yr`;
+
+        nri_fees = c['NRI Fees'] || c.nri_fees || Math.round(management_fees * 3.5);
+        nri_feesLabel = c['NRI Fees Label'] || c.nri_feesLabel || `₹${(nri_fees / 100000).toFixed(2)}L / yr ($${Math.round(nri_fees / 83).toLocaleString()})`;
       }
 
       return {
@@ -384,6 +416,12 @@ export async function POST(request: Request) {
         address: c.Address || `${city}, ${state || 'India'}`,
         fees,
         feesLabel,
+        govt_fees,
+        govt_feesLabel,
+        management_fees,
+        management_feesLabel,
+        nri_fees,
+        nri_feesLabel,
         seats: Number(seats) || 150,
         seatsLabel: `${seats || 150} seats`,
         cutoff,
