@@ -1,4 +1,5 @@
 import { LOGGER } from '@/lib/logger';
+import { readLocalFile, writeLocalFile } from './file';
 
 const FIREBASE_DB_URL = (process.env.FIREBASE_DATABASE_URL || '').trim().replace(/\/$/, '');
 const FIREBASE_DB_SECRET = (process.env.FIREBASE_DATABASE_SECRET || '').trim();
@@ -18,6 +19,11 @@ function firebaseTokenURL(path: string): string {
 */
 export async function readFromFirebase(path: string): Promise<any | null> {
   try {
+    // Get data from local file in development mode
+    if (process.env.NODE_ENV === 'development') {
+      return JSON.parse(await readLocalFile('storage', path, 'firebase.json') || '{}');
+    }
+
     const response = await fetch(firebaseTokenURL(path), {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -41,6 +47,12 @@ export async function readFromFirebase(path: string): Promise<any | null> {
  */
 export async function writeToFirebase(path: string, record: any): Promise<void> {
   try {
+    // Store data to local file in development mode
+    if (process.env.NODE_ENV === 'development') {
+      await writeLocalFile('storage', path, 'firebase.json', JSON.stringify(record));
+      return;
+    }
+
     const response = await fetch(firebaseTokenURL(path), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

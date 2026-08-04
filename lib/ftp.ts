@@ -1,12 +1,21 @@
 import * as ftp from 'basic-ftp';
 import path from 'path';
+import fs from 'fs';
 import { Readable } from 'stream';
 
 import { LOGGER } from '@/lib/logger';
+import { writeLocalFile } from './file';
 
 export const ftpPublicURLPrefix = process.env.FTP_PUBLIC_URL_PREFIX || '';
 
 export async function storeFileToStorage(buffer: Buffer, filePath: string, fileName: string): Promise<string> {
+  // Upload files to local folder in development mode
+  if (process.env.NODE_ENV === 'development') {
+    const localUploadedPath = await writeLocalFile('uploads', filePath, fileName, buffer);
+
+    return `/${localUploadedPath}`;
+  }
+
   const client = new ftp.Client();
   client.ftp.verbose = false;
 
