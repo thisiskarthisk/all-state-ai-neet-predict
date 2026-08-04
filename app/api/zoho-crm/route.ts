@@ -51,8 +51,11 @@ export async function POST(req: Request) {
       mobile: mobileNo,
       homeState: homeStateVal,
       extraFields: {
-        College_Name: collegeNamesStr,
+        Created_At: new Date().toISOString().split('T')[0],
+        Mode: 'Web',
         Neet_Rank: intRank || '',
+        Course: '',
+        College_Name: collegeNamesStr,
         Platform: 'Web',
         Form_Name: 'College Predictor',
       },
