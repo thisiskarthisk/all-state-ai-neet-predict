@@ -289,10 +289,112 @@ async function requestZohoCRM(path: string, data: any, method: string = 'POST'):
 
   if (!response.ok) {
     LOGGER.error('[Zoho CRM] Request failed:', method, path, response.status, payload);
-    return null;
+    // Returned rather than swallowed: on a partially failed bulk write Zoho answers
+    // non-2xx with a per-record `data` array, and the caller needs to see which rows
+    // failed. Callers reading `data[0].details.id` still get `undefined` here.
   }
 
   return payload;
+}
+
+/**
+ * Builds the Zoho field payload for one lead. Shared by `createLead` and `insertLead`
+ * so both go through the same mapping and the same unknown-field warnings.
+ */
+function buildLeadPayload(student: ZohoLeadInput): Record<string, unknown> {
+  const data: Record<string, unknown> = {
+    // This layout repurposes Zoho's mandatory `Last_Name` as its "Home State"
+    // column — the leads from the live KA-Meta form hold "Telangana", "Tamil Nadu"
+    // etc. here. Zoho rejects a blank Last_Name, hence the fallback.
+    Last_Name: student.homeState || 'Unknown',
+    // Not on the current layout, so Zoho drops it — kept for when it is restored.
+    Lead_Source: LEAD_SOURCE,
+  };
+
+  // The student's name belongs in the custom `Name1` field, not `Last_Name`.
+  if (student.name) data.Name1 = student.name;
+  if (student.email) data.Email = student.email;
+  if (student.mobile) data.Phone = student.mobile;
+
+  // Applied last so an explicit extraFields entry can override the defaults above.
+  Object.assign(data, mapLeadFields(student.extraFields || {}));
+
+  return data;
+}
+
+/** Zoho accepts at most 100 records per write call; longer input is split across calls. */
+const ZOHO_MAX_RECORDS_PER_CALL = 100;
+
+export interface ZohoInsertResult {
+  /** Position in the input array, so callers can match results back to their own rows. */
+  index: number;
+  email?: string | null;
+  id: string | null;
+  success: boolean;
+  /** Zoho's per-record code, e.g. `SUCCESS`, `DUPLICATE_DATA`, `MANDATORY_NOT_FOUND`. */
+  code?: string;
+  message?: string;
+}
+
+/**
+ * Inserts one or many leads. Accepts a single object or an array — a lone object is
+ * wrapped, so the bulk path is the only path and there is one behaviour to reason about.
+ *
+ * Unlike `createLead` this is a true insert, not an upsert: it never modifies an
+ * existing record. Zoho may still reject a row as `DUPLICATE_DATA` if a unique field
+ * collides; that surfaces per record rather than failing the batch.
+ *
+ * Results are returned in input order, including for rejected records, because Zoho's
+ * response array is positional. A batch that fails wholesale (auth, network) yields
+ * `success: false` for every record in that batch rather than throwing.
+ */
+export async function insertLead(input: ZohoLeadInput | ZohoLeadInput[]): Promise<ZohoInsertResult[]> {
+  const students = Array.isArray(input) ? input : [input];
+
+  if (!students.length) return [];
+
+  if (!isZohoCRMEnabled()) {
+    LOGGER.log('[Zoho CRM] Disabled or not configured — skipping lead insert');
+    return students.map((student, index) => ({
+      index,
+      email: student.email ?? null,
+      id: null,
+      success: false,
+      code: 'CRM_DISABLED',
+      message: 'Zoho CRM is disabled or not configured',
+    }));
+  }
+
+  const results: ZohoInsertResult[] = [];
+
+  for (let offset = 0; offset < students.length; offset += ZOHO_MAX_RECORDS_PER_CALL) {
+    const batch = students.slice(offset, offset + ZOHO_MAX_RECORDS_PER_CALL);
+
+    let records: any[] = [];
+
+    try {
+      const response = await requestZohoCRM('Leads', batch.map(buildLeadPayload));
+      records = Array.isArray(response?.data) ? response.data : [];
+    } catch (error) {
+      LOGGER.error('[Zoho CRM] insertLead batch error:', error);
+    }
+
+    batch.forEach((student, i) => {
+      const record = records[i];
+      const success = String(record?.status || '').toLowerCase() === 'success';
+
+      results.push({
+        index: offset + i,
+        email: student.email ?? null,
+        id: success && record?.details?.id ? String(record.details.id) : null,
+        success,
+        code: record?.code,
+        message: record?.message,
+      });
+    });
+  }
+
+  return results;
 }
 
 /** Attaches one or more Zoho product records to an existing lead. */
@@ -331,24 +433,7 @@ export async function createLead(
     let leadId = student.zohoCrmLeadId || null;
 
     if (!leadId) {
-      const upsertData: Record<string, unknown> = {
-        // This layout repurposes Zoho's mandatory `Last_Name` as its "Home State"
-        // column — the leads from the live KA-Meta form hold "Telangana", "Tamil Nadu"
-        // etc. here. Zoho rejects a blank Last_Name, hence the fallback.
-        Last_Name: student.homeState || 'Unknown',
-        // Not on the current layout, so Zoho drops it — kept for when it is restored.
-        Lead_Source: LEAD_SOURCE,
-      };
-
-      // The student's name belongs in the custom `Name1` field, not `Last_Name`.
-      if (student.name) upsertData.Name1 = student.name;
-      if (student.email) upsertData.Email = student.email;
-      if (student.mobile) upsertData.Phone = student.mobile;
-
-      // Applied last so an explicit extraFields entry can override the defaults above.
-      Object.assign(upsertData, mapLeadFields(student.extraFields || {}));
-
-      const response = await requestZohoCRM('Leads/upsert', upsertData);
+      const response = await requestZohoCRM('Leads/upsert', buildLeadPayload(student));
       const upsertedId = response?.data?.[0]?.details?.id;
 
       if (upsertedId) {

@@ -37,3 +37,7 @@ next-env.d.ts
 
 /public/uploads/
 /storage/
+
+# Lead recovery working files — contain student names, emails and phone numbers
+/exported-emails/
+/recovered-leads.csv
