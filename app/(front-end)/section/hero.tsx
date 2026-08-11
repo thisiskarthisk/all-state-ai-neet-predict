@@ -71,6 +71,7 @@ interface HeroSectionProps {
   fmt: (n: number) => string;
   mode?: 'allstate' | 'karnataka';
   handleNavigateToCollegePredictor?: () => void;
+  skipInfoModal?: boolean; // new add Line
 }
 
 type HeroTab = 'rank' | 'college';
@@ -146,6 +147,7 @@ export default function HeroSection({
   getMaxMarks,
   fmt,
   mode = 'karnataka',
+  skipInfoModal = false, // new add Line
 }: HeroSectionProps) {
   const router = useRouter();
 
@@ -479,13 +481,8 @@ export default function HeroSection({
     }
     setCollegeError('');
 
-    // If user has already submitted the lead capture modal during this page session, skip modal & search directly
-    // if (hasSubmittedPredictLeadInSession) {
-    //   executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound);
-    //   return;
-    // }
-
-    if (typeof window !== 'undefined' && sessionStorage.getItem('is_whatsapp_verified') === 'true') {
+    
+    if (skipInfoModal || (typeof window !== 'undefined' && sessionStorage.getItem('is_whatsapp_verified') === 'true')) {
       executeCollegeSearch(collegeRank, collegeExamType, selectedCourse, selectedCategory, selectedStates, selectedRound);
       return;
     }
@@ -2130,21 +2127,23 @@ export default function HeroSection({
 
       {mounted && infoModalMarkup && createPortal(infoModalMarkup, document.body)}
       <CounsellingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <CounsellingInfoModel
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-        onSuccess={handleOtpSuccess}
-        title="Get your favourite college counselling info"
-        subtitle="Enter your profile & contact info to view matching medical colleges & cutoffs."
-        isCollegePredictor={true}
-        initialStudentProfile={{
-          rank: collegeRank,
-          exam: collegeExamType,
-          course: selectedCourse,
-          category: selectedCategory,
-          states: selectedStates,
-        }}
-      />
+      {!skipInfoModal && (
+        <CounsellingInfoModel
+          isOpen={isOtpModalOpen}
+          onClose={() => setIsOtpModalOpen(false)}
+          onSuccess={handleOtpSuccess}
+          title="Get your favourite college counselling info"
+          subtitle="Enter your profile & contact info to view matching medical colleges & cutoffs."
+          isCollegePredictor={true}
+          initialStudentProfile={{
+            rank: collegeRank,
+            exam: collegeExamType,
+            course: selectedCourse,
+            category: selectedCategory,
+            states: selectedStates,
+          }}
+        />
+      )}
     </section>
   );
 }
