@@ -207,6 +207,31 @@ export default function CounsellingInfoModel({
         setSuccessMsg(data.message || 'OTP code sent to your WhatsApp number!');
         setResendTimer(30);
         setIsResendDisabled(true);
+
+        // 4. If Rank is 500,000 or above (500000, 500001, or any rank >= 500000), send WhatsApp template message (neet_score_above_5lakh) after 2 minutes
+        const rawRank = profileRank || initialStudentProfile?.rank || (typeof window !== 'undefined' ? localStorage.getItem('predict_rank') : '') || '';
+        const numRank = parseInt(String(rawRank).replace(/\D/g, ''), 10);
+        console.log('[WATI Score Template Rank Check]:', { rawRank, numRank, cleanPhone, name: predictLeadName.trim() });
+
+        if (!isNaN(numRank) && numRank >= 500000) {
+          setTimeout(async () => {
+            try {
+              console.log('[WATI Timer] 2 minutes elapsed for rank', numRank, '. Sending score template to +91', cleanPhone);
+              const response = await fetch('/api/whatsapp/send-score-template', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  phone: cleanPhone,
+                  name: predictLeadName.trim(),
+                }),
+              });
+              const resData = await response.json();
+              console.log('[WATI Score Template Result]:', resData);
+            } catch (scoreTmplErr) {
+              console.warn('[WATI Score Template Warning]:', scoreTmplErr);
+            }
+          }, 120000); // 2 minutes (120 seconds) delay
+        }
       } else {
         setFormError(data.error || 'Failed to send OTP to WhatsApp. Please check your number.');
       }

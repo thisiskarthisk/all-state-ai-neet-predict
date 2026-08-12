@@ -162,3 +162,110 @@ export async function sendWatiOtp(
     return { success: false, error: error?.message || 'Server error while sending Wati OTP.' };
   }
 }
+
+/**
+ * Sends a Template Message for NEET score/rank >= 500000 via Wati WhatsApp API using WATI_SCORE_TEMPLATE_NAME
+ */
+export async function sendWatiScoreTemplate(
+  to: string,
+  name: string = 'Student'
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    let cleanPhone = (to || '').replace(/\D/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = `91${cleanPhone}`;
+    }
+
+    const scoreTemplateName = process.env.WATI_SCORE_TEMPLATE_NAME || 'neet_score_above_5lakh';
+
+    // 1. Opt-in / Add Contact on WATI with ?optedIn=true query parameter & body
+    try {
+      await fetch(`${API_END_POINT}/api/v1/addContact/${cleanPhone}?optedIn=true`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: ACCESS_TOKEN,
+        },
+        body: JSON.stringify({
+          name: name || 'Student',
+          optedIn: true,
+          customParams: [
+            { name: 'name', value: name || 'Student' },
+            { name: '1', value: name || 'Student' },
+          ],
+        }),
+      });
+
+      await fetch(`${API_END_POINT}/api/v1/updateContactAttribute/${cleanPhone}?optedIn=true`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: ACCESS_TOKEN,
+        },
+        body: JSON.stringify({
+          name: name || 'Student',
+          optedIn: true,
+        }),
+      }).catch(() => {});
+
+      await fetch(`${API_END_POINT}/api/v1/updateContactCustomParams/${cleanPhone}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: ACCESS_TOKEN,
+        },
+        body: JSON.stringify([
+          { name: 'name', value: name || 'Student' },
+          { name: '1', value: name || 'Student' },
+          { name: 'optedIn', value: 'true' },
+        ]),
+      }).catch(() => {});
+    } catch (optErr) {
+      console.warn('[WATI Score Contact Add Warning]:', optErr);
+    }
+
+    // 2. Send Template Message using WATI_SCORE_TEMPLATE_NAME with dynamic broadcast_name to prevent WATI deduplication on repeat sends
+    const url = `${API_END_POINT}/api/v1/sendTemplateMessage?whatsappNumber=${cleanPhone}`;
+
+    const payload = {
+      template_name: scoreTemplateName,
+      broadcast_name: `NEET Score Above 5 Lakh ${Date.now()}`,
+      parameters: [
+        {
+          name: 'name',
+          value: name || 'Student',
+        },
+        {
+          name: '1',
+          value: name || 'Student',
+        },
+      ],
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: ACCESS_TOKEN,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && (data.result === true || data.result === 'success' || data.valid === true || response.status === 200)) {
+      console.log('[WATI Score Template Success]:', data);
+      return { success: true, data };
+    } else {
+      console.error('[WATI Score Template Failed]:', data);
+      return {
+        success: false,
+        error: data.info || data.message || 'Failed to deliver WhatsApp score template message via Wati.',
+        data,
+      };
+    }
+  } catch (error: any) {
+    console.error('[WATI Score Template Error]:', error);
+    return { success: false, error: error?.message || 'Server error while sending Wati score template.' };
+  }
+}
