@@ -41,6 +41,7 @@ export interface CutoffDetail {
   openingRank: number;
   closingRank: number;
   chanceOfAdmission: 'High' | 'Medium' | 'Low';
+  estimated?: boolean; // new Add Aug 13
 }
 
 export interface PgCourseDetail {
@@ -52,6 +53,7 @@ export interface PgCourseDetail {
   overallRangeStr?: string;
   cutoffs: CutoffDetail[];
   allRoundCutoffs?: Record<string, Record<string, number | null>>;
+  estimated?: boolean; // new Add Aug 13
 }
 
 export interface MatchedCollegeResult {
@@ -73,6 +75,7 @@ export interface MatchedCollegeResult {
   allRoundCutoffs?: Record<string, Record<string, number | null>>;
   authorityInfo?: any;
   pg_courses?: PgCourseDetail[];
+  estimated?: boolean; // new Add Aug 13
 }
 
 export function isStateMatched(collegeStateRaw: string, filterStateRaw: string): boolean {
@@ -455,6 +458,50 @@ export function predictPgCollegesFromMasterData(
       }
     }
 
+    // Fallback for colleges with no real round-wise cutoff numbers (mostly Private/Deemed
+    // rows): use the estimated "Overall Rank Range (All Rounds)" range set on these rows
+    // (see PgMasterCollegeList.json "Estimated" flag) so they can still surface in results,
+    // clearly flagged as estimated rather than official cutoffs.
+    // new Add Aug 13
+    let isEstimatedMatch = false;
+    if (eligibleCutoffs.length === 0 && item['Estimated'] === true) {
+      const rangeMatch = /^([\d,]+)\s*[–-]\s*([\d,]+)$/.exec(
+        String(item['Overall Rank Range (All Rounds)'] || '').trim()
+      );
+      if (rangeMatch) {
+        const lo = parseInt(rangeMatch[1].replace(/,/g, ''), 10);
+        const hi = parseInt(rangeMatch[2].replace(/,/g, ''), 10);
+
+        let itemChance: 'High' | 'Medium' | 'Low' | null = null;
+        if (studentRank <= lo) {
+          itemChance = 'High';
+        } else if (studentRank <= hi) {
+          itemChance = 'Medium';
+        } else if (studentRank <= hi + Math.max(2500, Math.round(hi * 0.15))) {
+          itemChance = 'Low';
+        }
+
+        if (itemChance !== null) {
+          isEstimatedMatch = true;
+          eligibleCutoffs.push(hi);
+          eligibleChances.push(itemChance);
+          matchingCutoffEntries.push({
+            course: cName,
+            category: 'Estimated',
+            round: 'Estimated',
+            openingRank: lo,
+            closingRank: hi,
+            chanceOfAdmission: itemChance,
+            estimated: true,
+          });
+        }
+      }
+    }
+    // new Add Aug 13
+
+
+
+
     if (eligibleCutoffs.length === 0) continue;
 
     const chanceRank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
@@ -496,6 +543,7 @@ export function predictPgCollegesFromMasterData(
       opening_cutoff: minCutoff,
       totalSeats: item['2026 Total Seats'] || 0,
       overallRangeStr: item['Overall Rank Range (All Rounds)'] || item['Overall Rank Range'] || undefined,
+      estimated: isEstimatedMatch, // new Add Aug 13
       cutoffs: matchingCutoffEntries,
       allRoundCutoffs: {
         'Round 1': {
@@ -563,6 +611,7 @@ export function predictPgCollegesFromMasterData(
           overallRangeStr: col.overallRangeStr,
           cutoffs: col.cutoffs,
           allRoundCutoffs: col.allRoundCutoffs,
+          estimated: col.estimated, // new Add Aug 13
         }]
       });
     } else {
@@ -585,8 +634,14 @@ export function predictPgCollegesFromMasterData(
           overallRangeStr: col.overallRangeStr,
           cutoffs: col.cutoffs,
           allRoundCutoffs: col.allRoundCutoffs,
+          estimated: col.estimated, // new Add Aug 13
         });
         existing.totalSeats += col.totalSeats;
+      }
+
+      // new Add Aug 13
+      if (col.estimated) {
+        existing.estimated = true;
       }
 
       if (chanceWeight[col.best_chance] < chanceWeight[existing.best_chance]) {

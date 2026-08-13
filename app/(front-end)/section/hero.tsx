@@ -729,6 +729,7 @@ export default function HeroSection({
           cutoffs: extractedCutoffs,
           allRoundCutoffs: c.allRoundCutoffs || null,
           overallRangeStr: c.overallRangeStr || null,
+          estimated: !!c.estimated, //new Add Aug 13
         });
       } else {
         const existing = map.get(key);
@@ -740,6 +741,10 @@ export default function HeroSection({
         }
         if (!existing.counsellingDetail && counsellingInfo) {
           existing.counsellingDetail = counsellingInfo;
+        }
+        //new Add Aug 13
+        if (c.estimated) {
+          existing.estimated = true;
         }
         for (const newCut of extractedCutoffs) {
           if (!existing.cutoffs.some((x: any) => x.course_name === newCut.course_name && x.category_name === newCut.category_name)) {
@@ -1875,6 +1880,15 @@ export default function HeroSection({
                                             <span>Overall Rank Range:</span>
                                             <span className="font-mono text-slate-900">{c.overallRangeStr}</span>
                                           </span>
+                                          {/* new Add Aug 13 */}
+                                          {c.estimated && (
+                                            <span
+                                              title="No official round-wise cutoff data is available for this college/course yet — this range is an approximate estimate, not an official cutoff."
+                                              className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wide"
+                                            >
+                                              Estimated
+                                            </span>
+                                          )}
                                         </div>
                                       );
                                     }

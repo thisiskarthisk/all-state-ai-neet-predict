@@ -635,7 +635,9 @@ export async function POST(req: NextRequest) {
       ? (NEET_CATEGORIES.find(c => c.code === category)?.name || category)
       : 'General (UR)';
 
-    // Direct static PG College Dataset matching for NEET PG using PgMasterCollegeList.json
+    // Direct static PG College Dataset matching for NEET PG using PgMasterCollegeList.json.
+    // NEET PG never falls back to AI generation (Gemini/Perplexity) — only real cutoff data
+    // from the static JSON is used, even if that means returning an empty list.
     if (selectedExamCode === 'NEET_PG') {
       const masterPgMatches = predictPgCollegesFromMasterData(
         undefined,
@@ -648,9 +650,11 @@ export async function POST(req: NextRequest) {
         type || 'ALL'
       );
 
-      if (masterPgMatches && masterPgMatches.length > 0) {
-        return NextResponse.json({ colleges: masterPgMatches });
-      }
+      // if (masterPgMatches && masterPgMatches.length > 0) {
+      //   return NextResponse.json({ colleges: masterPgMatches });
+      // }
+      //new Add Aug 13
+      return NextResponse.json({ colleges: masterPgMatches || [] });
     }
 
     // Direct deterministic Master UG College Dataset matching for NEET UG
