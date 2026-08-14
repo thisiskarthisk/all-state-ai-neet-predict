@@ -145,31 +145,59 @@ export default function CounsellingInfoModel({
 
     try {
       // 1. Push lead to Zoho CRM
+      // try {
+      //   await fetch('/api/zoho-crm', {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({
+      //       name: predictLeadName.trim(),
+      //       email: predictLeadEmail.trim(),
+      //       mobileNo: cleanPhone,
+      //       homeState: predictLeadHomeState,
+      //       selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
+      //       studentProfile: {
+      //         preferredColleges: predictPreferredColleges.join(', '),
+      //         homeState: predictLeadHomeState,
+      //         rank: isCollegePredictor ? profileRank : undefined,
+      //         exam: isCollegePredictor ? profileExam : undefined,
+      //         course: isCollegePredictor ? profileCourse : undefined,
+      //         category: isCollegePredictor ? profileCategory : undefined,
+      //         states: isCollegePredictor ? profileStates : undefined,
+      //       },
+      //       leadSource: title || 'Counselling Info OTP Modal',
+      //     }),
+      //   });
+      // } catch (crmErr) {
+      //   console.warn('[CRM Push Warning]:', crmErr);
+      // }
+
+
       try {
-        await fetch('/api/zoho-crm', {
+        const rawRankStr = profileRank || initialStudentProfile?.rank || (typeof window !== 'undefined' ? localStorage.getItem('predict_rank') : '') || '';
+        const examCodeStr = profileExam || initialStudentProfile?.exam || (typeof window !== 'undefined' ? localStorage.getItem('predict_examType') : '') || 'NEET_UG';
+        const isPg = String(examCodeStr).toUpperCase().includes('PG') || ['MD', 'MS', 'DNB', 'PG'].includes(String(profileCourse).toUpperCase());
+
+        const extPayload = {
+          mobile_no: cleanPhone,
+          name: predictLeadName.trim(),
+          email: predictLeadEmail.trim(),
+          home_state: predictLeadHomeState,
+          neet_rank: rawRankStr,
+          ug_or_pg: isPg ? 'PG' : 'UG',
+          course: profileCourse || initialStudentProfile?.course || 'MBBS',
+          category: profileCategory || initialStudentProfile?.category || 'General',
+        };
+
+        await fetch('/api/backend/student-push', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: predictLeadName.trim(),
-            email: predictLeadEmail.trim(),
-            mobileNo: cleanPhone,
-            homeState: predictLeadHomeState,
-            selectedColleges: predictPreferredColleges.map((c) => ({ college_name: c })),
-            studentProfile: {
-              preferredColleges: predictPreferredColleges.join(', '),
-              homeState: predictLeadHomeState,
-              rank: isCollegePredictor ? profileRank : undefined,
-              exam: isCollegePredictor ? profileExam : undefined,
-              course: isCollegePredictor ? profileCourse : undefined,
-              category: isCollegePredictor ? profileCategory : undefined,
-              states: isCollegePredictor ? profileStates : undefined,
-            },
-            leadSource: title || 'Counselling Info OTP Modal',
-          }),
+          body: JSON.stringify(extPayload),
         });
-      } catch (crmErr) {
-        console.warn('[CRM Push Warning]:', crmErr);
+      } catch (extErr) {
+        console.warn('[Back-end Student Push Warning]:', extErr);
       }
+
+
 
       // 2. Send email notification
       try {
@@ -208,30 +236,31 @@ export default function CounsellingInfoModel({
         setResendTimer(30);
         setIsResendDisabled(true);
 
-        // 4. If Rank is 500,000 or above (500000, 500001, or any rank >= 500000), send WhatsApp template message (neet_score_above_5lakh) after 2 minutes
-        const rawRank = profileRank || initialStudentProfile?.rank || (typeof window !== 'undefined' ? localStorage.getItem('predict_rank') : '') || '';
-        const numRank = parseInt(String(rawRank).replace(/\D/g, ''), 10);
-        console.log('[WATI Score Template Rank Check]:', { rawRank, numRank, cleanPhone, name: predictLeadName.trim() });
+        // // 4. If Rank is 500,000 or above (500000, 500001, or any rank >= 500000), send WhatsApp template message (neet_score_above_5lakh) after 2 minutes
+        // const rawRank = profileRank || initialStudentProfile?.rank || (typeof window !== 'undefined' ? localStorage.getItem('predict_rank') : '') || '';
+        // const numRank = parseInt(String(rawRank).replace(/\D/g, ''), 10);
+        // console.log('[WATI Score Template Rank Check]:', { rawRank, numRank, cleanPhone, name: predictLeadName.trim() });
 
-        if (!isNaN(numRank) && numRank >= 500000) {
-          setTimeout(async () => {
-            try {
-              console.log('[WATI Timer] 2 minutes elapsed for rank', numRank, '. Sending score template to +91', cleanPhone);
-              const response = await fetch('/api/whatsapp/send-score-template', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  phone: cleanPhone,
-                  name: predictLeadName.trim(),
-                }),
-              });
-              const resData = await response.json();
-              console.log('[WATI Score Template Result]:', resData);
-            } catch (scoreTmplErr) {
-              console.warn('[WATI Score Template Warning]:', scoreTmplErr);
-            }
-          }, 120000); // 2 minutes (120 seconds) delay
-        }
+        // if (!isNaN(numRank) && numRank >= 500000) {
+        //   setTimeout(async () => {
+        //     try {
+        //       console.log('[WATI Timer] 2 minutes elapsed for rank', numRank, '. Sending score template to +91', cleanPhone);
+        //       const response = await fetch('/api/whatsapp/send-score-template', {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({
+        //           phone: cleanPhone,
+        //           name: predictLeadName.trim(),
+        //         }),
+        //       });
+        //       const resData = await response.json();
+        //       console.log('[WATI Score Template Result]:', resData);
+        //     } catch (scoreTmplErr) {
+        //       console.warn('[WATI Score Template Warning]:', scoreTmplErr);
+        //     }
+        //   }, 120000); // 2 minutes (120 seconds) delay
+        // }
+
       } else {
         setFormError(data.error || 'Failed to send OTP to WhatsApp. Please check your number.');
       }
