@@ -72,6 +72,7 @@ interface HeroSectionProps {
   mode?: 'allstate' | 'karnataka';
   handleNavigateToCollegePredictor?: () => void;
   skipInfoModal?: boolean; // new add Line
+  defaultCollegeExam?: string; // new add Line
 }
 
 type HeroTab = 'rank' | 'college';
@@ -148,6 +149,7 @@ export default function HeroSection({
   fmt,
   mode = 'karnataka',
   skipInfoModal = false, // new add Line
+  defaultCollegeExam, // new add Line
 }: HeroSectionProps) {
   const router = useRouter();
 
@@ -177,7 +179,8 @@ export default function HeroSection({
 
   // ---- College Predictor state ----
   const [collegeRank, setCollegeRank] = useState('');
-  const [collegeExamType, setCollegeExamType] = useState('NEET_UG');
+  // const [collegeExamType, setCollegeExamType] = useState('NEET_UG');
+  const [collegeExamType, setCollegeExamType] = useState(defaultCollegeExam || 'NEET_UG');
   const [selectedCourse, setSelectedCourse] = useState('MBBS');
   const [selectedSpeciality, setSelectedSpeciality] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('UR');
@@ -409,6 +412,69 @@ export default function HeroSection({
     }
   };
 
+  // const executeCollegeSearch = async (
+  //   rStr: string,
+  //   eStr: string,
+  //   cStr: string,
+  //   catStr: string,
+  //   sArr: string[],
+  //   rRoundStr: string = 'Round 1',
+  //   specStr: string = selectedSpeciality
+  // ) => {
+  //   const rankNum = parseInt(rStr, 10);
+  //   if (isNaN(rankNum) || rankNum <= 0) {
+  //     setCollegeError('Please enter a valid All India Rank (AIR).');
+  //     return;
+  //   }
+
+  //   setCollegeLoading(true);
+  //   setCollegeError('');
+
+  //   try {
+  //     const coursesForExam = getCoursesByExam(eStr as any);
+  //     const coursesToUse = cStr === 'ALL' ? coursesForExam.map((c) => c.code) : [cStr];
+
+  //     const res = await fetch('/api/ai-predict-colleges', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({
+  //         rank: rankNum,
+  //         examType: eStr,
+  //         course: cStr,
+  //         courses: coursesToUse,
+  //         speciality: specStr,
+  //         category: catStr,
+  //         states: sArr,
+  //         round: rRoundStr,
+  //       }),
+  //     });
+
+  //     const data = await res.json();
+  //     if (!res.ok) {
+  //       setCollegeError(data.error || 'Failed to predict colleges.');
+  //     } else {
+  //       setCollegeResult(data);
+  //       setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, speciality: specStr, category: catStr, states: sArr, round: rRoundStr });
+  //       scrollToResults();
+  //       if (typeof window !== 'undefined') {
+  //         localStorage.setItem('predict_rank', rStr);
+  //         localStorage.setItem('predict_examType', eStr);
+  //         localStorage.setItem('predict_course', cStr);
+  //         localStorage.setItem('predict_speciality', specStr);
+  //         localStorage.setItem('predict_category', catStr);
+  //         localStorage.setItem('predict_round', rRoundStr);
+  //         localStorage.setItem('predict_states', JSON.stringify(sArr));
+  //         localStorage.setItem('collegeList', JSON.stringify(data));
+  //         localStorage.setItem('college_prediction_results', JSON.stringify(data));
+  //       }
+  //     }
+  //   } catch {
+  //     setCollegeError('Connection error. Please try again.');
+  //   } finally {
+  //     setCollegeLoading(false);
+  //   }
+  // };
+
   const executeCollegeSearch = async (
     rStr: string,
     eStr: string,
@@ -419,6 +485,7 @@ export default function HeroSection({
     specStr: string = selectedSpeciality
   ) => {
     const rankNum = parseInt(rStr, 10);
+
     if (isNaN(rankNum) || rankNum <= 0) {
       setCollegeError('Please enter a valid All India Rank (AIR).');
       return;
@@ -428,12 +495,20 @@ export default function HeroSection({
     setCollegeError('');
 
     try {
+      // Get courses based on selected exam
       const coursesForExam = getCoursesByExam(eStr as any);
-      const coursesToUse = cStr === 'ALL' ? coursesForExam.map((c) => c.code) : [cStr];
 
+      const coursesToUse =
+        cStr === 'ALL'
+          ? coursesForExam.map((c) => c.code)
+          : [cStr];
+
+      // API request
       const res = await fetch('/api/ai-predict-colleges', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           rank: rankNum,
           examType: eStr,
@@ -446,31 +521,149 @@ export default function HeroSection({
         }),
       });
 
-      const data = await res.json();
+      // Read response safely
+      const responseText = await res.text();
+
+      console.log(
+        '[College Predictor] API Status:',
+        res.status
+      );
+
+      console.log(
+        '[College Predictor] API Response:',
+        responseText
+      );
+
+      let data: any;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(
+          '[College Predictor] JSON Parse Error:',
+          parseError
+        );
+
+        throw new Error(
+          `Invalid API response. Status: ${res.status}`
+        );
+      }
+
+      // API returned an error
       if (!res.ok) {
-        setCollegeError(data.error || 'Failed to predict colleges.');
-      } else {
-        setCollegeResult(data);
-        setLastSearchParams({ rank: rStr, examType: eStr, course: cStr, speciality: specStr, category: catStr, states: sArr, round: rRoundStr });
-        scrollToResults();
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('predict_rank', rStr);
-          localStorage.setItem('predict_examType', eStr);
-          localStorage.setItem('predict_course', cStr);
-          localStorage.setItem('predict_speciality', specStr);
-          localStorage.setItem('predict_category', catStr);
-          localStorage.setItem('predict_round', rRoundStr);
-          localStorage.setItem('predict_states', JSON.stringify(sArr));
-          localStorage.setItem('collegeList', JSON.stringify(data));
-          localStorage.setItem('college_prediction_results', JSON.stringify(data));
+        console.error(
+          '[College Predictor] API Error:',
+          data
+        );
+
+        setCollegeError(
+          data?.error ||
+            `Failed to predict colleges. Status: ${res.status}`
+        );
+
+        return;
+      }
+
+      // API success
+      console.log(
+        '[College Predictor] Prediction successful:',
+        data
+      );
+
+      setCollegeResult(data);
+
+      setLastSearchParams({
+        rank: rStr,
+        examType: eStr,
+        course: cStr,
+        speciality: specStr,
+        category: catStr,
+        states: sArr,
+        round: rRoundStr,
+      });
+
+      // Scroll to results
+      scrollToResults();
+
+      // Save to localStorage separately.
+      // If localStorage fails, it should NOT show a fake
+      // "Connection error" because the API already succeeded.
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(
+            'predict_rank',
+            rStr
+          );
+
+          localStorage.setItem(
+            'predict_examType',
+            eStr
+          );
+
+          localStorage.setItem(
+            'predict_course',
+            cStr
+          );
+
+          localStorage.setItem(
+            'predict_speciality',
+            specStr
+          );
+
+          localStorage.setItem(
+            'predict_category',
+            catStr
+          );
+
+          localStorage.setItem(
+            'predict_round',
+            rRoundStr
+          );
+
+          localStorage.setItem(
+            'predict_states',
+            JSON.stringify(sArr)
+          );
+
+          localStorage.setItem(
+            'collegeList',
+            JSON.stringify(data)
+          );
+
+          localStorage.setItem(
+            'college_prediction_results',
+            JSON.stringify(data)
+          );
+
+        } catch (storageError) {
+          console.warn(
+            '[College Predictor] localStorage warning:',
+            storageError
+          );
+
+          // Do NOT show connection error.
+          // API response was successful.
         }
       }
-    } catch {
-      setCollegeError('Connection error. Please try again.');
+
+    } catch (error) {
+      console.error(
+        '[College Predictor] Request Error:',
+        error
+      );
+
+      setCollegeError(
+        error instanceof Error
+          ? error.message
+          : 'Connection error. Please try again.'
+      );
+
     } finally {
       setCollegeLoading(false);
     }
   };
+
+  
 
   const handleCollegeSubmit = (e: React.FormEvent) => {
     e.preventDefault();

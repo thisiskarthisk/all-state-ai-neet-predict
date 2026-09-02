@@ -29,7 +29,7 @@ import CounsellingModal from '@/components/CounsellingModal';
 
 const CounsellingKitURL = '/assets/counselling-kit/The Counselling Atlas.pdf';
 
-export default function UgCollegePredictor() {
+export default function PgCollegePredictor() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,11 +47,11 @@ export default function UgCollegePredictor() {
   const [rankResult, setRankResult] = useState<any>(null);
   const [rankLoading, setRankLoading] = useState(false);
   const [rankError, setRankError] = useState('');
-  const [rankExamType, setRankExamType] = useState('NEET_UG');
+  const [rankExamType, setRankExamType] = useState('NEET_PG');
 
   // College predictor inputs
   const [rank, setRank] = useState('');
-  const [examType, setExamType] = useState('NEET_UG');
+  const [examType, setExamType] = useState('NEET_PG');
   const [selectedCourse, setSelectedCourse] = useState('MBBS');
   const [selectedCategory, setSelectedCategory] = useState('UR');
   const [selectedStates, setSelectedStates] = useState<string[]>(['ALL']);
@@ -434,6 +434,7 @@ export default function UgCollegePredictor() {
           fmt={fmt}
           handleNavigateToCollegePredictor={handleNavigateToCollegePredictor}
           skipInfoModal={true}
+          defaultCollegeExam="NEET_PG"
         />
 
         <TrustStats mode="allstate" />
