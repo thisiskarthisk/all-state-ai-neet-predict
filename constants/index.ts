@@ -37,16 +37,16 @@ export interface RankLevel {
 
 export const SUPPORTED_EXAMS: ExamMetadata[] = [
   {
-    code: 'NEET_UG',
-    name: 'NEET UG',
-    fullName: 'National Eligibility cum Entrance Test for Undergraduate Courses',
-    description: 'Entrance for MBBS, BDS, BAMS, BHMS, and other allied undergraduate medical degrees.'
-  },
-  {
     code: 'NEET_PG',
     name: 'NEET PG',
     fullName: 'National Eligibility cum Entrance Test for Postgraduate Courses',
     description: 'Entrance for Doctor of Medicine (MD), Master of Surgery (MS), and PG Diploma medical specialties.'
+  },
+  {
+    code: 'NEET_UG',
+    name: 'NEET UG',
+    fullName: 'National Eligibility cum Entrance Test for Undergraduate Courses',
+    description: 'Entrance for MBBS, BDS, BAMS, BHMS, and other allied undergraduate medical degrees.'
   },
   // {
   //   code: 'NEET_MDS',

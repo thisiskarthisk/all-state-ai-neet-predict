@@ -73,6 +73,7 @@ interface HeroSectionProps {
   handleNavigateToCollegePredictor?: () => void;
   skipInfoModal?: boolean; // new add Line
   defaultCollegeExam?: string; // new add Line
+  initialTab?: 'rank' | 'college';
 }
 
 type HeroTab = 'rank' | 'college';
@@ -150,6 +151,7 @@ export default function HeroSection({
   mode = 'karnataka',
   skipInfoModal = false, // new add Line
   defaultCollegeExam, // new add Line
+  initialTab,
 }: HeroSectionProps) {
   const router = useRouter();
 
@@ -158,8 +160,8 @@ export default function HeroSection({
   // regardless of decimals coming back from the AI / DB layer.
   const fmtInt = (n: number) => fmt(Math.round(Number(n) || 0));
 
-  // ---- Tab state (defaults to College Predictor) ----
-  const [activeTab, setActiveTab] = useState<HeroTab>('college');
+  // ---- Tab state (defaults to initialTab or College Predictor) ----
+  const [activeTab, setActiveTab] = useState<HeroTab>(initialTab || 'college');
 
   // ---- Portal mount guard (document is undefined during SSR) ----
   const [mounted, setMounted] = useState(false);
@@ -179,9 +181,10 @@ export default function HeroSection({
 
   // ---- College Predictor state ----
   const [collegeRank, setCollegeRank] = useState('');
-  // const [collegeExamType, setCollegeExamType] = useState('NEET_UG');
-  const [collegeExamType, setCollegeExamType] = useState(defaultCollegeExam || 'NEET_UG');
-  const [selectedCourse, setSelectedCourse] = useState('MBBS');
+  const [collegeExamType, setCollegeExamType] = useState(defaultCollegeExam || 'NEET_PG');
+  const [selectedCourse, setSelectedCourse] = useState(
+    (defaultCollegeExam || 'NEET_PG') === 'NEET_PG' ? 'MD/MS' : 'MBBS'
+  );
   const [selectedSpeciality, setSelectedSpeciality] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('UR');
   const [selectedStates, setSelectedStates] = useState<string[]>(mode === 'allstate' ? ['AI'] : ['KA']);
@@ -369,7 +372,7 @@ export default function HeroSection({
         if (storedList || storedRank || tabParam === 'college') {
           setActiveTab('college');
         }
-      } else if (tabParam === 'rank') {
+      } else if (tabParam === 'rank' || initialTab === 'rank') {
         setActiveTab('rank');
       }
     }

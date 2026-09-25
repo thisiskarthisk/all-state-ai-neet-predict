@@ -47,12 +47,12 @@ export default function HomePage() {
   const [rankResult, setRankResult] = useState<any>(null);
   const [rankLoading, setRankLoading] = useState(false);
   const [rankError, setRankError] = useState('');
-  const [rankExamType, setRankExamType] = useState('NEET_UG');
+  const [rankExamType, setRankExamType] = useState('NEET_PG');
 
   // College predictor inputs
   const [rank, setRank] = useState('');
-  const [examType, setExamType] = useState('NEET_UG');
-  const [selectedCourse, setSelectedCourse] = useState('MBBS');
+  const [examType, setExamType] = useState('NEET_PG');
+  const [selectedCourse, setSelectedCourse] = useState('MD/MS');
   const [selectedCategory, setSelectedCategory] = useState('UR');
   const [selectedStates, setSelectedStates] = useState<string[]>(['ALL']);
 
@@ -433,6 +433,7 @@ export default function HomePage() {
           getMaxMarks={getMaxMarks}
           fmt={fmt}
           handleNavigateToCollegePredictor={handleNavigateToCollegePredictor}
+          defaultCollegeExam="NEET_PG"
         />
 
         <TrustStats mode="allstate" />
