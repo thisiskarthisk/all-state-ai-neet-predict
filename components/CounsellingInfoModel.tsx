@@ -6,6 +6,7 @@ import { X, ArrowRight, Loader2, ShieldCheck, CheckCircle2, RefreshCw, Sparkles,
 import { INDIAN_STATES } from '@/constants';
 import MultiSelect from '@/components/Multiselect';
 import MASTER_UG_COLLEGE_LIST from '@/lib/data/allstate/UgMasterCollegeList.json';
+import { triggerOpenAiPixel } from '@/components/analytics';
 
 const ALL_COLLEGE_OPTIONS: { code: string; name: string }[] = (() => {
   const masterUg = Array.isArray(MASTER_UG_COLLEGE_LIST) ? MASTER_UG_COLLEGE_LIST : [];
@@ -304,6 +305,8 @@ export default function CounsellingInfoModel({
         }
 
         setSuccessMsg('WhatsApp verified successfully!');
+        // Only trigger OpenAI Pixel after OTP verification finishes and succeeds
+        triggerOpenAiPixel();
         setTimeout(() => {
           onSuccess({
             name: predictLeadName,

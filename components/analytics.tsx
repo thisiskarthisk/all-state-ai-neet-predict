@@ -28,6 +28,51 @@ export function HeadAnalyticsScripts() {
   );
 }
 
+export function triggerOpenAiPixel() {
+  if (typeof window === 'undefined') return;
+
+  const pixelId = process.env.NEXT_PUBLIC_OPENAI_PIXEL_ID || OPENAI_PIXEL_ID || "Xae3JP7Nc4xnkyifrMB8B8";
+  const isDebug = process.env.NEXT_PUBLIC_OPENAI_PIXEL_DEBUG === 'true' || OPENAI_PIXEL_DEBUG || true;
+
+  try {
+    const w = window as any;
+    const d = document;
+
+    // Guard: Prevent duplicate script injection
+    const existingScript = d.querySelector('script[src*="oaiq.min.js"]');
+    if (!w.oaiq && !existingScript) {
+      const q: any = function () {
+        q.q.push(arguments);
+      };
+      q.q = [];
+      w.oaiq = q;
+
+      const j = d.createElement('script');
+      j.async = true;
+      j.src = 'https://bzrcdn.openai.com/sdk/oaiq.min.js';
+      const f = d.getElementsByTagName('script')[0];
+      if (f && f.parentNode) {
+        f.parentNode.insertBefore(j, f);
+      } else {
+        d.head.appendChild(j);
+      }
+    }
+
+    // Guard: Ensure init is called only once
+    if (!w._oaiq_initialized && w.oaiq) {
+      w.oaiq('init', { pixelId, debug: isDebug });
+      w._oaiq_initialized = true;
+    }
+
+    // Fire the Lead event
+    if (w.oaiq) {
+      w.oaiq('event', 'Lead');
+    }
+  } catch (err) {
+    console.warn('[OpenAI Pixel] Error executing pixel script:', err);
+  }
+}
+
 function GoogleAnalyticsScript() {
   return (
     <>{
