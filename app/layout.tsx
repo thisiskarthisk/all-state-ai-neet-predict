@@ -2,7 +2,7 @@ import { GOOGLE_ANALYTICS_ID, GTM_ID, MS_CLARITY_ID } from '@/constants';
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { BodyAnalyticsScripts } from '@/components/analytics';
+import { BodyAnalyticsScripts, HeadAnalyticsScripts } from '@/components/analytics';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +18,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <HeadAnalyticsScripts />
+      </head>
       <body className={inter.className}>
         {children}
 

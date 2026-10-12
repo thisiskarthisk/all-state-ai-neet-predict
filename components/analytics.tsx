@@ -1,5 +1,32 @@
-import { GOOGLE_ANALYTICS_ID, GTM_ID, MS_CLARITY_ID } from "@/constants";
+import { GOOGLE_ANALYTICS_ID, GTM_ID, MS_CLARITY_ID, OPENAI_PIXEL_ID, OPENAI_PIXEL_DEBUG } from "@/constants";
 import Script from "next/script";
+
+function OpenAiPixelHeadScript() {
+  return (
+    <>
+      {OPENAI_PIXEL_ID && (
+        <Script
+          id="analytics-openai-pixel"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+!function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(j,f)}(window,document,"script","https://bzrcdn.openai.com/sdk/oaiq.min.js");
+oaiq("init",{pixelId:"${OPENAI_PIXEL_ID}",debug:${OPENAI_PIXEL_DEBUG ? 'true' : 'false'}});
+`.trim(),
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+export function HeadAnalyticsScripts() {
+  return (
+    <>
+      <OpenAiPixelHeadScript />
+    </>
+  );
+}
 
 function GoogleAnalyticsScript() {
   return (

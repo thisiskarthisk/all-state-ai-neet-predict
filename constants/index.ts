@@ -353,3 +353,5 @@ export const AI_API_TO_USE: AI_API_TYPE|undefined|null = process.env.AI_API_TO_U
 export const GTM_ID = process.env.GTM_ID;
 export const GOOGLE_ANALYTICS_ID = process.env.GOOGLE_ANALYTICS_ID;
 export const MS_CLARITY_ID = process.env.MS_CLARITY_ID;
+export const OPENAI_PIXEL_ID = process.env.OPENAI_PIXEL_ID;
+export const OPENAI_PIXEL_DEBUG = process.env.OPENAI_PIXEL_DEBUG === 'true';
